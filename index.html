@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Productivity Tracker — Takahami Medical Billing</title>
+
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<style>
+  :root {
+    --blue: #1a73e8;
+    --blue-dark: #1557b0;
+    --blue-light: #e8f0fe;
+    --green: #1e8e3e;
+    --green-light: #e6f4ea;
+    --red: #d93025;
+    --red-light: #fce8e6;
+    --yellow: #f9ab00;
+    --yellow-light: #fef7e0;
+    --gray-50: #f8f9fa;
+    --gray-100: #f1f3f4;
+    --gray-200: #e8eaed;
+    --gray-300: #dadce0;
+    --gray-400: #bdc1c6;
+    --gray-500: #9aa0a6;
+    --gray-700: #5f6368;
+    --gray-900: #202124;
+    --white: #ffffff;
+    --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.15);
+    --radius: 8px;
+    --font: 'Google Sans', 'Segoe UI', Roboto, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--gray-50);
+    color: var(--gray-900);
+    min-height: 100vh;
+  }
+
+  /* ── LOGIN ── */
+  #login-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+  }
+
+  .login-card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 3rem 2.5rem;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: var(--shadow-md);
+    text-align: center;
+  }
+
+  .login-logo {
+    width: 64px;
+    height: 64px;
+    background: var(--blue);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 28px;
+  }
+
+  .login-card h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 4px;
+  }
+
+  .login-card .subtitle {
+    font-size: 14px;
+    color: var(--gray-500);
+    margin-bottom: 2rem;
+  }
+
+  .login-notice {
+    font-size: 13px;
+    color: var(--gray-500);
+    background: var(--gray-100);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: 1.5rem;
+  }
+
+  #login-error {
+    display: none;
+    background: var(--red-light);
+    color: var(--red);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    margin-top: 1rem;
+  }
+
+  /* ── APP SHELL ── */
+  #app-screen { display: none; min-height: 100vh; }
+
+  header {
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-200);
+    padding: 0 1.5rem;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header-logo {
+    width: 36px;
+    height: 36px;
+    background: var(--blue);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .header-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-900);
+    line-height: 1.2;
+  }
+
+  .header-subtitle {
+    font-size: 12px;
+    color: var(--gray-500);
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .user-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--gray-100);
+    border-radius: 24px;
+    padding: 6px 12px 6px 8px;
+    font-size: 13px;
+    color: var(--gray-700);
+  }
+
+  .user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--blue);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .btn-signout {
+    background: none;
+    border: 1px solid var(--gray-300);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-signout:hover { background: var(--gray-100); }
+
+  /* ── MAIN CONTENT ── */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem;
+  }
+
+  /* ── CONTROLS BAR ── */
+  .controls-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .controls-bar label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-700);
+  }
+
+  select {
+    border: 1px solid var(--gray-300);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-family: var(--font);
+    color: var(--gray-900);
+    background: var(--white);
+    cursor: pointer;
+    outline: none;
+    transition: border 0.15s;
+  }
+  select:focus { border-color: var(--blue); }
+
+  .year-select { min-width: 90px; }
+  .month-select { min-width: 130px; }
+
+  .sync-btn {
+    margin-left: auto;
+    background: var(--blue);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-family: var(--font);
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s;
+  }
+  .sync-btn:hover { background: var(--blue-dark); }
+  .sync-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
+
+  .sync-status {
+    font-size: 13px;
+    color: var(--gray-500);
+  }
+  .sync-status.ok { color: var(--green); }
+  .sync-status.err { color: var(--red); }
+
+  /* ── MTD CARDS ── */
+  .mtd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+
+  .mtd-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow);
+  }
+
+  .mtd-card .card-label {
+    font-size: 12px;
+    color: var(--gray-500);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .mtd-card .card-value {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--gray-900);
+    line-height: 1.1;
+  }
+
+  .mtd-card .card-sub {
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-top: 4px;
+  }
+
+  .mtd-card.goal .card-value { color: var(--blue); }
+  .mtd-card.productivity .card-value { color: var(--green); }
+  .mtd-card.deficit .card-value { color: var(--red); }
+  .mtd-card.ptg .card-value { color: var(--gray-900); }
+  .mtd-card.acpd .card-value { color: var(--gray-700); }
+
+  /* Progress bar inside MTD card */
+  .progress-bar-wrap {
+    margin-top: 8px;
+    background: var(--gray-200);
+    border-radius: 4px;
+    height: 5px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: var(--blue);
+    transition: width 0.4s ease;
+  }
+
+  /* ── AGENT INFO BANNER ── */
+  .agent-banner {
+    background: var(--blue-light);
+    border: 1px solid #c5d9fb;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 14px;
+    color: var(--blue-dark);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .readonly-notice {
+    background: var(--yellow-light);
+    border: 1px solid #fce8a0;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 13px;
+    color: #7a5b00;
+    margin-bottom: 1.5rem;
+    display: none;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ── CALENDAR TABLE ── */
+  .table-wrap {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .table-header-bar {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .table-header-bar h2 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gray-900);
+  }
+
+  .table-header-bar .hint {
+    font-size: 12px;
+    color: var(--gray-500);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  thead th {
+    background: var(--gray-50);
+    color: var(--gray-700);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 16px;
+    text-align: center;
+    border-bottom: 1px solid var(--gray-200);
+    position: sticky;
+    top: 60px;
+  }
+
+  thead th:first-child { text-align: left; }
+
+  tbody tr { border-bottom: 1px solid var(--gray-100); }
+  tbody tr:last-child { border-bottom: none; }
+
+  tbody td {
+    padding: 6px 16px;
+    text-align: center;
+    color: var(--gray-900);
+    font-size: 14px;
+  }
+
+  tbody td:first-child {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-500);
+    text-align: left;
+    width: 80px;
+  }
+
+  td.weekend {
+    background: var(--gray-900);
+    color: white !important;
+  }
+
+  td.weekend input { display: none; }
+
+  .day-num { font-variant-numeric: tabular-nums; }
+
+  /* Input cells */
+  td input[type="number"] {
+    width: 72px;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 14px;
+    font-family: var(--font);
+    text-align: center;
+    color: var(--gray-900);
+    background: var(--white);
+    outline: none;
+    transition: border 0.15s, box-shadow 0.15s;
+    -moz-appearance: textfield;
+  }
+
+  td input[type="number"]::-webkit-inner-spin-button,
+  td input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  td input[type="number"]:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+  }
+
+  td input[type="number"].readonly-cell {
+    background: var(--gray-50);
+    color: var(--gray-700);
+    cursor: not-allowed;
+    border-color: var(--gray-100);
+    pointer-events: none;
+  }
+
+  td input[type="number"].has-value {
+    background: var(--blue-light);
+    border-color: #93b8f7;
+    font-weight: 600;
+    color: var(--blue-dark);
+  }
+
+  td input[type="number"].other-value {
+    background: var(--gray-50);
+    color: var(--gray-700);
+    font-weight: 500;
+    cursor: not-allowed;
+    pointer-events: none;
+    border-color: var(--gray-200);
+  }
+
+  /* Summary row */
+  tr.summary-row td {
+    background: var(--gray-900);
+    color: white;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 10px 16px;
+    border: none;
+  }
+
+  tr.goal-row td {
+    background: var(--blue);
+    color: white;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 10px 16px;
+  }
+
+  tr.deficit-row td {
+    background: var(--red);
+    color: white;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 10px 16px;
+  }
+
+  tr.deficit-row td.on-target {
+    background: var(--green);
+    color: white;
+  }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--gray-900);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.25s ease;
+    pointer-events: none;
+    z-index: 999;
+    max-width: 320px;
+  }
+
+  #toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  #toast.success { background: var(--green); }
+  #toast.error { background: var(--red); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 700px) {
+    main { padding: 1rem; }
+    .controls-bar { gap: 8px; }
+    .mtd-grid { grid-template-columns: repeat(2, 1fr); }
+    thead th, tbody td { padding: 6px 8px; }
+    td input[type="number"] { width: 56px; font-size: 13px; }
+    .header-subtitle { display: none; }
+    table { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════ LOGIN SCREEN ══════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">📋</div>
+    <h1>Productivity Tracker</h1>
+    <p class="subtitle">Takahami Medical Billing</p>
+
+    <div id="g_id_onload"
+      data-client_id="YOUR_GOOGLE_CLIENT_ID"
+      data-callback="handleCredentialResponse"
+      data-auto_prompt="false">
+    </div>
+    <div class="g_id_signin"
+      data-type="standard"
+      data-size="large"
+      data-theme="outline"
+      data-text="sign_in_with"
+      data-shape="rectangular"
+      data-logo_alignment="left"
+      data-width="320">
+    </div>
+
+    <div id="login-error">⚠️ Access denied. Please use your @allianceglobalsolutions.com account.</div>
+
+    <div class="login-notice">
+      🔒 Sign in with your company email only.<br>
+      Only authorized agents may enter data.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ APP SCREEN ══════════ -->
+<div id="app-screen">
+  <header>
+    <div class="header-left">
+      <div class="header-logo">📋</div>
+      <div>
+        <div class="header-title">Productivity Tracker</div>
+        <div class="header-subtitle">Takahami Medical Billing</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="user-badge">
+        <div class="user-avatar" id="user-initials">--</div>
+        <span id="user-name-display">Agent</span>
+      </div>
+      <button class="btn-signout" onclick="signOut()">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Controls -->
+    <div class="controls-bar">
+      <label for="sel-year">Year</label>
+      <select id="sel-year" class="year-select" onchange="loadView()"></select>
+
+      <label for="sel-month">Month</label>
+      <select id="sel-month" class="month-select" onchange="loadView()"></select>
+
+      <span id="sync-status" class="sync-status"></span>
+      <button class="sync-btn" id="sync-btn" onclick="syncToSheets()">
+        ☁️ Sync to Sheets
+      </button>
+    </div>
+
+    <!-- Agent banner -->
+    <div class="agent-banner" id="agent-banner">
+      👤 Logged in as: <strong id="agent-full-name">—</strong> — you can only edit your own column.
+    </div>
+    <div class="readonly-notice" id="readonly-notice">
+      👁️ View-only mode. You are not in the agent list for this campaign.
+    </div>
+
+    <!-- MTD Summary Cards -->
+    <div class="mtd-grid">
+      <div class="mtd-card goal">
+        <div class="card-label">MTD Goal</div>
+        <div class="card-value" id="mtd-goal">—</div>
+        <div class="card-sub">Monthly target</div>
+      </div>
+      <div class="mtd-card productivity">
+        <div class="card-label">MTD Productivity</div>
+        <div class="card-value" id="mtd-prod">—</div>
+        <div class="card-sub">Total so far</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="mtd-progress-bar" style="width:0%"></div></div>
+      </div>
+      <div class="mtd-card deficit">
+        <div class="card-label">Deficit</div>
+        <div class="card-value" id="mtd-deficit">—</div>
+        <div class="card-sub">Goal − Productivity</div>
+      </div>
+      <div class="mtd-card ptg">
+        <div class="card-label">PTG %</div>
+        <div class="card-value" id="mtd-ptg">—</div>
+        <div class="card-sub">Productivity to goal</div>
+      </div>
+      <div class="mtd-card acpd">
+        <div class="card-label">ACPD</div>
+        <div class="card-value" id="mtd-acpd">—</div>
+        <div class="card-sub">Avg cases per work day</div>
+      </div>
+    </div>
+
+    <!-- Daily Table -->
+    <div class="table-wrap">
+      <div class="table-header-bar">
+        <h2 id="table-title">Daily Entries</h2>
+        <span class="hint">Black rows = weekends (no entry)</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table id="main-table">
+          <thead id="table-head"></thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════
+const ALLOWED_DOMAIN = 'allianceglobalsolutions.com';
+const SHEET_ID = 'YOUR_GOOGLE_SHEET_ID'; // 1KAD9iBlcaYqHOPm364iwtZswcmp4Jx8JmzdqnLdj06I
+const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_DEPLOY_URL'; // https://script.google.com/macros/s/AKfycbzK9BiU3-VXgpwLoHfe2OHGi3fjDU-va6NXAsh8LJstn05iLvaaLOmV3APMWWWZhPx5/exec
+
+const AGENTS = [
+  { name: 'Ado, Jaypee Dhan',       email: 'jaypee@allianceglobalsolutions.com',      initials: 'JA' },
+  { name: 'Hubilla, Alvin Jhon',    email: 'a.hubilla@allianceglobalsolutions.com',    initials: 'AH' },
+  { name: 'Mapa, Christia Marie',   email: 'christia@allianceglobalsolutions.com',     initials: 'CM' },
+  { name: 'Patricio, Cherabyl',     email: 'c.patricio@allianceglobalsolutions.com',   initials: 'CP' },
+  { name: 'Regaspi, Jeffrey',       email: 'jeffrey@allianceglobalsolutions.com',      initials: 'JR' },
+];
+
+// Monthly goals (matching original tracker: 1890, 1800, 1980, 1890, 1710, 1890, 180 visible...)
+// Default: 1890 per month unless month-specific. Adjust as needed.
+const MONTHLY_GOALS = {
+  0: 1890, 1: 1800, 2: 1980, 3: 1890,
+  4: 1710, 5: 1890, 6: 180, 7: 1890,
+  8: 1890, 9: 1890, 10: 1890, 11: 1890
+};
+
+const MONTHS = ['January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let currentUser = null;
+let currentAgentIdx = -1;
+
+// data[year][month][agentIdx][day] = value
+let data = {};
+
+// ══════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════
+function handleCredentialResponse(response) {
+  const payload = parseJwt(response.credential);
+  const email = payload.email || '';
+  const domain = email.split('@')[1] || '';
+
+  if (domain !== ALLOWED_DOMAIN) {
+    document.getElementById('login-error').style.display = 'block';
+    return;
+  }
+
+  currentUser = { email, name: payload.name, picture: payload.picture };
+  currentAgentIdx = AGENTS.findIndex(a => a.email.toLowerCase() === email.toLowerCase());
+
+  // Store session
+  sessionStorage.setItem('user', JSON.stringify(currentUser));
+  sessionStorage.setItem('agentIdx', currentAgentIdx);
+
+  startApp();
+}
+
+function parseJwt(token) {
+  const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+  const json = atob(base64);
+  return JSON.parse(json);
+}
+
+function signOut() {
+  sessionStorage.clear();
+  currentUser = null;
+  currentAgentIdx = -1;
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  google.accounts.id.disableAutoSelect();
+}
+
+function checkSession() {
+  const saved = sessionStorage.getItem('user');
+  if (saved) {
+    currentUser = JSON.parse(saved);
+    currentAgentIdx = parseInt(sessionStorage.getItem('agentIdx') || '-1');
+    startApp();
+    return true;
+  }
+  return false;
+}
+
+// ══════════════════════════════════════════════
+// APP INIT
+// ══════════════════════════════════════════════
+function startApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+
+  // User display
+  const agent = AGENTS[currentAgentIdx];
+  const initials = agent ? agent.initials : currentUser.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('user-initials').textContent = initials;
+  document.getElementById('user-name-display').textContent = agent ? agent.name.split(',')[1].trim() : currentUser.name;
+
+  if (currentAgentIdx >= 0) {
+    document.getElementById('agent-full-name').textContent = AGENTS[currentAgentIdx].name;
+    document.getElementById('agent-banner').style.display = 'flex';
+    document.getElementById('readonly-notice').style.display = 'none';
+  } else {
+    document.getElementById('agent-banner').style.display = 'none';
+    document.getElementById('readonly-notice').style.display = 'flex';
+  }
+
+  buildYearMonthSelectors();
+  loadFromLocalStorage();
+  loadView();
+}
+
+function buildYearMonthSelectors() {
+  const now = new Date();
+  const ySel = document.getElementById('sel-year');
+  const mSel = document.getElementById('sel-month');
+  ySel.innerHTML = '';
+  mSel.innerHTML = '';
+
+  for (let y = 2024; y <= now.getFullYear() + 1; y++) {
+    const o = document.createElement('option');
+    o.value = y; o.textContent = y;
+    if (y === now.getFullYear()) o.selected = true;
+    ySel.appendChild(o);
+  }
+
+  MONTHS.forEach((m, i) => {
+    const o = document.createElement('option');
+    o.value = i; o.textContent = m;
+    if (i === now.getMonth()) o.selected = true;
+    mSel.appendChild(o);
+  });
+}
+
+// ══════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════
+function getStorageKey() { return `takahami_prod_data`; }
+
+function loadFromLocalStorage() {
+  try {
+    const raw = localStorage.getItem(getStorageKey());
+    if (raw) data = JSON.parse(raw);
+  } catch(e) { data = {}; }
+}
+
+function saveToLocalStorage() {
+  localStorage.setItem(getStorageKey(), JSON.stringify(data));
+}
+
+function ensurePath(year, month) {
+  if (!data[year]) data[year] = {};
+  if (!data[year][month]) data[year][month] = {};
+  AGENTS.forEach((_, i) => {
+    if (!data[year][month][i]) data[year][month][i] = {};
+  });
+}
+
+function getDayValue(year, month, agentIdx, day) {
+  try { return data[year][month][agentIdx][day] ?? ''; }
+  catch(e) { return ''; }
+}
+
+function setDayValue(year, month, agentIdx, day, val) {
+  ensurePath(year, month);
+  if (val === '' || val === null || isNaN(val)) {
+    delete data[year][month][agentIdx][day];
+  } else {
+    data[year][month][agentIdx][day] = Number(val);
+  }
+  saveToLocalStorage();
+  updateMTD();
+}
+
+// ══════════════════════════════════════════════
+// VIEW
+// ══════════════════════════════════════════════
+function loadView() {
+  const year = parseInt(document.getElementById('sel-year').value);
+  const month = parseInt(document.getElementById('sel-month').value);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  document.getElementById('table-title').textContent =
+    `${MONTHS[month]} ${year} — Daily Productivity`;
+
+  ensurePath(year, month);
+  buildTable(year, month, daysInMonth);
+  updateMTD();
+}
+
+function isWeekend(year, month, day) {
+  const dow = new Date(year, month, day).getDay();
+  return dow === 0 || dow === 6; // Sun=0, Sat=6
+}
+
+function buildTable(year, month, daysInMonth) {
+  const thead = document.getElementById('table-head');
+  const tbody = document.getElementById('table-body');
+
+  // HEADER
+  let headHtml = '<tr><th>Day</th>';
+  AGENTS.forEach(a => {
+    headHtml += `<th title="${a.email}">${a.name.split(',')[1]?.trim() || a.name.split(' ')[0]}</th>`;
+  });
+  headHtml += '</tr>';
+  thead.innerHTML = headHtml;
+
+  // BODY
+  let bodyHtml = '';
+  const dow_labels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dow = new Date(year, month, d).getDay();
+    const weekend = isWeekend(year, month, d);
+    const dowLabel = dow_labels[dow];
+
+    bodyHtml += `<tr id="row-${d}">`;
+    bodyHtml += `<td class="day-num">${d} <span style="color:var(--gray-400);font-size:11px">${dowLabel}</span></td>`;
+
+    AGENTS.forEach((_, agentIdx) => {
+      if (weekend) {
+        bodyHtml += `<td class="weekend"></td>`;
+        return;
+      }
+
+      const val = getDayValue(year, month, agentIdx, d);
+      const isOwn = agentIdx === currentAgentIdx;
+      const hasVal = val !== '' && val !== undefined;
+
+      let cls = '';
+      let readonly = '';
+      let displayVal = hasVal ? val : '';
+
+      if (!isOwn) {
+        cls = hasVal ? 'other-value' : 'readonly-cell';
+        readonly = 'readonly';
+      } else if (hasVal) {
+        cls = 'has-value';
+      }
+
+      bodyHtml += `<td>
+        <input type="number" min="0"
+          id="inp-${d}-${agentIdx}"
+          class="${cls}"
+          value="${displayVal}"
+          placeholder="${isOwn ? '0' : ''}"
+          ${readonly}
+          ${isOwn ? `onchange="cellChanged(${year},${month},${agentIdx},${d},this.value)"
+                     onblur="cellChanged(${year},${month},${agentIdx},${d},this.value)"` : ''}
+        />
+      </td>`;
+    });
+
+    bodyHtml += '</tr>';
+  }
+
+  // PRODUCTIVITY row
+  bodyHtml += `<tr class="summary-row"><td>Productivity</td>`;
+  AGENTS.forEach((_, i) => {
+    bodyHtml += `<td id="total-${i}">0</td>`;
+  });
+  bodyHtml += '</tr>';
+
+  // GOAL row
+  const goal = MONTHLY_GOALS[month] || 1890;
+  bodyHtml += `<tr class="goal-row"><td>Goal</td>`;
+  AGENTS.forEach(() => {
+    bodyHtml += `<td>${goal}</td>`;
+  });
+  bodyHtml += '</tr>';
+
+  // DEFICIT row
+  bodyHtml += `<tr class="deficit-row"><td>Deficit</td>`;
+  AGENTS.forEach((_, i) => {
+    bodyHtml += `<td id="deficit-${i}">—</td>`;
+  });
+  bodyHtml += '</tr>';
+
+  tbody.innerHTML = bodyHtml;
+  updateTotals(year, month, daysInMonth);
+}
+
+function cellChanged(year, month, agentIdx, day, val) {
+  const v = val === '' ? '' : parseInt(val);
+  setDayValue(year, month, agentIdx, day, v);
+  const inp = document.getElementById(`inp-${day}-${agentIdx}`);
+  if (inp) {
+    if (v !== '' && !isNaN(v)) {
+      inp.classList.add('has-value');
+    } else {
+      inp.classList.remove('has-value');
+    }
+  }
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  updateTotals(year, month, daysInMonth);
+}
+
+function updateTotals(year, month, daysInMonth) {
+  const goal = MONTHLY_GOALS[month] || 1890;
+  AGENTS.forEach((_, i) => {
+    let total = 0;
+    for (let d = 1; d <= daysInMonth; d++) {
+      if (!isWeekend(year, month, d)) {
+        const v = getDayValue(year, month, i, d);
+        if (v !== '' && !isNaN(v)) total += Number(v);
+      }
+    }
+    const totalEl = document.getElementById(`total-${i}`);
+    if (totalEl) totalEl.textContent = total;
+
+    const deficit = goal - total;
+    const defEl = document.getElementById(`deficit-${i}`);
+    if (defEl) {
+      defEl.textContent = deficit <= 0 ? `+${Math.abs(deficit)}` : deficit;
+      defEl.className = deficit <= 0 ? 'on-target' : '';
+    }
+  });
+}
+
+// ══════════════════════════════════════════════
+// MTD SUMMARY
+// ══════════════════════════════════════════════
+function updateMTD() {
+  const year = parseInt(document.getElementById('sel-year').value);
+  const month = parseInt(document.getElementById('sel-month').value);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const goal = MONTHLY_GOALS[month] || 1890;
+  const today = new Date();
+  const isCurrentMonth = (today.getFullYear() === year && today.getMonth() === month);
+  const lastDay = isCurrentMonth ? today.getDate() : daysInMonth;
+
+  const agentIdx = currentAgentIdx >= 0 ? currentAgentIdx : 0;
+
+  let total = 0;
+  let workDays = 0;
+  for (let d = 1; d <= lastDay; d++) {
+    if (!isWeekend(year, month, d)) {
+      workDays++;
+      const v = getDayValue(year, month, agentIdx, d);
+      if (v !== '' && !isNaN(v)) total += Number(v);
+    }
+  }
+
+  // Total work days in month
+  let totalWorkDays = 0;
+  for (let d = 1; d <= daysInMonth; d++) {
+    if (!isWeekend(year, month, d)) totalWorkDays++;
+  }
+
+  const mtdGoal = Math.round((goal / totalWorkDays) * workDays);
+  const deficit = total - mtdGoal;
+  const ptg = mtdGoal > 0 ? ((total / mtdGoal) * 100).toFixed(1) : '0.0';
+  const acpd = workDays > 0 ? (total / workDays).toFixed(1) : '0.0';
+  const pct = Math.min(100, mtdGoal > 0 ? (total / mtdGoal * 100) : 0);
+
+  document.getElementById('mtd-goal').textContent = mtdGoal.toLocaleString();
+  document.getElementById('mtd-prod').textContent = total.toLocaleString();
+  document.getElementById('mtd-deficit').textContent =
+    deficit >= 0 ? `+${deficit.toLocaleString()}` : deficit.toLocaleString();
+  document.getElementById('mtd-deficit').style.color =
+    deficit >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('mtd-ptg').textContent = `${ptg}%`;
+  document.getElementById('mtd-acpd').textContent = acpd;
+  document.getElementById('mtd-progress-bar').style.width = `${pct}%`;
+  document.getElementById('mtd-progress-bar').style.background =
+    pct >= 100 ? 'var(--green)' : pct >= 75 ? 'var(--blue)' : 'var(--yellow)';
+}
+
+// ══════════════════════════════════════════════
+// SYNC TO GOOGLE SHEETS
+// ══════════════════════════════════════════════
+async function syncToSheets() {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_DEPLOY_URL') {
+    showToast('⚠️ Apps Script URL not configured yet. See setup guide.', 'error');
+    return;
+  }
+
+  const year = parseInt(document.getElementById('sel-year').value);
+  const month = parseInt(document.getElementById('sel-month').value);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const btn = document.getElementById('sync-btn');
+  const statusEl = document.getElementById('sync-status');
+  btn.disabled = true;
+  btn.textContent = '⏳ Syncing…';
+  statusEl.textContent = '';
+  statusEl.className = 'sync-status';
+
+  // Build payload
+  const rows = [];
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dow = new Date(year, month, d).getDay();
+    const weekend = dow === 0 || dow === 6;
+    const rowData = { day: d, weekend };
+    AGENTS.forEach((a, i) => {
+      rowData[a.email] = weekend ? null : (getDayValue(year, month, i, d) ?? null);
+    });
+    rows.push(rowData);
+  }
+
+  const payload = {
+    year, month, monthName: MONTHS[month],
+    sheetId: SHEET_ID,
+    agents: AGENTS.map(a => a.name),
+    goal: MONTHLY_GOALS[month] || 1890,
+    rows,
+    submittedBy: currentUser.email,
+    timestamp: new Date().toISOString()
+  };
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (json.status === 'ok') {
+      showToast('✅ Synced to Google Sheets!', 'success');
+      statusEl.textContent = `Last sync: ${new Date().toLocaleTimeString()}`;
+      statusEl.className = 'sync-status ok';
+    } else {
+      throw new Error(json.message || 'Unknown error');
+    }
+  } catch (e) {
+    showToast(`❌ Sync failed: ${e.message}`, 'error');
+    statusEl.textContent = 'Sync failed';
+    statusEl.className = 'sync-status err';
+  }
+
+  btn.disabled = false;
+  btn.textContent = '☁️ Sync to Sheets';
+}
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+let toastTimer;
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = ''; }, 3500);
+}
+
+// ══════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════
+window.addEventListener('load', () => {
+  if (!checkSession()) {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app-screen').style.display = 'none';
+  }
+});
+</script>
+</body>
+</html>
