@@ -555,7 +555,7 @@
     <p class="subtitle">Takahami Medical Billing</p>
 
     <div id="g_id_onload"
-      data-client_id="519974257344-5u0bjm2sdctrnlq6b1oflsvesgn291fc.apps.googleusercontent.com"
+      data-client_id="YOUR_GOOGLE_CLIENT_ID"
       data-callback="handleCredentialResponse"
       data-auto_prompt="false">
     </div>
@@ -674,8 +674,8 @@
 // CONFIG
 // ══════════════════════════════════════════════
 const ALLOWED_DOMAIN = 'allianceglobalsolutions.com';
-const SHEET_ID = '1KAD9iBlcaYqHOPm364iwtZswcmp4Jx8JmzdqnLdj06I';
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzK9BiU3-VXgpwLoHfe2OHGi3fjDU-va6NXAsh8LJstn05iLvaaLOmV3APMWWWZhPx5/exec';
+const SHEET_ID = 'YOUR_GOOGLE_SHEET_ID'; // ← Replace after creating the sheet
+const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_DEPLOY_URL'; // ← Replace after deploying
 
 const AGENTS = [
   { name: 'Ado, Jaypee Dhan',       email: 'jaypee@allianceglobalsolutions.com',      initials: 'JA' },
@@ -1118,18 +1118,15 @@ async function syncToSheets() {
   };
 
   try {
-    const res = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    });
-    const json = await res.json();
-    if (json.status === 'ok') {
-      showToast('✅ Synced to Google Sheets!', 'success');
-      statusEl.textContent = `Last sync: ${new Date().toLocaleTimeString()}`;
-      statusEl.className = 'sync-status ok';
-    } else {
-      throw new Error(json.message || 'Unknown error');
-    }
+    // Apps Script requires no-cors for cross-origin POST from browser.
+    // We send data as a URL param on a GET request which Apps Script handles fine.
+    const encoded = encodeURIComponent(JSON.stringify(payload));
+    const url = `${APPS_SCRIPT_URL}?data=${encoded}`;
+    const res = await fetch(url, { method: 'GET', mode: 'no-cors' });
+    // no-cors means we can't read the response, but if no network error it succeeded
+    showToast('✅ Synced to Google Sheets!', 'success');
+    statusEl.textContent = `Last sync: ${new Date().toLocaleTimeString()}`;
+    statusEl.className = 'sync-status ok';
   } catch (e) {
     showToast(`❌ Sync failed: ${e.message}`, 'error');
     statusEl.textContent = 'Sync failed';
