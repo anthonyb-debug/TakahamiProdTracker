@@ -4,684 +4,298 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Productivity Tracker — Takahami Medical Billing</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
-  :root {
-    --primary: #2563eb;
-    --primary-dark: #1d4ed8;
-    --primary-light: #eff6ff;
-    --primary-muted: #bfdbfe;
-    --success: #059669;
-    --success-light: #ecfdf5;
-    --danger: #dc2626;
-    --danger-light: #fef2f2;
-    --warning: #d97706;
-    --warning-light: #fffbeb;
-    --gray-50: #f9fafb;
-    --gray-100: #f3f4f6;
-    --gray-200: #e5e7eb;
-    --gray-300: #d1d5db;
-    --gray-400: #9ca3af;
-    --gray-500: #6b7280;
-    --gray-600: #4b5563;
-    --gray-700: #374151;
-    --gray-800: #1f2937;
-    --gray-900: #111827;
-    --white: #ffffff;
-    --font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-    --radius-sm: 6px;
-    --radius: 10px;
-    --radius-lg: 14px;
-    --radius-xl: 20px;
-    --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-    --shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04);
-    --shadow-md: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
-    --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: var(--font);
-    background: #f0f4f8;
-    color: var(--gray-900);
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  /* ══ LOGIN ══ */
-  #login-screen {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 2rem;
-    background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%);
-    position: relative;
-    overflow: hidden;
-  }
-
-  #login-screen::before {
-    content: "";
-    position: absolute;
-    width: 600px; height: 600px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.04);
-    top: -200px; right: -150px;
-  }
-
-  #login-screen::after {
-    content: "";
-    position: absolute;
-    width: 400px; height: 400px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.04);
-    bottom: -100px; left: -100px;
-  }
-
-  .login-card {
-    background: var(--white);
-    border-radius: var(--radius-xl);
-    padding: 3rem 2.5rem;
-    width: 100%;
-    max-width: 420px;
-    box-shadow: var(--shadow-lg);
-    text-align: center;
-    position: relative;
-    z-index: 1;
-  }
-
-  .login-brand {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 2rem;
-  }
-
-  .login-icon {
-    width: 72px; height: 72px;
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1.25rem;
-    box-shadow: 0 8px 20px rgba(37,99,235,0.35);
-  }
-
-  .login-icon svg { width: 36px; height: 36px; fill: white; }
-
-  .login-card h1 {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--gray-900);
-    letter-spacing: -0.3px;
-    margin-bottom: 4px;
-  }
-
-  .login-campaign {
-    font-size: 13px;
-    color: var(--gray-500);
-    font-weight: 500;
-    margin-bottom: 0;
-  }
-
-  .login-divider {
-    height: 1px;
-    background: var(--gray-100);
-    margin: 1.75rem 0;
-  }
-
-  .login-notice {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    background: var(--gray-50);
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius);
-    padding: 12px 14px;
-    margin-top: 1.5rem;
-    text-align: left;
-  }
-
-  .login-notice svg { width: 16px; height: 16px; fill: var(--gray-400); flex-shrink: 0; margin-top: 1px; }
-  .login-notice span { font-size: 12px; color: var(--gray-500); line-height: 1.5; }
-
-  #login-error {
-    display: none;
-    align-items: center;
-    gap: 8px;
-    background: var(--danger-light);
-    border: 1px solid #fecaca;
-    color: var(--danger);
-    border-radius: var(--radius);
-    padding: 10px 14px;
-    font-size: 13px;
-    margin-top: 1rem;
-    text-align: left;
-  }
-
-  /* ══ APP SHELL ══ */
-  #app-screen { display: none; min-height: 100vh; }
-
-  /* ── Topbar ── */
-  .topbar {
-    background: var(--white);
-    border-bottom: 1px solid var(--gray-200);
-    height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 2rem;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: var(--shadow-xs);
-  }
-
-  .topbar-left { display: flex; align-items: center; gap: 14px; }
-
-  .topbar-logo {
-    width: 38px; height: 38px;
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    border-radius: var(--radius);
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 8px rgba(37,99,235,0.3);
-    flex-shrink: 0;
-  }
-
-  .topbar-logo svg { width: 20px; height: 20px; fill: white; }
-
-  .topbar-title { font-size: 15px; font-weight: 700; color: var(--gray-900); letter-spacing: -0.2px; }
-  .topbar-sub { font-size: 12px; color: var(--gray-400); font-weight: 400; margin-top: 1px; }
-
-  .topbar-right { display: flex; align-items: center; gap: 10px; }
-
-  .user-pill {
-    display: flex; align-items: center; gap: 9px;
-    background: var(--gray-50);
-    border: 1px solid var(--gray-200);
-    border-radius: 100px;
-    padding: 5px 14px 5px 6px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--gray-700);
-  }
-
-  .user-avatar {
-    width: 30px; height: 30px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #2563eb, #7c3aed);
-    color: white;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    flex-shrink: 0;
-  }
-
-  .btn-signout {
-    background: none;
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius-sm);
-    padding: 7px 14px;
-    font-size: 13px;
-    font-family: var(--font);
-    font-weight: 500;
-    color: var(--gray-600);
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .btn-signout:hover { background: var(--gray-50); border-color: var(--gray-300); color: var(--gray-800); }
-
-  /* ── Main ── */
-  main { max-width: 1280px; margin: 0 auto; padding: 2rem; }
-
-  /* ── Page header ── */
-  .page-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.75rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-
-  .page-header-left h2 {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--gray-900);
-    letter-spacing: -0.3px;
-  }
-
-  .page-header-left p {
-    font-size: 13px;
-    color: var(--gray-500);
-    margin-top: 3px;
-  }
-
-  .page-header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-
-  /* ── Selectors ── */
-  .selector-group {
-    display: flex;
-    align-items: center;
-    background: var(--white);
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: var(--shadow-xs);
-  }
-
-  .selector-group select {
-    border: none;
-    outline: none;
-    padding: 9px 12px;
-    font-size: 13px;
-    font-family: var(--font);
-    font-weight: 500;
-    color: var(--gray-800);
-    background: transparent;
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-  }
-
-  .selector-group select:first-child { border-right: 1px solid var(--gray-200); }
-
-  .selector-group select:focus { background: var(--gray-50); }
-
-  /* ── Sync button ── */
-  .sync-btn {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    color: white;
-    border: none;
-    border-radius: var(--radius);
-    padding: 9px 18px;
-    font-size: 13px;
-    font-family: var(--font);
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    box-shadow: 0 2px 8px rgba(37,99,235,0.3);
-    transition: all 0.15s;
-    letter-spacing: 0.1px;
-  }
-
-  .sync-btn:hover { background: linear-gradient(135deg, #1d4ed8, #1e40af); box-shadow: 0 4px 12px rgba(37,99,235,0.4); transform: translateY(-1px); }
-  .sync-btn:active { transform: translateY(0); }
-  .sync-btn:disabled { background: linear-gradient(135deg, var(--gray-300), var(--gray-400)); box-shadow: none; cursor: not-allowed; transform: none; }
-
-  .sync-status { font-size: 12px; color: var(--gray-400); font-weight: 500; }
-  .sync-status.ok { color: var(--success); }
-  .sync-status.err { color: var(--danger); }
-
-  /* ── Banners ── */
-  .banner {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-radius: var(--radius);
-    padding: 11px 16px;
-    margin-bottom: 1.5rem;
-    font-size: 13px;
-    font-weight: 500;
-  }
-
-  .banner-blue { background: var(--primary-light); border: 1px solid var(--primary-muted); color: #1e40af; }
-  .banner-yellow { background: var(--warning-light); border: 1px solid #fde68a; color: #92400e; }
-  .banner-gray { background: var(--gray-50); border: 1px solid var(--gray-200); color: var(--gray-600); }
-  .banner svg { width: 15px; height: 15px; fill: currentColor; flex-shrink: 0; }
-
-  /* ── Stats cards ── */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 14px;
-    margin-bottom: 1.75rem;
-  }
-
-  .stat-card {
-    background: var(--white);
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius-lg);
-    padding: 1.25rem 1.5rem;
-    box-shadow: var(--shadow-sm);
-    position: relative;
-    overflow: hidden;
-    transition: box-shadow 0.2s;
-  }
-
-  .stat-card:hover { box-shadow: var(--shadow); }
-
-  .stat-card::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  }
-
-  .stat-card.prod::before { background: linear-gradient(90deg, #2563eb, #7c3aed); }
-  .stat-card.deficit::before { background: linear-gradient(90deg, #dc2626, #f97316); }
-  .stat-card.ptg::before { background: linear-gradient(90deg, #059669, #10b981); }
-  .stat-card.acpd::before { background: linear-gradient(90deg, #d97706, #f59e0b); }
-
-  .stat-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--gray-400);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 8px;
-  }
-
-  .stat-value {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--gray-900);
-    line-height: 1;
-    letter-spacing: -0.5px;
-  }
-
-  .stat-sub {
-    font-size: 12px;
-    color: var(--gray-400);
-    margin-top: 6px;
-    font-weight: 400;
-  }
-
-  .stat-bar {
-    margin-top: 10px;
-    background: var(--gray-100);
-    border-radius: 100px;
-    height: 4px;
-    overflow: hidden;
-  }
-
-  .stat-bar-fill {
-    height: 100%;
-    border-radius: 100px;
-    background: linear-gradient(90deg, #2563eb, #7c3aed);
-    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
-  }
-
-  /* ── Table card ── */
-  .table-card {
-    background: var(--white);
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
-  }
-
-  .table-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--gray-100);
-  }
-
-  .table-toolbar h3 {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--gray-800);
-  }
-
-  .table-toolbar .table-hint {
-    font-size: 12px;
-    color: var(--gray-400);
-    display: flex; align-items: center; gap: 6px;
-  }
-
-  .weekend-dot {
-    width: 10px; height: 10px;
-    background: var(--gray-800);
-    border-radius: 2px;
-    display: inline-block;
-  }
-
-  .table-wrap { overflow-x: auto; }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-
-  thead th {
-    background: var(--gray-50);
-    color: var(--gray-500);
-    font-weight: 600;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    padding: 11px 16px;
-    text-align: center;
-    border-bottom: 1px solid var(--gray-200);
-    white-space: nowrap;
-    position: sticky;
-    top: 64px;
-  }
-
-  thead th:first-child { text-align: left; min-width: 80px; }
-
-  tbody tr { border-bottom: 1px solid var(--gray-100); transition: background 0.1s; }
-  tbody tr:last-child { border-bottom: none; }
-  tbody tr:hover:not(.summary-row):not(.goal-row):not(.deficit-row):not(.weekend-row) {
-    background: #fafbff;
-  }
-
-  tbody td {
-    padding: 5px 16px;
-    text-align: center;
-    vertical-align: middle;
-  }
-
-  tbody td:first-child {
-    text-align: left;
-  }
-
-  .day-cell {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .day-num {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--gray-700);
-    min-width: 20px;
-  }
-
-  .day-label {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--gray-400);
-  }
-
-  /* Weekend rows */
-  tr.weekend-row td {
-    background: var(--gray-800);
-    padding: 4px 16px;
-  }
-
-  tr.weekend-row .day-num { color: #6b7280; }
-  tr.weekend-row .day-label { color: #4b5563; }
-
-  /* Inputs */
-  td input[type="number"] {
-    width: 70px;
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius-sm);
-    padding: 6px 8px;
-    font-size: 13px;
-    font-family: var(--font);
-    font-weight: 500;
-    text-align: center;
-    color: var(--gray-800);
-    background: var(--white);
-    outline: none;
-    transition: all 0.15s;
-    -moz-appearance: textfield;
-  }
-
-  td input[type="number"]::-webkit-inner-spin-button,
-  td input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
-
-  td input[type="number"]:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
-    background: var(--white);
-  }
-
-  td input[type="number"].has-value {
-    background: var(--primary-light);
-    border-color: var(--primary-muted);
-    color: var(--primary-dark);
-    font-weight: 600;
-  }
-
-  td input[type="number"].readonly-cell {
-    background: var(--gray-50);
-    border-color: var(--gray-100);
-    color: var(--gray-300);
-    cursor: not-allowed;
-    pointer-events: none;
-  }
-
-  td input[type="number"].other-value {
-    background: var(--gray-50);
-    border-color: var(--gray-200);
-    color: var(--gray-500);
-    font-weight: 500;
-    cursor: not-allowed;
-    pointer-events: none;
-  }
-
-  /* Summary rows */
-  tr.summary-row td {
-    background: var(--gray-900);
-    color: var(--white);
-    font-weight: 700;
-    font-size: 12px;
-    padding: 12px 16px;
-    letter-spacing: 0.2px;
-  }
-
-  tr.summary-row td:first-child { color: var(--gray-400); font-weight: 600; }
-
-  tr.goal-row td {
-    background: var(--primary);
-    color: var(--white);
-    font-weight: 700;
-    font-size: 12px;
-    padding: 12px 16px;
-  }
-
-  tr.goal-row td:first-child { color: #bfdbfe; font-weight: 600; }
-
-  tr.deficit-row td {
-    background: #7f1d1d;
-    color: #fca5a5;
-    font-weight: 700;
-    font-size: 12px;
-    padding: 12px 16px;
-  }
-
-  tr.deficit-row td:first-child { color: #f87171; font-weight: 600; }
-  tr.deficit-row td.on-target { background: #064e3b; color: #6ee7b7; }
-
-  /* ── Toast ── */
-  #toast {
-    position: fixed;
-    bottom: 28px;
-    right: 28px;
-    background: var(--gray-900);
-    color: var(--white);
-    padding: 13px 20px;
-    border-radius: var(--radius);
-    font-size: 13px;
-    font-weight: 500;
-    box-shadow: var(--shadow-md);
-    opacity: 0;
-    transform: translateY(10px) scale(0.98);
-    transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
-    pointer-events: none;
-    z-index: 999;
-    max-width: 340px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  #toast.show { opacity: 1; transform: translateY(0) scale(1); }
-  #toast.success { background: #064e3b; color: #6ee7b7; }
-  #toast.error { background: #7f1d1d; color: #fca5a5; }
-
-  /* ── Responsive ── */
-  @media (max-width: 768px) {
-    main { padding: 1rem; }
-    .page-header { flex-direction: column; align-items: flex-start; }
-    .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    .topbar { padding: 0 1rem; }
-    .topbar-sub { display: none; }
-    thead th, tbody td { padding: 5px 10px; }
-    td input[type="number"] { width: 56px; font-size: 12px; }
-  }
+:root {
+  --primary:#2563eb;--primary-dark:#1d4ed8;--primary-light:#eff6ff;--primary-muted:#bfdbfe;
+  --success:#059669;--success-light:#ecfdf5;--danger:#dc2626;--danger-light:#fef2f2;
+  --warning:#d97706;--warning-light:#fffbeb;--orange:#ea580c;
+  --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-300:#d1d5db;
+  --gray-400:#9ca3af;--gray-500:#6b7280;--gray-600:#4b5563;--gray-700:#374151;
+  --gray-800:#1f2937;--gray-900:#111827;--white:#fff;
+  --font:"Inter",-apple-system,BlinkMacSystemFont,sans-serif;
+  --r:10px;--r-lg:14px;--r-xl:20px;
+  --sh-xs:0 1px 2px rgba(0,0,0,.05);
+  --sh-sm:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --sh:0 4px 6px -1px rgba(0,0,0,.07),0 2px 4px -1px rgba(0,0,0,.04);
+  --sh-md:0 10px 15px -3px rgba(0,0,0,.08),0 4px 6px -2px rgba(0,0,0,.04);
+  --sh-lg:0 20px 25px -5px rgba(0,0,0,.1),0 10px 10px -5px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:#eef2f7;color:var(--gray-900);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── LOGIN ── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem;
+  background:linear-gradient(135deg,#1e3a8a 0%,#1d4ed8 50%,#2563eb 100%);position:relative;overflow:hidden}
+#login-screen::before{content:"";position:absolute;width:600px;height:600px;border-radius:50%;
+  background:rgba(255,255,255,.04);top:-200px;right:-150px}
+#login-screen::after{content:"";position:absolute;width:400px;height:400px;border-radius:50%;
+  background:rgba(255,255,255,.04);bottom:-100px;left:-100px}
+.login-card{background:var(--white);border-radius:var(--r-xl);padding:3rem 2.5rem;width:100%;max-width:420px;
+  box-shadow:var(--sh-lg);text-align:center;position:relative;z-index:1}
+.login-icon{width:72px;height:72px;background:linear-gradient(135deg,#2563eb,#1d4ed8);border-radius:20px;
+  display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;
+  box-shadow:0 8px 20px rgba(37,99,235,.35)}
+.login-icon svg{width:36px;height:36px;fill:white}
+.login-card h1{font-size:22px;font-weight:800;color:var(--gray-900);letter-spacing:-.4px;margin-bottom:4px}
+.login-campaign{font-size:13px;color:var(--gray-400);font-weight:500;margin-bottom:2rem}
+.login-divider{height:1px;background:var(--gray-100);margin:1.5rem 0}
+.login-notice{display:flex;align-items:flex-start;gap:10px;background:var(--gray-50);
+  border:1px solid var(--gray-200);border-radius:var(--r);padding:12px 14px;text-align:left}
+.login-notice svg{width:15px;height:15px;fill:var(--gray-400);flex-shrink:0;margin-top:1px}
+.login-notice span{font-size:12px;color:var(--gray-500);line-height:1.5}
+#login-error{display:none;align-items:center;gap:8px;background:var(--danger-light);
+  border:1px solid #fecaca;color:var(--danger);border-radius:var(--r);
+  padding:10px 14px;font-size:13px;margin-top:1rem;text-align:left}
+
+/* ── APP ── */
+#app-screen{display:none;min-height:100vh}
+.topbar{background:var(--white);border-bottom:1px solid var(--gray-200);height:64px;
+  display:flex;align-items:center;justify-content:space-between;padding:0 2rem;
+  position:sticky;top:0;z-index:100;box-shadow:var(--sh-xs)}
+.topbar-left{display:flex;align-items:center;gap:14px}
+.topbar-logo{width:38px;height:38px;background:linear-gradient(135deg,#2563eb,#1d4ed8);
+  border-radius:var(--r);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(37,99,235,.3);flex-shrink:0}
+.topbar-logo svg{width:20px;height:20px;fill:white}
+.topbar-title{font-size:15px;font-weight:700;color:var(--gray-900);letter-spacing:-.2px}
+.topbar-sub{font-size:11px;color:var(--gray-400);margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.user-pill{display:flex;align-items:center;gap:9px;background:var(--gray-50);
+  border:1px solid var(--gray-200);border-radius:100px;padding:5px 14px 5px 6px;
+  font-size:13px;font-weight:500;color:var(--gray-700)}
+.user-avatar{width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;letter-spacing:.5px;flex-shrink:0}
+.btn-signout{background:none;border:1px solid var(--gray-200);border-radius:6px;
+  padding:7px 14px;font-size:13px;font-family:var(--font);font-weight:500;
+  color:var(--gray-600);cursor:pointer;transition:all .15s}
+.btn-signout:hover{background:var(--gray-50);color:var(--gray-800)}
+
+main{max-width:1300px;margin:0 auto;padding:2rem}
+
+/* ── BANNER ── */
+.banner{display:flex;align-items:center;gap:10px;border-radius:var(--r);
+  padding:11px 16px;margin-bottom:1.5rem;font-size:13px;font-weight:500}
+.banner svg{width:15px;height:15px;fill:currentColor;flex-shrink:0}
+.banner-blue{background:var(--primary-light);border:1px solid var(--primary-muted);color:#1e40af}
+.banner-yellow{background:var(--warning-light);border:1px solid #fde68a;color:#92400e}
+.banner-gray{background:var(--gray-50);border:1px solid var(--gray-200);color:var(--gray-600)}
+
+/* ── PAGE HEADER ── */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;flex-wrap:wrap;gap:1rem}
+.page-header-left h2{font-size:20px;font-weight:800;color:var(--gray-900);letter-spacing:-.4px}
+.page-header-left p{font-size:13px;color:var(--gray-500);margin-top:3px}
+.page-header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.selector-group{display:flex;align-items:center;background:var(--white);
+  border:1px solid var(--gray-200);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh-xs)}
+.selector-group select{border:none;outline:none;padding:9px 12px;font-size:13px;
+  font-family:var(--font);font-weight:500;color:var(--gray-800);background:transparent;cursor:pointer}
+.selector-group select:first-child{border-right:1px solid var(--gray-200)}
+.sync-btn{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:white;border:none;
+  border-radius:var(--r);padding:9px 18px;font-size:13px;font-family:var(--font);
+  font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;
+  box-shadow:0 2px 8px rgba(37,99,235,.3);transition:all .15s;letter-spacing:.1px}
+.sync-btn:hover{box-shadow:0 4px 12px rgba(37,99,235,.4);transform:translateY(-1px)}
+.sync-btn:disabled{background:linear-gradient(135deg,var(--gray-300),var(--gray-400));
+  box-shadow:none;cursor:not-allowed;transform:none}
+.sync-status{font-size:12px;color:var(--gray-400);font-weight:500}
+.sync-status.ok{color:var(--success)}.sync-status.err{color:var(--danger)}
+
+/* ── DAILY TARGET BANNER ── */
+.target-bar{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--r);
+  padding:12px 20px;margin-bottom:1.5rem;display:flex;align-items:center;
+  justify-content:space-between;flex-wrap:wrap;gap:12px;box-shadow:var(--sh-xs)}
+.target-bar-item{display:flex;align-items:center;gap:8px}
+.target-badge{background:var(--primary-light);color:var(--primary);border-radius:6px;
+  padding:4px 10px;font-size:13px;font-weight:700}
+.target-badge.green{background:var(--success-light);color:var(--success)}
+.target-badge.red{background:var(--danger-light);color:var(--danger)}
+.target-badge.amber{background:var(--warning-light);color:var(--warning)}
+.target-label{font-size:12px;color:var(--gray-500);font-weight:500}
+.streak-badge{display:flex;align-items:center;gap:6px;background:#fdf4ff;
+  border:1px solid #e9d5ff;border-radius:6px;padding:4px 10px;
+  font-size:13px;font-weight:700;color:#7c3aed}
+
+/* ── STATS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:1.75rem}
+.stat-card{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--r-lg);
+  padding:1.25rem 1.5rem;box-shadow:var(--sh-sm);position:relative;overflow:hidden;transition:box-shadow .2s}
+.stat-card:hover{box-shadow:var(--sh)}
+.stat-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r-lg) var(--r-lg) 0 0}
+.stat-card.prod::before{background:linear-gradient(90deg,#2563eb,#7c3aed)}
+.stat-card.deficit::before{background:linear-gradient(90deg,#dc2626,#f97316)}
+.stat-card.ptg::before{background:linear-gradient(90deg,#059669,#10b981)}
+.stat-card.acpd::before{background:linear-gradient(90deg,#d97706,#f59e0b)}
+.stat-label{font-size:11px;font-weight:600;color:var(--gray-400);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.stat-value{font-size:28px;font-weight:800;color:var(--gray-900);line-height:1;letter-spacing:-.5px}
+.stat-sub{font-size:12px;color:var(--gray-400);margin-top:6px;font-weight:400}
+.stat-bar{margin-top:10px;background:var(--gray-100);border-radius:100px;height:4px;overflow:hidden}
+.stat-bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,#2563eb,#7c3aed);
+  transition:width .5s cubic-bezier(.4,0,.2,1)}
+
+/* ── LEADERBOARD (manager only) ── */
+#leaderboard-section{display:none;margin-bottom:1.75rem}
+.leaderboard-card{background:var(--white);border:1px solid var(--gray-200);
+  border-radius:var(--r-lg);box-shadow:var(--sh-sm);overflow:hidden}
+.leaderboard-header{padding:14px 20px;border-bottom:1px solid var(--gray-100);
+  display:flex;align-items:center;justify-content:space-between}
+.leaderboard-header h3{font-size:14px;font-weight:700;color:var(--gray-800)}
+.leaderboard-header span{font-size:12px;color:var(--gray-400)}
+.lb-row{display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--gray-50);transition:background .1s}
+.lb-row:last-child{border-bottom:none}
+.lb-row:hover{background:var(--gray-50)}
+.lb-rank{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;flex-shrink:0}
+.lb-rank.r1{background:#fef3c7;color:#d97706}
+.lb-rank.r2{background:#f3f4f6;color:#6b7280}
+.lb-rank.r3{background:#fef3c7;color:#b45309}
+.lb-rank.rn{background:var(--gray-100);color:var(--gray-500)}
+.lb-name{font-size:13px;font-weight:600;color:var(--gray-800);min-width:130px}
+.lb-bar-wrap{flex:1;background:var(--gray-100);border-radius:100px;height:8px;overflow:hidden}
+.lb-bar-fill{height:100%;border-radius:100px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.lb-value{font-size:13px;font-weight:700;color:var(--gray-700);min-width:50px;text-align:right}
+.lb-ptg{font-size:11px;font-weight:600;border-radius:4px;padding:2px 7px;min-width:50px;text-align:center}
+.lb-ptg.ok{background:var(--success-light);color:var(--success)}
+.lb-ptg.warn{background:var(--warning-light);color:var(--warning)}
+.lb-ptg.bad{background:var(--danger-light);color:var(--danger)}
+.at-risk-flag{display:none;align-items:center;gap:4px;background:var(--danger-light);
+  border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;color:var(--danger)}
+
+/* ── TABLE ── */
+.table-card{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--r-lg);box-shadow:var(--sh-sm);overflow:hidden}
+.table-toolbar{display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid var(--gray-100)}
+.table-toolbar h3{font-size:14px;font-weight:700;color:var(--gray-800)}
+.table-toolbar .hint{font-size:12px;color:var(--gray-400);display:flex;align-items:center;gap:6px}
+.weekend-dot{width:10px;height:10px;background:var(--gray-800);border-radius:2px;display:inline-block}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:var(--gray-50);color:var(--gray-500);font-weight:600;font-size:11px;
+  text-transform:uppercase;letter-spacing:.6px;padding:10px 14px;text-align:center;
+  border-bottom:1px solid var(--gray-200);white-space:nowrap;position:sticky;top:64px}
+thead th:first-child{text-align:left;min-width:85px}
+.col-header-wrap{display:flex;flex-direction:column;align-items:center;gap:3px}
+.col-at-risk{display:none;align-items:center;gap:3px;font-size:10px;color:var(--danger);font-weight:600}
+.col-at-risk svg{width:10px;height:10px;fill:var(--danger)}
+tbody tr{border-bottom:1px solid var(--gray-100);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover:not(.summary-row):not(.goal-row):not(.deficit-row):not(.weekend-row){background:#fafbff}
+tbody td{padding:4px 14px;text-align:center;vertical-align:middle}
+tbody td:first-child{text-align:left}
+.day-cell{display:flex;align-items:center;gap:8px}
+.day-num{font-size:13px;font-weight:600;color:var(--gray-700);min-width:20px}
+.day-label{font-size:11px;font-weight:500;color:var(--gray-400)}
+
+/* Today highlight */
+tr.today-row td{background:#fffbeb !important}
+tr.today-row td:first-child .day-num{color:var(--warning);font-weight:800}
+tr.today-row td:first-child::after{content:"TODAY";font-size:9px;font-weight:700;
+  color:var(--warning);background:#fef3c7;border-radius:3px;padding:1px 4px;
+  margin-left:5px;vertical-align:middle}
+
+/* Weekend */
+tr.weekend-row td{background:var(--gray-800);padding:4px 14px}
+tr.weekend-row .day-num{color:#6b7280}
+tr.weekend-row .day-label{color:#4b5563}
+
+/* Inputs */
+td input[type="number"]{width:70px;border:1px solid var(--gray-200);border-radius:6px;
+  padding:6px 8px;font-size:13px;font-family:var(--font);font-weight:500;text-align:center;
+  color:var(--gray-800);background:var(--white);outline:none;transition:all .15s;
+  -moz-appearance:textfield}
+td input[type="number"]::-webkit-inner-spin-button,
+td input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none}
+td input[type="number"]:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+td input[type="number"].has-value{background:var(--primary-light);border-color:var(--primary-muted);
+  color:var(--primary-dark);font-weight:700}
+td input[type="number"].readonly-cell{background:var(--gray-50);border-color:var(--gray-100);
+  color:var(--gray-300);cursor:not-allowed;pointer-events:none}
+td input[type="number"].other-value{background:var(--gray-50);border-color:var(--gray-200);
+  color:var(--gray-500);font-weight:500;cursor:not-allowed;pointer-events:none}
+
+/* Summary rows */
+tr.summary-row td{background:var(--gray-900);color:var(--white);font-weight:700;font-size:12px;padding:10px 14px}
+tr.summary-row td:first-child{color:var(--gray-400)}
+tr.summary-row td .col-mini-bar{margin-top:4px}
+tr.goal-row td{background:var(--primary);color:var(--white);font-weight:700;font-size:12px;padding:10px 14px}
+tr.goal-row td:first-child{color:#bfdbfe}
+tr.deficit-row td{background:#7f1d1d;color:#fca5a5;font-weight:700;font-size:12px;padding:10px 14px}
+tr.deficit-row td:first-child{color:#f87171}
+tr.deficit-row td.on-target{background:#064e3b;color:#6ee7b7}
+
+/* Mini progress bar in totals row */
+.col-mini-bar{height:3px;border-radius:100px;background:rgba(255,255,255,.15);overflow:hidden;margin-top:4px;width:70px;margin-left:auto;margin-right:auto}
+.col-mini-bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,#60a5fa,#a78bfa);transition:width .5s ease}
+
+/* Empty state */
+.empty-state{text-align:center;padding:3rem 2rem;color:var(--gray-400)}
+.empty-state svg{width:48px;height:48px;fill:var(--gray-300);margin-bottom:1rem}
+.empty-state h4{font-size:15px;font-weight:600;color:var(--gray-500);margin-bottom:6px}
+.empty-state p{font-size:13px;color:var(--gray-400)}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:28px;right:28px;color:var(--white);padding:13px 18px;
+  border-radius:var(--r);font-size:13px;font-weight:500;box-shadow:var(--sh-md);
+  opacity:0;transform:translateY(10px) scale(.98);
+  transition:all .25s cubic-bezier(.4,0,.2,1);pointer-events:none;z-index:999;
+  max-width:340px;display:flex;align-items:center;gap:8px;background:var(--gray-900)}
+#toast.show{opacity:1;transform:translateY(0) scale(1)}
+#toast.success{background:#064e3b;color:#6ee7b7}
+#toast.error{background:#7f1d1d;color:#fca5a5}
+#toast.info{background:#1e3a8a;color:#bfdbfe}
+
+/* ── KEYBOARD HINT ── */
+.kb-hint{font-size:11px;color:var(--gray-400);display:flex;align-items:center;gap:4px}
+.kb-key{background:var(--gray-100);border:1px solid var(--gray-300);border-radius:4px;
+  padding:1px 5px;font-size:10px;font-weight:600;color:var(--gray-500)}
+
+@media(max-width:768px){
+  main{padding:1rem}
+  .page-header{flex-direction:column;align-items:flex-start}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .topbar{padding:0 1rem}
+  .topbar-sub{display:none}
+  thead th,tbody td{padding:4px 8px}
+  td input[type="number"]{width:54px;font-size:12px}
+  .target-bar{flex-direction:column;align-items:flex-start}
+}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 </style>
 </head>
 <body>
 
-<!-- ══ LOGIN ══ -->
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
-    <div class="login-brand">
-      <div class="login-icon">
-        <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-      </div>
-      <h1>Productivity Tracker</h1>
-      <p class="login-campaign">Takahami Medical Billing</p>
+    <div class="login-icon">
+      <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
     </div>
-
+    <h1>Productivity Tracker</h1>
+    <p class="login-campaign">Takahami Medical Billing · Alliance Global Solutions</p>
     <div id="g_id_onload"
       data-client_id="519974257344-5u0bjm2sdctrnlq6b1oflsvesgn291fc.apps.googleusercontent.com"
       data-callback="handleCredentialResponse"
-      data-auto_prompt="false">
-    </div>
-    <div class="g_id_signin"
-      data-type="standard"
-      data-size="large"
-      data-theme="outline"
-      data-text="sign_in_with"
-      data-shape="rectangular"
-      data-logo_alignment="left"
-      data-width="340">
-    </div>
-
+      data-auto_prompt="false"></div>
+    <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline"
+      data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left" data-width="340"></div>
     <div id="login-error">
       <svg viewBox="0 0 20 20" style="width:15px;height:15px;fill:#dc2626;flex-shrink:0"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
       Access denied. Use your @allianceglobalsolutions.com account.
     </div>
-
-    <div class="login-divider"></div>
-
+    <div class="login-divider" style="height:1px;background:var(--gray-100);margin:1.5rem 0"></div>
     <div class="login-notice">
       <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
-      <span>Company email only. Each agent can only edit their own data.</span>
+      <span>Company email only · Each agent edits their own column only</span>
     </div>
   </div>
 </div>
 
-<!-- ══ APP ══ -->
+<!-- APP -->
 <div id="app-screen">
-
   <div class="topbar">
     <div class="topbar-left">
       <div class="topbar-logo">
@@ -702,8 +316,7 @@
   </div>
 
   <main>
-
-    <!-- Agent banner -->
+    <!-- Banners -->
     <div class="banner banner-blue" id="agent-banner">
       <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
       <span>Signed in as <strong id="agent-full-name">—</strong> — you can only edit your own column.</span>
@@ -720,9 +333,10 @@
         <p id="page-sub">Loading...</p>
       </div>
       <div class="page-header-right">
+        <div class="kb-hint"><span class="kb-key">Ctrl</span>+<span class="kb-key">S</span> to sync</div>
         <div class="selector-group">
-          <select id="sel-month" class="month-select" onchange="loadView()"></select>
-          <select id="sel-year" class="year-select" onchange="loadView()"></select>
+          <select id="sel-month" onchange="loadView()"></select>
+          <select id="sel-year" onchange="loadView()"></select>
         </div>
         <span id="sync-status" class="sync-status"></span>
         <button class="sync-btn" id="sync-btn" onclick="syncToSheets()">
@@ -732,12 +346,32 @@
       </div>
     </div>
 
+    <!-- Daily target bar -->
+    <div class="target-bar" id="target-bar">
+      <div class="target-bar-item">
+        <span class="target-label">Daily Target</span>
+        <span class="target-badge" id="daily-target-badge">—</span>
+      </div>
+      <div class="target-bar-item">
+        <span class="target-label">Today's Pace</span>
+        <span class="target-badge" id="pace-badge">—</span>
+      </div>
+      <div class="target-bar-item">
+        <span class="target-label">Remaining to Goal</span>
+        <span class="target-badge" id="remaining-badge">—</span>
+      </div>
+      <div class="target-bar-item">
+        <span class="target-label">Streak 🔥</span>
+        <span class="streak-badge" id="streak-badge">— days</span>
+      </div>
+    </div>
+
     <!-- Stats -->
     <div class="stats-grid">
       <div class="stat-card prod">
         <div class="stat-label">MTD Productivity</div>
         <div class="stat-value" id="mtd-prod">—</div>
-        <div class="stat-sub">Total cases this month</div>
+        <div class="stat-sub" id="mtd-prod-sub">Total cases this month</div>
         <div class="stat-bar"><div class="stat-bar-fill" id="mtd-progress-bar" style="width:0%"></div></div>
       </div>
       <div class="stat-card deficit">
@@ -757,14 +391,22 @@
       </div>
     </div>
 
+    <!-- Leaderboard (manager only) -->
+    <div id="leaderboard-section">
+      <div class="leaderboard-card">
+        <div class="leaderboard-header">
+          <h3>👑 Team Leaderboard</h3>
+          <span id="lb-subtitle">Month-to-date ranking</span>
+        </div>
+        <div id="leaderboard-body"></div>
+      </div>
+    </div>
+
     <!-- Table -->
     <div class="table-card">
       <div class="table-toolbar">
         <h3 id="table-title">Daily Entries</h3>
-        <div class="table-hint">
-          <span class="weekend-dot"></span>
-          Weekends are locked
-        </div>
+        <div class="hint"><span class="weekend-dot"></span>Weekends locked &nbsp;·&nbsp; Press Enter to advance</div>
       </div>
       <div class="table-wrap">
         <table id="main-table">
@@ -773,7 +415,6 @@
         </table>
       </div>
     </div>
-
   </main>
 </div>
 
@@ -783,92 +424,71 @@
 // ══════════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════════
-const ALLOWED_DOMAIN = 'allianceglobalsolutions.com';
-const SHEET_ID = '1KAD9iBlcaYqHOPm364iwtZswcmp4Jx8JmzdqnLdj06I';
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyzaYxtRzCMtGisJ8BvcifuL1MXu8l3_ZvKu5pMo02nMD3MeDAJSFPqJ3ghdaU8fJOcAg/exec';
+const ALLOWED_DOMAIN   = 'allianceglobalsolutions.com';
+const SHEET_ID         = '1KAD9iBlcaYqHOPm364iwtZswcmp4Jx8JmzdqnLdj06I';
+const APPS_SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbyzaYxtRzCMtGisJ8BvcifuL1MXu8l3_ZvKu5pMo02nMD3MeDAJSFPqJ3ghdaU8fJOcAg/exec';
 
 const AGENTS = [
-  { name: 'Ado, Jaypee Dhan',       email: 'jaypee@allianceglobalsolutions.com',      initials: 'JA' },
-  { name: 'Hubilla, Alvin Jhon',    email: 'a.hubilla@allianceglobalsolutions.com',    initials: 'AH' },
-  { name: 'Mapa, Christia Marie',   email: 'christia@allianceglobalsolutions.com',     initials: 'CM' },
-  { name: 'Patricio, Cherabyl',     email: 'c.patricio@allianceglobalsolutions.com',   initials: 'CP' },
-  { name: 'Regaspi, Jeffrey',       email: 'jeffrey@allianceglobalsolutions.com',      initials: 'JR' },
+  { name:'Ado, Jaypee Dhan',     email:'jaypee@allianceglobalsolutions.com',     initials:'JA' },
+  { name:'Hubilla, Alvin Jhon',  email:'a.hubilla@allianceglobalsolutions.com',   initials:'AH' },
+  { name:'Mapa, Christia Marie', email:'christia@allianceglobalsolutions.com',    initials:'CM' },
+  { name:'Patricio, Cherabyl',   email:'c.patricio@allianceglobalsolutions.com',  initials:'CP' },
+  { name:'Regaspi, Jeffrey',     email:'jeffrey@allianceglobalsolutions.com',     initials:'JR' },
 ];
 
 const MANAGERS = [
-  { name: 'Anthony B.', email: 'anthony.b@allianceglobalsolutions.com', initials: 'AB' },
-  { name: 'Paul',        email: 'paul@allianceglobalsolutions.com',       initials: 'PL' },
-  { name: 'Tristan',     email: 'tristan@allianceglobalsolutions.com',    initials: 'TR' },
-  { name: 'Zaldy',       email: 'zaldy@allianceglobalsolutions.com',      initials: 'ZL' },
+  { name:'Anthony B.', email:'anthony.b@allianceglobalsolutions.com', initials:'AB' },
+  { name:'Paul',       email:'paul@allianceglobalsolutions.com',       initials:'PL' },
+  { name:'Tristan',    email:'tristan@allianceglobalsolutions.com',    initials:'TR' },
+  { name:'Zaldy',      email:'zaldy@allianceglobalsolutions.com',      initials:'ZL' },
 ];
 
-function isManager(email) {
-  return MANAGERS.some(m => m.email.toLowerCase() === (email || '').toLowerCase());
-}
+const MONTHLY_GOALS = {0:1890,1:1800,2:1980,3:1890,4:1710,5:1890,6:180,7:1890,8:1890,9:1890,10:1890,11:1890};
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-const MONTHLY_GOALS = {
-  0: 1890, 1: 1800, 2: 1980, 3: 1890,
-  4: 1710, 5: 1890, 6: 180,  7: 1890,
-  8: 1890, 9: 1890, 10: 1890, 11: 1890
-};
-
-const MONTHS = ['January','February','March','April','May','June',
-                'July','August','September','October','November','December'];
+function isManager(email){ return MANAGERS.some(m=>m.email.toLowerCase()===(email||'').toLowerCase()); }
 
 // ══════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════
-let currentUser = null;
-let currentAgentIdx = -1;
-let currentIsManager = false;
-let data = {};
+let currentUser=null, currentAgentIdx=-1, currentIsManager=false, data={};
 
 // ══════════════════════════════════════════════
 // AUTH
 // ══════════════════════════════════════════════
-function handleCredentialResponse(response) {
-  const payload = parseJwt(response.credential);
-  const email = payload.email || '';
-  const domain = email.split('@')[1] || '';
-
-  if (domain !== ALLOWED_DOMAIN) {
-    const el = document.getElementById('login-error');
-    el.style.display = 'flex';
-    return;
+function handleCredentialResponse(response){
+  const p=parseJwt(response.credential);
+  const email=p.email||'';
+  if((email.split('@')[1]||'')!==ALLOWED_DOMAIN){
+    document.getElementById('login-error').style.display='flex'; return;
   }
-
-  currentUser = { email, name: payload.name, picture: payload.picture };
-  currentAgentIdx = AGENTS.findIndex(a => a.email.toLowerCase() === email.toLowerCase());
-  currentIsManager = isManager(email);
-
-  sessionStorage.setItem('user', JSON.stringify(currentUser));
-  sessionStorage.setItem('agentIdx', currentAgentIdx);
-  sessionStorage.setItem('isManager', currentIsManager);
-
+  currentUser={email,name:p.name,picture:p.picture};
+  currentAgentIdx=AGENTS.findIndex(a=>a.email.toLowerCase()===email.toLowerCase());
+  currentIsManager=isManager(email);
+  sessionStorage.setItem('user',JSON.stringify(currentUser));
+  sessionStorage.setItem('agentIdx',currentAgentIdx);
+  sessionStorage.setItem('isManager',currentIsManager);
   startApp();
 }
 
-function parseJwt(token) {
-  const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-  return JSON.parse(atob(base64));
+function parseJwt(token){
+  return JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
 }
 
-function signOut() {
-  sessionStorage.clear();
-  currentUser = null; currentAgentIdx = -1; currentIsManager = false;
-  document.getElementById('app-screen').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
+function signOut(){
+  sessionStorage.clear(); currentUser=null; currentAgentIdx=-1; currentIsManager=false;
+  document.getElementById('app-screen').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
   google.accounts.id.disableAutoSelect();
 }
 
-function checkSession() {
-  const saved = sessionStorage.getItem('user');
-  if (saved) {
-    currentUser = JSON.parse(saved);
-    currentAgentIdx = parseInt(sessionStorage.getItem('agentIdx') || '-1');
-    currentIsManager = sessionStorage.getItem('isManager') === 'true';
-    startApp();
-    return true;
+function checkSession(){
+  const s=sessionStorage.getItem('user');
+  if(s){
+    currentUser=JSON.parse(s);
+    currentAgentIdx=parseInt(sessionStorage.getItem('agentIdx')||'-1');
+    currentIsManager=sessionStorage.getItem('isManager')==='true';
+    startApp(); return true;
   }
   return false;
 }
@@ -876,352 +496,492 @@ function checkSession() {
 // ══════════════════════════════════════════════
 // APP INIT
 // ══════════════════════════════════════════════
-function startApp() {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app-screen').style.display = 'block';
+function startApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').style.display='block';
 
-  const agent = AGENTS[currentAgentIdx];
-  const mgr = currentIsManager ? MANAGERS.find(m => m.email.toLowerCase() === currentUser.email.toLowerCase()) : null;
-  const initials = agent ? agent.initials : mgr ? mgr.initials : currentUser.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const agent=AGENTS[currentAgentIdx];
+  const mgr=currentIsManager?MANAGERS.find(m=>m.email.toLowerCase()===currentUser.email.toLowerCase()):null;
+  const initials=agent?agent.initials:mgr?mgr.initials:currentUser.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
 
-  document.getElementById('user-initials').textContent = initials;
-  document.getElementById('user-name-display').textContent =
-    agent ? agent.name.split(',')[1].trim() :
-    mgr   ? mgr.name :
-    currentUser.name;
+  document.getElementById('user-initials').textContent=initials;
+  document.getElementById('user-name-display').textContent=
+    agent?agent.name.split(',')[1].trim():mgr?mgr.name:currentUser.name;
 
-  if (currentIsManager) {
-    const mgrName = mgr ? mgr.name : currentUser.name;
-    document.getElementById('agent-full-name').textContent = mgrName;
-    document.getElementById('agent-banner').className = 'banner banner-yellow';
-    document.getElementById('agent-banner').querySelector('strong').textContent = mgrName + ' 👑';
-    document.getElementById('agent-banner').querySelector('span').innerHTML =
-      'Signed in as <strong>' + mgrName + ' 👑</strong> — Manager · Full access to all columns.';
-    document.getElementById('agent-banner').style.display = 'flex';
-    document.getElementById('readonly-notice').style.display = 'none';
-  } else if (currentAgentIdx >= 0) {
-    document.getElementById('agent-full-name').textContent = AGENTS[currentAgentIdx].name;
-    document.getElementById('agent-banner').style.display = 'flex';
-    document.getElementById('readonly-notice').style.display = 'none';
+  if(currentIsManager){
+    const n=mgr?mgr.name:currentUser.name;
+    document.getElementById('agent-banner').className='banner banner-yellow';
+    document.getElementById('agent-banner').querySelector('span').innerHTML=
+      'Signed in as <strong>'+n+' 👑</strong> — Manager · Full access · Leaderboard enabled.';
+    document.getElementById('agent-banner').style.display='flex';
+    document.getElementById('readonly-notice').style.display='none';
+    document.getElementById('leaderboard-section').style.display='block';
+  } else if(currentAgentIdx>=0){
+    document.getElementById('agent-full-name').textContent=AGENTS[currentAgentIdx].name;
+    document.getElementById('agent-banner').style.display='flex';
+    document.getElementById('readonly-notice').style.display='none';
+    document.getElementById('leaderboard-section').style.display='none';
   } else {
-    document.getElementById('agent-banner').style.display = 'none';
-    document.getElementById('readonly-notice').style.display = 'flex';
+    document.getElementById('agent-banner').style.display='none';
+    document.getElementById('readonly-notice').style.display='flex';
   }
 
-  buildYearMonthSelectors();
-  loadFromLocalStorage();
+  buildSelectors();
+  loadFromStorage();
   loadView();
+  setupKeyboard();
 }
 
-function buildYearMonthSelectors() {
-  const now = new Date();
-  const ySel = document.getElementById('sel-year');
-  const mSel = document.getElementById('sel-month');
-  ySel.innerHTML = ''; mSel.innerHTML = '';
-
-  for (let y = 2024; y <= now.getFullYear() + 1; y++) {
-    const o = document.createElement('option');
-    o.value = y; o.textContent = y;
-    if (y === now.getFullYear()) o.selected = true;
-    ySel.appendChild(o);
+function buildSelectors(){
+  const now=new Date();
+  const ys=document.getElementById('sel-year');
+  const ms=document.getElementById('sel-month');
+  ys.innerHTML=''; ms.innerHTML='';
+  for(let y=2024;y<=now.getFullYear()+1;y++){
+    const o=document.createElement('option');
+    o.value=y; o.textContent=y; if(y===now.getFullYear())o.selected=true; ys.appendChild(o);
   }
+  MONTHS.forEach((m,i)=>{
+    const o=document.createElement('option');
+    o.value=i; o.textContent=m; if(i===now.getMonth())o.selected=true; ms.appendChild(o);
+  });
+}
 
-  MONTHS.forEach((m, i) => {
-    const o = document.createElement('option');
-    o.value = i; o.textContent = m;
-    if (i === now.getMonth()) o.selected = true;
-    mSel.appendChild(o);
+// ══════════════════════════════════════════════
+// KEYBOARD
+// ══════════════════════════════════════════════
+function setupKeyboard(){
+  document.addEventListener('keydown',e=>{
+    // Ctrl+S = sync
+    if((e.ctrlKey||e.metaKey)&&e.key==='s'){
+      e.preventDefault(); syncToSheets();
+    }
+    // Enter = advance to next row same column
+    if(e.key==='Enter'&&e.target.tagName==='INPUT'){
+      e.preventDefault();
+      const id=e.target.id; // inp-{day}-{agentIdx}
+      const parts=id.split('-');
+      const day=parseInt(parts[1]);
+      const agentIdx=parseInt(parts[2]);
+      const year=parseInt(document.getElementById('sel-year').value);
+      const month=parseInt(document.getElementById('sel-month').value);
+      const daysInMonth=new Date(year,month+1,0).getDate();
+      // Find next weekday
+      for(let d=day+1;d<=daysInMonth;d++){
+        const dow=new Date(year,month,d).getDay();
+        if(dow!==0&&dow!==6){
+          const next=document.getElementById(`inp-${d}-${agentIdx}`);
+          if(next&&!next.readOnly){next.focus();next.select();return;}
+        }
+      }
+    }
   });
 }
 
 // ══════════════════════════════════════════════
 // DATA
 // ══════════════════════════════════════════════
-function loadFromLocalStorage() {
-  try { const r = localStorage.getItem('takahami_prod_data'); if (r) data = JSON.parse(r); } catch(e) { data = {}; }
+function loadFromStorage(){
+  try{const r=localStorage.getItem('takahami_prod_data');if(r)data=JSON.parse(r);}catch(e){data={};}
 }
-
-function saveToLocalStorage() {
-  localStorage.setItem('takahami_prod_data', JSON.stringify(data));
+function saveToStorage(){ localStorage.setItem('takahami_prod_data',JSON.stringify(data)); }
+function ensurePath(y,m){
+  if(!data[y])data[y]={};
+  if(!data[y][m])data[y][m]={};
+  AGENTS.forEach((_,i)=>{if(!data[y][m][i])data[y][m][i]={};});
 }
-
-function ensurePath(year, month) {
-  if (!data[year]) data[year] = {};
-  if (!data[year][month]) data[year][month] = {};
-  AGENTS.forEach((_, i) => { if (!data[year][month][i]) data[year][month][i] = {}; });
-}
-
-function getDayValue(year, month, agentIdx, day) {
-  try { return data[year][month][agentIdx][day] ?? ''; } catch(e) { return ''; }
-}
-
-function setDayValue(year, month, agentIdx, day, val) {
-  ensurePath(year, month);
-  if (val === '' || val === null || isNaN(val)) delete data[year][month][agentIdx][day];
-  else data[year][month][agentIdx][day] = Number(val);
-  saveToLocalStorage();
-  updateMTD();
+function getDayValue(y,m,ai,d){try{return data[y][m][ai][d]??'';}catch(e){return '';}}
+function setDayValue(y,m,ai,d,val){
+  ensurePath(y,m);
+  if(val===''||val===null||isNaN(val)) delete data[y][m][ai][d];
+  else data[y][m][ai][d]=Number(val);
+  saveToStorage(); updateMTD(); updateTargetBar(); updateLeaderboard();
 }
 
 // ══════════════════════════════════════════════
 // VIEW
 // ══════════════════════════════════════════════
-function loadView() {
-  const year  = parseInt(document.getElementById('sel-year').value);
-  const month = parseInt(document.getElementById('sel-month').value);
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  document.getElementById('table-title').textContent = `${MONTHS[month]} ${year} — Daily Entries`;
-  document.getElementById('page-title').textContent  = `${MONTHS[month]} ${year}`;
-  document.getElementById('page-sub').textContent    = `Takahami Medical Billing · ${AGENTS.length} Agents`;
-
-  ensurePath(year, month);
-  buildTable(year, month, daysInMonth);
-  updateMTD();
+function loadView(){
+  const year=parseInt(document.getElementById('sel-year').value);
+  const month=parseInt(document.getElementById('sel-month').value);
+  const dim=new Date(year,month+1,0).getDate();
+  document.getElementById('table-title').textContent=`${MONTHS[month]} ${year} — Daily Entries`;
+  document.getElementById('page-title').textContent=`${MONTHS[month]} ${year}`;
+  document.getElementById('page-sub').textContent=`Takahami Medical Billing · ${AGENTS.length} Agents · Goal: ${(MONTHLY_GOALS[month]||1890).toLocaleString()}`;
+  ensurePath(year,month);
+  buildTable(year,month,dim);
+  updateMTD(); updateTargetBar(); updateLeaderboard();
 }
 
-function isWeekend(year, month, day) {
-  const dow = new Date(year, month, day).getDay();
-  return dow === 0 || dow === 6;
+function isWeekend(y,m,d){ const dow=new Date(y,m,d).getDay(); return dow===0||dow===6; }
+
+function isCurrentDay(y,m,d){
+  const now=new Date();
+  return now.getFullYear()===y&&now.getMonth()===m&&now.getDate()===d;
 }
 
-function buildTable(year, month, daysInMonth) {
-  const thead = document.getElementById('table-head');
-  const tbody = document.getElementById('table-body');
+function buildTable(year,month,dim){
+  const thead=document.getElementById('table-head');
+  const tbody=document.getElementById('table-body');
+  const goal=MONTHLY_GOALS[month]||1890;
 
-  let headHtml = '<tr><th>Day</th>';
-  AGENTS.forEach(a => {
-    headHtml += `<th title="${a.email}">${a.name.split(',')[1]?.trim() || a.name.split(' ')[0]}</th>`;
+  // Header with at-risk flags
+  let hh=`<tr><th>Day</th>`;
+  AGENTS.forEach((a,i)=>{
+    const fn=a.name.split(',')[1]?.trim()||a.name.split(' ')[0];
+    hh+=`<th><div class="col-header-wrap">
+      <span>${fn}</span>
+      <span class="col-at-risk" id="col-risk-${i}">
+        <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        AT RISK
+      </span>
+    </div></th>`;
   });
-  headHtml += '</tr>';
-  thead.innerHTML = headHtml;
+  hh+=`</tr>`;
+  thead.innerHTML=hh;
 
-  let bodyHtml = '';
-  const dow_labels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let bb='';
+  let hasAnyData=false;
 
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dow     = new Date(year, month, d).getDay();
-    const weekend = isWeekend(year, month, d);
-    const dowLabel = dow_labels[dow];
+  for(let d=1;d<=dim;d++){
+    const dow=new Date(year,month,d).getDay();
+    const weekend=isWeekend(year,month,d);
+    const isToday=isCurrentDay(year,month,d);
+    let rowCls='';
+    if(weekend) rowCls='weekend-row';
+    else if(isToday) rowCls='today-row';
 
-    bodyHtml += `<tr id="row-${d}"${weekend ? ' class="weekend-row"' : ''}>`;
-    bodyHtml += `<td><div class="day-cell"><span class="day-num">${d}</span><span class="day-label">${dowLabel}</span></div></td>`;
+    bb+=`<tr id="row-${d}"${rowCls?` class="${rowCls}"`:''}>`;
+    bb+=`<td><div class="day-cell"><span class="day-num">${d}</span><span class="day-label">${DOW[dow]}</span></div></td>`;
 
-    AGENTS.forEach((_, agentIdx) => {
-      if (weekend) { bodyHtml += `<td></td>`; return; }
-
-      const val    = getDayValue(year, month, agentIdx, d);
-      const isOwn  = agentIdx === currentAgentIdx || currentIsManager;
-      const hasVal = val !== '' && val !== undefined;
-
-      let cls = '', readonly = '';
-      if (!isOwn) { cls = hasVal ? 'other-value' : 'readonly-cell'; readonly = 'readonly'; }
-      else if (hasVal) { cls = 'has-value'; }
-
-      bodyHtml += `<td>
-        <input type="number" min="0"
-          id="inp-${d}-${agentIdx}"
-          class="${cls}"
-          value="${hasVal ? val : ''}"
-          placeholder="${isOwn ? '0' : ''}"
-          ${readonly}
-          ${isOwn ? `onchange="cellChanged(${year},${month},${agentIdx},${d},this.value)"
-                     onblur="cellChanged(${year},${month},${agentIdx},${d},this.value)"` : ''}
-        /></td>`;
+    AGENTS.forEach((_,ai)=>{
+      if(weekend){bb+=`<td></td>`;return;}
+      const val=getDayValue(year,month,ai,d);
+      const isOwn=ai===currentAgentIdx||currentIsManager;
+      const hasVal=val!==''&&val!==undefined;
+      if(hasVal) hasAnyData=true;
+      let cls='',ro='';
+      if(!isOwn){cls=hasVal?'other-value':'readonly-cell';ro='readonly';}
+      else if(hasVal){cls='has-value';}
+      bb+=`<td><input type="number" min="0" id="inp-${d}-${ai}" class="${cls}"
+        value="${hasVal?val:''}" placeholder="${isOwn?'0':''}" ${ro}
+        ${isOwn?`onchange="cellChanged(${year},${month},${ai},${d},this.value)"
+                  onblur="cellChanged(${year},${month},${ai},${d},this.value)"`:''}/></td>`;
     });
-    bodyHtml += '</tr>';
+    bb+=`</tr>`;
   }
 
-  // Productivity row
-  bodyHtml += `<tr class="summary-row"><td>Productivity</td>`;
-  AGENTS.forEach((_, i) => { bodyHtml += `<td id="total-${i}">0</td>`; });
-  bodyHtml += '</tr>';
+  // Summary rows
+  bb+=`<tr class="summary-row"><td>Productivity</td>`;
+  AGENTS.forEach((_,i)=>{
+    bb+=`<td><div id="total-${i}">0</div>
+      <div class="col-mini-bar"><div class="col-mini-bar-fill" id="mini-bar-${i}" style="width:0%"></div></div>
+    </td>`;
+  });
+  bb+=`</tr>`;
+  bb+=`<tr class="goal-row"><td>Goal</td>`;
+  AGENTS.forEach(()=>{bb+=`<td>${goal}</td>`;});
+  bb+=`</tr>`;
+  bb+=`<tr class="deficit-row"><td>Deficit</td>`;
+  AGENTS.forEach((_,i)=>{bb+=`<td id="deficit-${i}">—</td>`;});
+  bb+=`</tr>`;
 
-  // Goal row
-  const goal = MONTHLY_GOALS[month] || 1890;
-  bodyHtml += `<tr class="goal-row"><td>Goal</td>`;
-  AGENTS.forEach(() => { bodyHtml += `<td>${goal}</td>`; });
-  bodyHtml += '</tr>';
+  tbody.innerHTML=bb;
+  updateTotals(year,month,dim);
 
-  // Deficit row
-  bodyHtml += `<tr class="deficit-row"><td>Deficit</td>`;
-  AGENTS.forEach((_, i) => { bodyHtml += `<td id="deficit-${i}">—</td>`; });
-  bodyHtml += '</tr>';
-
-  tbody.innerHTML = bodyHtml;
-  updateTotals(year, month, daysInMonth);
+  // Scroll to today
+  const todayRow=document.getElementById(`row-${new Date().getDate()}`);
+  if(todayRow&&isCurrentDay(year,month,new Date().getDate())){
+    setTimeout(()=>todayRow.scrollIntoView({behavior:'smooth',block:'center'}),300);
+  }
 }
 
-function cellChanged(year, month, agentIdx, day, val) {
-  const v = val === '' ? '' : parseInt(val);
-  setDayValue(year, month, agentIdx, day, v);
-  const inp = document.getElementById(`inp-${day}-${agentIdx}`);
-  if (inp) { if (v !== '' && !isNaN(v)) inp.classList.add('has-value'); else inp.classList.remove('has-value'); }
-  updateTotals(year, month, new Date(year, month + 1, 0).getDate());
+function cellChanged(year,month,ai,day,val){
+  const v=val===''?'':parseInt(val);
+  setDayValue(year,month,ai,day,v);
+  const inp=document.getElementById(`inp-${day}-${ai}`);
+  if(inp){if(v!==''&&!isNaN(v))inp.classList.add('has-value');else inp.classList.remove('has-value');}
+  updateTotals(year,month,new Date(year,month+1,0).getDate());
 }
 
-function updateTotals(year, month, daysInMonth) {
-  const goal = MONTHLY_GOALS[month] || 1890;
-  AGENTS.forEach((_, i) => {
-    let total = 0;
-    for (let d = 1; d <= daysInMonth; d++) {
-      if (!isWeekend(year, month, d)) {
-        const v = getDayValue(year, month, i, d);
-        if (v !== '' && !isNaN(v)) total += Number(v);
+function updateTotals(year,month,dim){
+  const goal=MONTHLY_GOALS[month]||1890;
+  AGENTS.forEach((_,i)=>{
+    let total=0;
+    for(let d=1;d<=dim;d++){
+      if(!isWeekend(year,month,d)){
+        const v=getDayValue(year,month,i,d);
+        if(v!==''&&!isNaN(v))total+=Number(v);
       }
     }
-    const totalEl = document.getElementById(`total-${i}`);
-    if (totalEl) totalEl.textContent = total;
-    const deficit = goal - total;
-    const defEl = document.getElementById(`deficit-${i}`);
-    if (defEl) {
-      defEl.textContent = deficit <= 0 ? `+${Math.abs(deficit)}` : deficit;
-      defEl.className = deficit <= 0 ? 'on-target' : '';
+    const tel=document.getElementById(`total-${i}`); if(tel)tel.textContent=total;
+    const deficit=goal-total;
+    const del=document.getElementById(`deficit-${i}`);
+    if(del){del.textContent=deficit<=0?`+${Math.abs(deficit)}`:deficit;del.className=deficit<=0?'on-target':'';}
+    // Mini progress bar
+    const pct=Math.min(100,(total/goal)*100);
+    const mb=document.getElementById(`mini-bar-${i}`);
+    if(mb){
+      mb.style.width=pct+'%';
+      mb.style.background=pct>=100?'linear-gradient(90deg,#34d399,#10b981)':pct>=75?'linear-gradient(90deg,#60a5fa,#a78bfa)':'linear-gradient(90deg,#f87171,#fb923c)';
+    }
+    // At-risk flag
+    const riskEl=document.getElementById(`col-risk-${i}`);
+    if(riskEl){
+      const ptg=goal>0?(total/goal)*100:0;
+      riskEl.style.display=ptg<75&&total>0?'flex':'none';
     }
   });
 }
 
 // ══════════════════════════════════════════════
-// MTD SUMMARY
+// TARGET BAR
 // ══════════════════════════════════════════════
-function updateMTD() {
-  const year  = parseInt(document.getElementById('sel-year').value);
-  const month = parseInt(document.getElementById('sel-month').value);
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const goal  = MONTHLY_GOALS[month] || 1890;
-  const today = new Date();
-  const isCurrentMonth = (today.getFullYear() === year && today.getMonth() === month);
-  const lastDay = isCurrentMonth ? today.getDate() : daysInMonth;
-  const agentIdx = currentAgentIdx >= 0 ? currentAgentIdx : 0;
+function updateTargetBar(){
+  const year=parseInt(document.getElementById('sel-year').value);
+  const month=parseInt(document.getElementById('sel-month').value);
+  const goal=MONTHLY_GOALS[month]||1890;
+  const today=new Date();
+  const isCurrentMonth=today.getFullYear()===year&&today.getMonth()===month;
+  const agentIdx=currentAgentIdx>=0?currentAgentIdx:0;
+  const dim=new Date(year,month+1,0).getDate();
 
-  let total = 0, workDays = 0;
-  for (let d = 1; d <= lastDay; d++) {
-    if (!isWeekend(year, month, d)) {
+  // Total work days in month
+  let totalWorkDays=0,elapsedWorkDays=0;
+  const lastDay=isCurrentMonth?today.getDate():dim;
+  for(let d=1;d<=dim;d++){
+    if(!isWeekend(year,month,d)){
+      totalWorkDays++;
+      if(d<=lastDay)elapsedWorkDays++;
+    }
+  }
+
+  // Remaining work days from today
+  let remainingWorkDays=0;
+  for(let d=lastDay;d<=dim;d++){if(!isWeekend(year,month,d))remainingWorkDays++;}
+
+  const dailyTarget=totalWorkDays>0?Math.ceil(goal/totalWorkDays):0;
+
+  // Agent total so far
+  let total=0;
+  for(let d=1;d<=lastDay;d++){
+    if(!isWeekend(year,month,d)){
+      const v=getDayValue(year,month,agentIdx,d);
+      if(v!==''&&!isNaN(v))total+=Number(v);
+    }
+  }
+
+  const remaining=Math.max(0,goal-total);
+  const paceNeeded=remainingWorkDays>0?Math.ceil(remaining/remainingWorkDays):0;
+
+  const dtBadge=document.getElementById('daily-target-badge');
+  const paceBadge=document.getElementById('pace-badge');
+  const remBadge=document.getElementById('remaining-badge');
+  const streakBadge=document.getElementById('streak-badge');
+
+  if(dtBadge) dtBadge.textContent=dailyTarget+' cases/day';
+
+  if(paceBadge){
+    paceBadge.textContent=paceNeeded+' cases/day';
+    paceBadge.className='target-badge'+(paceNeeded<=dailyTarget?' green':paceNeeded<=dailyTarget*1.2?' amber':' red');
+  }
+
+  if(remBadge){
+    remBadge.textContent=remaining.toLocaleString()+' cases';
+    remBadge.className='target-badge'+(remaining===0?' green':remaining>goal*.5?' red':' amber');
+  }
+
+  // Streak — consecutive days hitting daily target
+  if(streakBadge&&currentAgentIdx>=0){
+    let streak=0;
+    for(let d=lastDay;d>=1;d--){
+      if(isWeekend(year,month,d))continue;
+      const v=getDayValue(year,month,agentIdx,d);
+      if(v!==''&&Number(v)>=dailyTarget)streak++;
+      else break;
+    }
+    streakBadge.textContent=streak+' day'+(streak!==1?'s':'');
+    streakBadge.style.background=streak>=5?'#fdf4ff':streak>=3?'#eff6ff':'#f9fafb';
+    streakBadge.style.color=streak>=5?'#7c3aed':streak>=3?'#2563eb':'#6b7280';
+    streakBadge.style.borderColor=streak>=5?'#e9d5ff':streak>=3?'#bfdbfe':'#e5e7eb';
+  }
+
+  // Hide target bar for managers (show leaderboard instead)
+  document.getElementById('target-bar').style.display=currentIsManager?'none':'flex';
+}
+
+// ══════════════════════════════════════════════
+// MTD
+// ══════════════════════════════════════════════
+function updateMTD(){
+  const year=parseInt(document.getElementById('sel-year').value);
+  const month=parseInt(document.getElementById('sel-month').value);
+  const dim=new Date(year,month+1,0).getDate();
+  const goal=MONTHLY_GOALS[month]||1890;
+  const today=new Date();
+  const isCurrent=today.getFullYear()===year&&today.getMonth()===month;
+  const lastDay=isCurrent?today.getDate():dim;
+  const agentIdx=currentAgentIdx>=0?currentAgentIdx:0;
+
+  let total=0,workDays=0;
+  for(let d=1;d<=lastDay;d++){
+    if(!isWeekend(year,month,d)){
       workDays++;
-      if (currentIsManager) {
-        AGENTS.forEach((_, ai) => { const v = getDayValue(year, month, ai, d); if (v !== '' && !isNaN(v)) total += Number(v); });
+      if(currentIsManager){
+        AGENTS.forEach((_,ai)=>{const v=getDayValue(year,month,ai,d);if(v!==''&&!isNaN(v))total+=Number(v);});
       } else {
-        const v = getDayValue(year, month, agentIdx, d);
-        if (v !== '' && !isNaN(v)) total += Number(v);
+        const v=getDayValue(year,month,agentIdx,d);if(v!==''&&!isNaN(v))total+=Number(v);
       }
     }
   }
 
-  let totalWorkDays = 0;
-  for (let d = 1; d <= daysInMonth; d++) { if (!isWeekend(year, month, d)) totalWorkDays++; }
+  let totalWorkDays=0;
+  for(let d=1;d<=dim;d++){if(!isWeekend(year,month,d))totalWorkDays++;}
 
-  const goalBase = currentIsManager ? goal * AGENTS.length : goal;
-  const mtdGoal  = Math.round((goalBase / totalWorkDays) * workDays);
-  const deficit  = total - mtdGoal;
-  const ptg      = mtdGoal > 0 ? ((total / mtdGoal) * 100).toFixed(1) : '0.0';
-  const acpd     = workDays > 0 ? (total / workDays).toFixed(1) : '0.0';
-  const pct      = Math.min(100, mtdGoal > 0 ? (total / mtdGoal * 100) : 0);
+  const goalBase=currentIsManager?goal*AGENTS.length:goal;
+  const mtdGoal=Math.round((goalBase/totalWorkDays)*workDays);
+  const deficit=total-mtdGoal;
+  const ptg=mtdGoal>0?((total/mtdGoal)*100).toFixed(1):'0.0';
+  const acpd=workDays>0?(total/workDays).toFixed(1):'0.0';
+  const pct=Math.min(100,mtdGoal>0?(total/mtdGoal*100):0);
 
-  document.getElementById('mtd-prod').textContent    = total.toLocaleString();
-  document.getElementById('mtd-deficit').textContent = deficit >= 0 ? `+${deficit.toLocaleString()}` : deficit.toLocaleString();
-  document.getElementById('mtd-deficit').style.color = deficit >= 0 ? 'var(--success)' : 'var(--danger)';
-  document.getElementById('mtd-ptg').textContent     = `${ptg}%`;
-  document.getElementById('mtd-acpd').textContent    = acpd;
-
-  const bar = document.getElementById('mtd-progress-bar');
-  bar.style.width = `${pct}%`;
-  bar.style.background = pct >= 100
-    ? 'linear-gradient(90deg,#059669,#10b981)'
-    : pct >= 75
-    ? 'linear-gradient(90deg,#2563eb,#7c3aed)'
-    : 'linear-gradient(90deg,#d97706,#f59e0b)';
+  document.getElementById('mtd-prod').textContent=total.toLocaleString();
+  const defEl=document.getElementById('mtd-deficit');
+  defEl.textContent=deficit>=0?`+${deficit.toLocaleString()}`:deficit.toLocaleString();
+  defEl.style.color=deficit>=0?'var(--success)':'var(--danger)';
+  document.getElementById('mtd-ptg').textContent=`${ptg}%`;
+  document.getElementById('mtd-ptg').style.color=parseFloat(ptg)>=95?'var(--success)':parseFloat(ptg)>=75?'var(--warning)':'var(--danger)';
+  document.getElementById('mtd-acpd').textContent=acpd;
+  const bar=document.getElementById('mtd-progress-bar');
+  bar.style.width=pct+'%';
+  bar.style.background=pct>=100?'linear-gradient(90deg,#059669,#10b981)':pct>=75?'linear-gradient(90deg,#2563eb,#7c3aed)':'linear-gradient(90deg,#d97706,#f59e0b)';
+  if(currentIsManager){
+    document.getElementById('mtd-prod-sub').textContent='Team total this month';
+  }
 }
 
 // ══════════════════════════════════════════════
-// SYNC TO GOOGLE SHEETS
+// LEADERBOARD
 // ══════════════════════════════════════════════
-async function syncToSheets() {
-  const year  = parseInt(document.getElementById('sel-year').value);
-  const month = parseInt(document.getElementById('sel-month').value);
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
+function updateLeaderboard(){
+  if(!currentIsManager) return;
+  const year=parseInt(document.getElementById('sel-year').value);
+  const month=parseInt(document.getElementById('sel-month').value);
+  const goal=MONTHLY_GOALS[month]||1890;
+  const today=new Date();
+  const isCurrent=today.getFullYear()===year&&today.getMonth()===month;
+  const lastDay=isCurrent?today.getDate():new Date(year,month+1,0).getDate();
+  const dim=new Date(year,month+1,0).getDate();
 
-  const btn = document.getElementById('sync-btn');
-  const statusEl = document.getElementById('sync-status');
-  btn.disabled = true;
-  btn.innerHTML = '<svg viewBox="0 0 20 20" style="width:14px;height:14px;fill:white;animation:spin 1s linear infinite"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Syncing…';
-  statusEl.textContent = ''; statusEl.className = 'sync-status';
+  // Calc totals per agent
+  const scores=AGENTS.map((a,i)=>{
+    let total=0;
+    for(let d=1;d<=lastDay;d++){
+      if(!isWeekend(year,month,d)){
+        const v=getDayValue(year,month,i,d);
+        if(v!==''&&!isNaN(v))total+=Number(v);
+      }
+    }
+    let totalWorkDays=0,elapsed=0;
+    for(let d=1;d<=dim;d++){if(!isWeekend(year,month,d)){totalWorkDays++;if(d<=lastDay)elapsed++;}}
+    const mtdGoal=Math.round((goal/totalWorkDays)*elapsed);
+    const ptg=mtdGoal>0?(total/mtdGoal*100):0;
+    return {name:a.name.split(',')[1]?.trim()||a.name,total,mtdGoal,ptg,initials:a.initials};
+  }).sort((a,b)=>b.total-a.total);
 
-  const rows = [];
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dow = new Date(year, month, d).getDay();
-    const weekend = dow === 0 || dow === 6;
-    const rowData = { day: d, weekend };
-    AGENTS.forEach((a, i) => { rowData[a.email] = weekend ? null : (getDayValue(year, month, i, d) ?? null); });
-    rows.push(rowData);
+  const maxTotal=scores[0]?.total||1;
+  const colors=['linear-gradient(90deg,#f59e0b,#fbbf24)','linear-gradient(90deg,#9ca3af,#d1d5db)',
+                'linear-gradient(90deg,#b45309,#d97706)'];
+
+  let html='';
+  scores.forEach((s,idx)=>{
+    const rankCls=idx===0?'r1':idx===1?'r2':idx===2?'r3':'rn';
+    const rankLabel=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':(idx+1);
+    const barColor=colors[idx]||'linear-gradient(90deg,#2563eb,#7c3aed)';
+    const ptgCls=s.ptg>=95?'ok':s.ptg>=75?'warn':'bad';
+    const barPct=maxTotal>0?(s.total/maxTotal*100):0;
+    html+=`<div class="lb-row">
+      <div class="lb-rank ${rankCls}">${rankLabel}</div>
+      <div class="lb-name">${s.name}</div>
+      <div class="lb-bar-wrap"><div class="lb-bar-fill" style="width:${barPct}%;background:${barColor}"></div></div>
+      <div class="lb-value">${s.total.toLocaleString()}</div>
+      <div class="lb-ptg ${ptgCls}">${s.ptg.toFixed(1)}%</div>
+    </div>`;
+  });
+  document.getElementById('leaderboard-body').innerHTML=html;
+  document.getElementById('lb-subtitle').textContent=`${MONTHS[month]} ${year} · MTD ranking`;
+}
+
+// ══════════════════════════════════════════════
+// SYNC
+// ══════════════════════════════════════════════
+async function syncToSheets(){
+  const year=parseInt(document.getElementById('sel-year').value);
+  const month=parseInt(document.getElementById('sel-month').value);
+  const dim=new Date(year,month+1,0).getDate();
+  const btn=document.getElementById('sync-btn');
+  const statusEl=document.getElementById('sync-status');
+  btn.disabled=true;
+  btn.innerHTML=`<svg viewBox="0 0 20 20" style="width:14px;height:14px;fill:white;animation:spin 1s linear infinite"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Syncing…`;
+
+  const rows=[];
+  for(let d=1;d<=dim;d++){
+    const dow=new Date(year,month,d).getDay();
+    const weekend=dow===0||dow===6;
+    const rd={day:d,weekend};
+    AGENTS.forEach((a,i)=>{rd[a.email]=weekend?null:(getDayValue(year,month,i,d)??null);});
+    rows.push(rd);
   }
 
-  const payload = {
-    year, month, monthName: MONTHS[month],
-    sheetId: SHEET_ID,
-    agents: AGENTS.map(a => a.name),
-    goal: MONTHLY_GOALS[month] || 1890,
-    rows,
-    submittedBy: currentUser.email,
-    timestamp: new Date().toISOString()
-  };
+  const payload={year,month,monthName:MONTHS[month],sheetId:SHEET_ID,
+    agents:AGENTS.map(a=>a.name),goal:MONTHLY_GOALS[month]||1890,
+    rows,submittedBy:currentUser.email,timestamp:new Date().toISOString()};
 
-  try {
-    const form = document.createElement('form');
-    form.method = 'POST'; form.action = APPS_SCRIPT_URL;
-    form.target = 'hidden-sync-frame'; form.style.display = 'none';
-    const input = document.createElement('input');
-    input.type = 'hidden'; input.name = 'payload'; input.value = JSON.stringify(payload);
-    form.appendChild(input);
-
-    let iframe = document.getElementById('hidden-sync-frame');
-    if (!iframe) {
-      iframe = document.createElement('iframe');
-      iframe.name = 'hidden-sync-frame'; iframe.id = 'hidden-sync-frame'; iframe.style.display = 'none';
+  try{
+    const form=document.createElement('form');
+    form.method='POST'; form.action=APPS_SCRIPT_URL;
+    form.target='hidden-sync-frame'; form.style.display='none';
+    const inp=document.createElement('input');
+    inp.type='hidden'; inp.name='payload'; inp.value=JSON.stringify(payload);
+    form.appendChild(inp);
+    let iframe=document.getElementById('hidden-sync-frame');
+    if(!iframe){
+      iframe=document.createElement('iframe');
+      iframe.name='hidden-sync-frame'; iframe.id='hidden-sync-frame'; iframe.style.display='none';
       document.body.appendChild(iframe);
     }
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
-
-    await new Promise(r => setTimeout(r, 2000));
-    showToast('✅ Synced to Google Sheets!', 'success');
-    statusEl.textContent = `Synced ${new Date().toLocaleTimeString()}`;
-    statusEl.className = 'sync-status ok';
-  } catch (e) {
-    showToast(`❌ Sync failed: ${e.message}`, 'error');
-    statusEl.textContent = 'Sync failed'; statusEl.className = 'sync-status err';
+    document.body.appendChild(form); form.submit(); document.body.removeChild(form);
+    await new Promise(r=>setTimeout(r,2000));
+    showToast('✅ Synced to Google Sheets!','success');
+    statusEl.textContent=`Synced ${new Date().toLocaleTimeString()}`; statusEl.className='sync-status ok';
+  }catch(e){
+    showToast(`❌ Sync failed: ${e.message}`,'error');
+    statusEl.textContent='Sync failed'; statusEl.className='sync-status err';
   }
-
-  btn.disabled = false;
-  btn.innerHTML = '<svg viewBox="0 0 20 20" style="width:14px;height:14px;fill:white"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Sync to Sheets';
+  btn.disabled=false;
+  btn.innerHTML=`<svg viewBox="0 0 20 20" style="width:14px;height:14px;fill:white"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Sync to Sheets`;
 }
 
 // ══════════════════════════════════════════════
 // TOAST
 // ══════════════════════════════════════════════
 let toastTimer;
-function showToast(msg, type = '') {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = `show ${type}`;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { t.className = ''; }, 3500);
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=`show ${type}`;
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>{t.className='';},3500);
 }
-
-// Spin animation for sync icon
-const style = document.createElement('style');
-style.textContent = '@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }';
-document.head.appendChild(style);
 
 // ══════════════════════════════════════════════
 // BOOT
 // ══════════════════════════════════════════════
-window.addEventListener('load', () => {
-  if (!checkSession()) {
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('app-screen').style.display = 'none';
+window.addEventListener('load',()=>{
+  if(!checkSession()){
+    document.getElementById('login-screen').style.display='flex';
+    document.getElementById('app-screen').style.display='none';
   }
 });
-
 </script>
 </body>
 </html>
