@@ -555,7 +555,7 @@
     <p class="subtitle">Takahami Medical Billing</p>
 
     <div id="g_id_onload"
-      data-client_id="519974257344-5u0bjm2sdctrnlq6b1oflsvesgn291fc.apps.googleusercontent.com"
+      data-client_id="YOUR_GOOGLE_CLIENT_ID"
       data-callback="handleCredentialResponse"
       data-auto_prompt="false">
     </div>
@@ -625,7 +625,7 @@
       <div class="mtd-card goal">
         <div class="card-label">MTD Goal</div>
         <div class="card-value" id="mtd-goal">—</div>
-        <div class="card-sub">Monthly target</div>
+        <div class="card-sub" id="mtd-goal-sub">Monthly target</div>
       </div>
       <div class="mtd-card productivity">
         <div class="card-label">MTD Productivity</div>
@@ -674,8 +674,8 @@
 // CONFIG
 // ══════════════════════════════════════════════
 const ALLOWED_DOMAIN = 'allianceglobalsolutions.com';
-const SHEET_ID = 'YOUR_GOOGLE_SHEET_ID'; // 1KAD9iBlcaYqHOPm364iwtZswcmp4Jx8JmzdqnLdj06I
-const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_DEPLOY_URL'; // https://script.google.com/macros/s/AKfycbzK9BiU3-VXgpwLoHfe2OHGi3fjDU-va6NXAsh8LJstn05iLvaaLOmV3APMWWWZhPx5/exec
+const SHEET_ID = 'YOUR_GOOGLE_SHEET_ID'; // ← Replace after creating the sheet
+const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_DEPLOY_URL'; // ← Replace after deploying
 
 const AGENTS = [
   { name: 'Ado, Jaypee Dhan',       email: 'jaypee@allianceglobalsolutions.com',      initials: 'JA' },
@@ -684,6 +684,17 @@ const AGENTS = [
   { name: 'Patricio, Cherabyl',     email: 'c.patricio@allianceglobalsolutions.com',   initials: 'CP' },
   { name: 'Regaspi, Jeffrey',       email: 'jeffrey@allianceglobalsolutions.com',      initials: 'JR' },
 ];
+
+const MANAGERS = [
+  { name: 'Anthony B.', email: 'anthony.b@allianceglobalsolutions.com', initials: 'AB' },
+  { name: 'Paul',        email: 'paul@allianceglobalsolutions.com',       initials: 'PL' },
+  { name: 'Tristan',     email: 'tristan@allianceglobalsolutions.com',    initials: 'TR' },
+  { name: 'Zaldy',       email: 'zaldy@allianceglobalsolutions.com',      initials: 'ZL' },
+];
+
+function isManager(email) {
+  return MANAGERS.some(m => m.email.toLowerCase() === (email || '').toLowerCase());
+}
 
 // Monthly goals (matching original tracker: 1890, 1800, 1980, 1890, 1710, 1890, 180 visible...)
 // Default: 1890 per month unless month-specific. Adjust as needed.
@@ -701,6 +712,7 @@ const MONTHS = ['January','February','March','April','May','June',
 // ══════════════════════════════════════════════
 let currentUser = null;
 let currentAgentIdx = -1;
+let currentIsManager = false;
 
 // data[year][month][agentIdx][day] = value
 let data = {};
@@ -720,10 +732,12 @@ function handleCredentialResponse(response) {
 
   currentUser = { email, name: payload.name, picture: payload.picture };
   currentAgentIdx = AGENTS.findIndex(a => a.email.toLowerCase() === email.toLowerCase());
+  currentIsManager = isManager(email);
 
   // Store session
   sessionStorage.setItem('user', JSON.stringify(currentUser));
   sessionStorage.setItem('agentIdx', currentAgentIdx);
+  sessionStorage.setItem('isManager', currentIsManager);
 
   startApp();
 }
@@ -748,6 +762,7 @@ function checkSession() {
   if (saved) {
     currentUser = JSON.parse(saved);
     currentAgentIdx = parseInt(sessionStorage.getItem('agentIdx') || '-1');
+    currentIsManager = sessionStorage.getItem('isManager') === 'true';
     startApp();
     return true;
   }
@@ -763,11 +778,24 @@ function startApp() {
 
   // User display
   const agent = AGENTS[currentAgentIdx];
-  const initials = agent ? agent.initials : currentUser.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const mgr = currentIsManager ? MANAGERS.find(m => m.email.toLowerCase() === currentUser.email.toLowerCase()) : null;
+  const initials = agent ? agent.initials : mgr ? mgr.initials : currentUser.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
   document.getElementById('user-initials').textContent = initials;
-  document.getElementById('user-name-display').textContent = agent ? agent.name.split(',')[1].trim() : currentUser.name;
+  document.getElementById('user-name-display').textContent =
+    agent ? agent.name.split(',')[1].trim() :
+    mgr ? mgr.name :
+    currentUser.name;
 
-  if (currentAgentIdx >= 0) {
+  if (currentIsManager) {
+    const mgrName = mgr ? mgr.name : currentUser.name;
+    document.getElementById('agent-full-name').textContent = mgrName + ' (Manager — Full Access)';
+    document.getElementById('agent-banner').style.display = 'flex';
+    document.getElementById('agent-banner').style.background = '#fef7e0';
+    document.getElementById('agent-banner').style.borderColor = '#f9ab00';
+    document.getElementById('agent-banner').style.color = '#7a5b00';
+    document.getElementById('agent-banner').querySelector('strong').textContent = mgrName + ' 👑 Full Access — all columns editable';
+    document.getElementById('readonly-notice').style.display = 'none';
+  } else if (currentAgentIdx >= 0) {
     document.getElementById('agent-full-name').textContent = AGENTS[currentAgentIdx].name;
     document.getElementById('agent-banner').style.display = 'flex';
     document.getElementById('readonly-notice').style.display = 'none';
@@ -895,7 +923,7 @@ function buildTable(year, month, daysInMonth) {
       }
 
       const val = getDayValue(year, month, agentIdx, d);
-      const isOwn = agentIdx === currentAgentIdx;
+      const isOwn = agentIdx === currentAgentIdx || currentIsManager;
       const hasVal = val !== '' && val !== undefined;
 
       let cls = '';
@@ -1000,6 +1028,7 @@ function updateMTD() {
   const isCurrentMonth = (today.getFullYear() === year && today.getMonth() === month);
   const lastDay = isCurrentMonth ? today.getDate() : daysInMonth;
 
+  // Managers see TEAM totals; agents see their own
   const agentIdx = currentAgentIdx >= 0 ? currentAgentIdx : 0;
 
   let total = 0;
@@ -1007,8 +1036,16 @@ function updateMTD() {
   for (let d = 1; d <= lastDay; d++) {
     if (!isWeekend(year, month, d)) {
       workDays++;
-      const v = getDayValue(year, month, agentIdx, d);
-      if (v !== '' && !isNaN(v)) total += Number(v);
+      if (currentIsManager) {
+        // Sum all agents
+        AGENTS.forEach((_, ai) => {
+          const v = getDayValue(year, month, ai, d);
+          if (v !== '' && !isNaN(v)) total += Number(v);
+        });
+      } else {
+        const v = getDayValue(year, month, agentIdx, d);
+        if (v !== '' && !isNaN(v)) total += Number(v);
+      }
     }
   }
 
@@ -1018,7 +1055,8 @@ function updateMTD() {
     if (!isWeekend(year, month, d)) totalWorkDays++;
   }
 
-  const mtdGoal = Math.round((goal / totalWorkDays) * workDays);
+  const goalBase = currentIsManager ? goal * AGENTS.length : goal;
+  const mtdGoal = Math.round((goalBase / totalWorkDays) * workDays);
   const deficit = total - mtdGoal;
   const ptg = mtdGoal > 0 ? ((total / mtdGoal) * 100).toFixed(1) : '0.0';
   const acpd = workDays > 0 ? (total / workDays).toFixed(1) : '0.0';
