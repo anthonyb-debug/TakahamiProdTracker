@@ -1118,15 +1118,35 @@ async function syncToSheets() {
   };
 
   try {
-    // Use no-cors POST with text/plain to avoid CORS preflight.
-    // Apps Script reads this via e.postData.contents in doPost.
-    await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload)
-    });
-    // no-cors = opaque response, can't read it — but if no throw, it worked
+    // Use hidden form POST — most reliable way to hit Apps Script cross-origin
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = APPS_SCRIPT_URL;
+    form.target = 'hidden-sync-frame';
+    form.style.display = 'none';
+
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'payload';
+    input.value = JSON.stringify(payload);
+    form.appendChild(input);
+
+    // Create hidden iframe to receive the response
+    let iframe = document.getElementById('hidden-sync-frame');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.name = 'hidden-sync-frame';
+      iframe.id = 'hidden-sync-frame';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+
+    // Wait a moment then assume success (can't read iframe response cross-origin)
+    await new Promise(r => setTimeout(r, 2000));
     showToast('✅ Synced to Google Sheets!', 'success');
     statusEl.textContent = `Last sync: ${new Date().toLocaleTimeString()}`;
     statusEl.className = 'sync-status ok';
