@@ -1118,12 +1118,15 @@ async function syncToSheets() {
   };
 
   try {
-    // Apps Script requires no-cors for cross-origin POST from browser.
-    // We send data as a URL param on a GET request which Apps Script handles fine.
-    const encoded = encodeURIComponent(JSON.stringify(payload));
-    const url = `${APPS_SCRIPT_URL}?data=${encoded}`;
-    const res = await fetch(url, { method: 'GET', mode: 'no-cors' });
-    // no-cors means we can't read the response, but if no network error it succeeded
+    // Use no-cors POST with text/plain to avoid CORS preflight.
+    // Apps Script reads this via e.postData.contents in doPost.
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
+    // no-cors = opaque response, can't read it — but if no throw, it worked
     showToast('✅ Synced to Google Sheets!', 'success');
     statusEl.textContent = `Last sync: ${new Date().toLocaleTimeString()}`;
     statusEl.className = 'sync-status ok';
