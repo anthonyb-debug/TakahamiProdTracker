@@ -622,11 +622,7 @@
 
     <!-- MTD Summary Cards -->
     <div class="mtd-grid">
-      <div class="mtd-card goal">
-        <div class="card-label">MTD Goal</div>
-        <div class="card-value" id="mtd-goal">—</div>
-        <div class="card-sub" id="mtd-goal-sub">Monthly target</div>
-      </div>
+
       <div class="mtd-card productivity">
         <div class="card-label">MTD Productivity</div>
         <div class="card-value" id="mtd-prod">—</div>
@@ -1062,7 +1058,6 @@ function updateMTD() {
   const acpd = workDays > 0 ? (total / workDays).toFixed(1) : '0.0';
   const pct = Math.min(100, mtdGoal > 0 ? (total / mtdGoal * 100) : 0);
 
-  document.getElementById('mtd-goal').textContent = mtdGoal.toLocaleString();
   document.getElementById('mtd-prod').textContent = total.toLocaleString();
   document.getElementById('mtd-deficit').textContent =
     deficit >= 0 ? `+${deficit.toLocaleString()}` : deficit.toLocaleString();
