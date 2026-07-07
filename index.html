@@ -1600,43 +1600,7 @@ function updateLeaderboard(){
 // ══════════════════════════════════════════════
 // REALTIME SHEET WRITE — one row per cell change
 // ══════════════════════════════════════════════
-// writeToSheet handled by syncMyData/syncAgentData
 
-function _sendToSheet(year, month, day, agentIdx, claims){
-  const agent = AGENTS[agentIdx];
-  if(!agent || !currentUser) return;
-
-  const mm  = String(month+1).padStart(2,'0');
-  const dd  = String(day).padStart(2,'0');
-  const dateStr = year+'-'+mm+'-'+dd;
-  const parts = agent.name.split(',');
-  const agentName = parts.length>1?(parts[1].trim()+' '+parts[0].trim()):agent.name;
-
-  const url = APPS_SCRIPT_URL
-    + '?year='       + encodeURIComponent(year)
-    + '&month='      + encodeURIComponent(MONTHS[month])
-    + '&date='       + encodeURIComponent(dateStr)
-    + '&claims='     + encodeURIComponent(claims)
-    + '&agentName='  + encodeURIComponent(agentName)
-    + '&agentEmail=' + encodeURIComponent(agent.email)
-    + '&submittedBy='+ encodeURIComponent(currentUser.email);
-
-  const statusEl = document.getElementById('sync-status');
-
-  // Try fetch first (most reliable), fall back to image tag
-  fetch(url, {mode:'no-cors'})
-    .then(function(){
-      if(statusEl){ statusEl.textContent='Saved '+new Date().toLocaleTimeString(); statusEl.className='sync-status ok'; }
-      console.log('Sheet write OK:', dateStr, agentName, claims);
-    })
-    .catch(function(){
-      // Fallback: image tag has zero CORS restrictions
-      var img = new Image();
-      img.src = url;
-      if(statusEl){ statusEl.textContent='Saved '+new Date().toLocaleTimeString(); statusEl.className='sync-status ok'; }
-      console.log('Sheet write via img:', dateStr, agentName, claims);
-    });
-}
 
 // ══════════════════════════════════════════════
 // SYNC FUNCTIONS
