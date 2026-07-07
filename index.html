@@ -2437,22 +2437,19 @@ function buildTodayCards(){
     var pct       = mtdGoal>0 ? Math.min(100,(total/mtdGoal)*100) : 0;
     var deficit   = mtdGoal - total;
     var barColor  = kpiScore>=5?'#22C55E':kpiScore>=4?'#2563EB':kpiScore>=3?'#F59E0B':'#EF4444';
-    var firstName = agent.name.split(',')[1]||agent.name.split(' ')[0];
-    if(firstName) firstName=firstName.trim();
+    var nameParts = agent.name.split(',');
+    var fullName  = nameParts.length>1 ? (nameParts[1].trim()+' '+nameParts[0].trim()) : agent.name;
     var borderCol = kpiCol?kpiCol.border:'var(--border)';
     var defColor  = deficit<=0?'var(--success-dark)':'var(--danger)';
     var defText   = deficit<=0?('+'+Math.abs(deficit).toLocaleString()+' ahead'):(deficit.toLocaleString()+' behind');
-    var kpiBadge  = kpiScore!==null
-      ? ('<div class="atc-kpi" style="background:'+kpiCol.bg+';color:'+kpiCol.text+';border:1px solid '+kpiCol.border+'">KPI '+kpiScore+'/5</div>')
-      : ('<div class="atc-kpi" style="background:var(--bg);color:var(--text-muted);border:1px solid var(--border)">No data</div>');
+
 
     html += '<div class="agent-today-card" style="border-top:3px solid '+borderCol+'">'
       + '<div class="atc-top">'
         + '<div class="atc-avatar" style="background:'+avatarColors[i%avatarColors.length]+'">'+agent.initials+'</div>'
-        + kpiBadge
       + '</div>'
-      + '<div class="atc-name">'+firstName+'</div>'
-      + '<div class="atc-email">'+agent.email.split('@')[0]+'</div>'
+      + '<div class="atc-name">'+fullName+'</div>'
+
       + '<div class="atc-count">'+total.toLocaleString()+'</div>'
       + '<div class="atc-label">claims MTD</div>'
       + '<div class="atc-bar"><div class="atc-bar-fill" style="width:'+pct+'%;background:'+barColor+'"></div></div>'
