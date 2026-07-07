@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Productivity Tracker — Takahami Medical Billing</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://accounts.google.com/gsi/client"></script>
 <style>
 /* ═══════════════════════════════════════════════════
    DESIGN SYSTEM
@@ -993,6 +993,7 @@ function handleCredentialResponse(response){
       return;
     }
 
+    setLoginStatus('Verifying your account...');
     const email = (p.email || '').toLowerCase().trim();
     const domain = email.split('@')[1] || '';
 
@@ -1023,12 +1024,27 @@ function handleCredentialResponse(response){
 }
 
 function showLoginError(msg){
-  const el = document.getElementById('login-error');
-  if(el){
-    el.style.display = 'flex';
-    el.textContent = msg;
-  }
+  const el  = document.getElementById('login-error');
+  const msg2 = document.getElementById('login-error-msg');
+  if(el)  el.style.display = 'block';
+  if(msg2) msg2.textContent = msg;
+  const st = document.getElementById('login-status');
+  if(st) st.textContent = '';
   console.error('Login error:', msg);
+}
+
+function setLoginStatus(msg){
+  const el = document.getElementById('login-status');
+  if(el) el.textContent = msg;
+}
+
+function triggerGSI(){
+  setLoginStatus('Opening Google sign-in...');
+  try {
+    google.accounts.id.prompt();
+  } catch(e) {
+    setLoginStatus('Error: ' + e.message);
+  }
 }
 
 function parseJwt(token){
@@ -2542,15 +2558,25 @@ function buildTodayCards(){
 // ══════════════════════════════════════════════
 // BOOT
 // ══════════════════════════════════════════════
-window.addEventListener('load',()=>{
-  // Always hide app first to prevent flash
-  document.getElementById('app-screen').style.display='none';
-  document.getElementById('login-screen').style.display='flex';
-  // Then try to restore session
-  if(!checkSession()){
-    document.getElementById('login-screen').style.display='flex';
-    document.getElementById('app-screen').style.display='none';
-  }
+window.addEventListener('load', () => {
+  // Always start on login screen
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+
+  // Try restore existing session first
+  if (checkSession()) return;
+
+  // Check if Google button rendered; show fallback if not
+  setTimeout(() => {
+    const wrap = document.getElementById('gsi-btn-wrap');
+    const fallback = document.getElementById('gsi-fallback');
+    const hasBtn = wrap && wrap.querySelector('iframe');
+    if (!hasBtn && fallback) {
+      if(wrap) wrap.style.display = 'none';
+      fallback.style.display = 'flex';
+      setLoginStatus('');
+    }
+  }, 2500);
 });
 
 </script>
