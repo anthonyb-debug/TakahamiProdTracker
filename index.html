@@ -810,6 +810,11 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
             </div>
             <div class="table-toolbar-right">
               <div class="table-hint"><span class="wknd-dot"></span>Weekends locked</div>
+              <span id="my-sync-status" class="sync-status" style="margin-left:8px"></span>
+              <button class="btn btn-primary btn-sm" id="my-sync-btn" onclick="syncMyData()" style="margin-left:8px;display:flex;align-items:center;gap:6px">
+                <svg viewBox="0 0 20 20" style="width:13px;height:13px;fill:white"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
+                Sync to Sheets
+              </button>
             </div>
           </div>
           <div class="table-wrap">
@@ -876,6 +881,11 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
             <div class="table-toolbar-right">
               <span style="font-size:12px;color:var(--text-muted);margin-right:8px" id="ag-editable-hint"></span>
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <span id="ag-sync-status" class="sync-status"></span>
+                <button class="btn btn-primary btn-sm" id="ag-sync-btn" onclick="syncAgentData()" style="display:flex;align-items:center;gap:6px">
+                  <svg viewBox="0 0 20 20" style="width:13px;height:13px;fill:white"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
+                  Sync to Sheets
+                </button>
                 <select id="csv-sel-agent" class="filter-select" style="font-size:12px;padding:5px 10px">
                 </select>
                 <select id="csv-sel-month" class="filter-select" style="font-size:12px;padding:5px 10px">
@@ -1206,10 +1216,6 @@ function setDayValue(y,m,ai,d,val){
   if(val===''||val===null||isNaN(val)) delete data[y][m][ai][d];
   else data[y][m][ai][d]=Number(val);
   saveToStorage(); updateMTD(); updateLeaderboard(); if(currentView==='dashboard') buildTodayCards();
-  // Realtime write to Google Sheet on every cell change
-  if(val!=='' && !isNaN(Number(val)) && currentUser){
-    writeToSheet(y, m, d, ai, Number(val));
-  }
 }
 
 // ══════════════════════════════════════════════
@@ -1594,30 +1600,7 @@ function updateLeaderboard(){
 // ══════════════════════════════════════════════
 // REALTIME SHEET WRITE — one row per cell change
 // ══════════════════════════════════════════════
-// Queue of pending sheet writes — prevents duplicates and rapid-fire requests
-var _writeQueue = {};
-var _writeTimers = {};
-
-async function writeToSheet(year, month, day, agentIdx, claims){
-  if(!APPS_SCRIPT_URL || !currentUser) return;
-  const agent = AGENTS[agentIdx];
-  if(!agent) return;
-
-  // Unique key for this cell
-  const key = year+'-'+month+'-'+day+'-'+agentIdx;
-
-  // Store latest value for this key
-  _writeQueue[key] = {year, month, day, agentIdx, claims};
-
-  // Debounce: wait 1.5s after last keystroke before sending
-  clearTimeout(_writeTimers[key]);
-  _writeTimers[key] = setTimeout(function(){
-    var entry = _writeQueue[key];
-    if(!entry) return;
-    delete _writeQueue[key];
-    _sendToSheet(entry.year, entry.month, entry.day, entry.agentIdx, entry.claims);
-  }, 1500);
-}
+// writeToSheet handled by syncMyData/syncAgentData
 
 function _sendToSheet(year, month, day, agentIdx, claims){
   const agent = AGENTS[agentIdx];
@@ -1655,52 +1638,116 @@ function _sendToSheet(year, month, day, agentIdx, claims){
     });
 }
 
-// Manual sync — sends only the current agent's entries for the selected month
-// Managers send all agents. No duplicates: upsertRow in Apps Script handles that.
-async function syncToSheets(silent=false){
-  const year  = parseInt(document.getElementById('sel-year').value);
-  const month = parseInt(document.getElementById('sel-month').value);
+// ══════════════════════════════════════════════
+// SYNC FUNCTIONS
+// ══════════════════════════════════════════════
+
+// Core send function — sends one cell to Google Sheet
+function _sendToSheet(year, month, day, agentIdx, claims, statusId){
+  const agent = AGENTS[agentIdx];
+  if(!agent || !currentUser || !APPS_SCRIPT_URL) return;
+
+  const mm  = String(month+1).padStart(2,'0');
+  const dd  = String(day).padStart(2,'0');
+  const dateStr = year+'-'+mm+'-'+dd;
+  const parts = agent.name.split(',');
+  const agentName = parts.length>1?(parts[1].trim()+' '+parts[0].trim()):agent.name;
+
+  const url = APPS_SCRIPT_URL
+    + '?year='        + encodeURIComponent(year)
+    + '&month='       + encodeURIComponent(MONTHS[month])
+    + '&date='        + encodeURIComponent(dateStr)
+    + '&claims='      + encodeURIComponent(claims)
+    + '&agentName='   + encodeURIComponent(agentName)
+    + '&agentEmail='  + encodeURIComponent(agent.email)
+    + '&submittedBy=' + encodeURIComponent(currentUser.email);
+
+  // Try fetch no-cors, fall back to image tag
+  fetch(url, {mode:'no-cors'}).catch(function(){
+    var img = new Image(); img.src = url;
+  });
+}
+
+// My Productivity — sync button click
+// Sends only the logged-in agent's entries for the selected month
+async function syncMyData(){
+  const msEl = document.getElementById('my-sel-month');
+  const ysEl = document.getElementById('my-sel-year');
+  if(!msEl||!ysEl) return;
+
+  const year  = parseInt(ysEl.value);
+  const month = parseInt(msEl.value);
   const dim   = new Date(year,month+1,0).getDate();
-  const btn   = document.getElementById('sync-btn');
-  const statusEl = document.getElementById('sync-status');
 
-  // Determine which agents to sync
-  const agentsToSync = currentIsManager
-    ? AGENTS.map((_,i)=>i)           // managers: all agents
-    : (currentAgentIdx>=0 ? [currentAgentIdx] : []); // agent: only themselves
+  // Who to sync
+  const myAgSel = document.getElementById('my-sel-agent');
+  const ai = currentIsManager
+    ? (myAgSel ? parseInt(myAgSel.value) : 0)
+    : currentAgentIdx;
 
-  if(agentsToSync.length===0){
-    showToast('Nothing to sync — no agent selected.','error'); return;
-  }
+  if(ai < 0){ showToast('No agent selected.','error'); return; }
 
-  if(!silent){
-    btn.disabled=true;
-    btn.innerHTML='<svg viewBox="0 0 20 20" style="width:14px;height:14px;fill:white;animation:spin 1s linear infinite"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Syncing...';
-    if(statusEl){ statusEl.textContent='Syncing...'; statusEl.className='sync-status'; }
-  }
+  const btn      = document.getElementById('my-sync-btn');
+  const statusEl = document.getElementById('my-sync-status');
+
+  if(btn){ btn.disabled=true; btn.textContent='Syncing...'; }
+  if(statusEl){ statusEl.textContent='Syncing...'; statusEl.className='sync-status'; }
 
   let count = 0;
-  for(let a=0; a<agentsToSync.length; a++){
-    const ai = agentsToSync[a];
-    for(let d=1; d<=dim; d++){
-      if(isWeekend(year,month,d)) continue;
-      const val = getDayValue(year,month,ai,d);
+  for(let d=1; d<=dim; d++){
+    if(isWeekend(year,month,d)) continue;
+    const val = getDayValue(year,month,ai,d);
+    if(val===''||isNaN(val)) continue;
+    _sendToSheet(year, month, d, ai, Number(val));
+    count++;
+    await new Promise(r=>setTimeout(r,250));
+  }
+
+  const msg = count > 0
+    ? 'Synced '+count+' entr'+(count===1?'y':'ies')
+    : 'No data to sync';
+
+  showToast('✅ '+msg+' to Google Sheets!','success');
+  if(statusEl){ statusEl.textContent=msg+' · '+new Date().toLocaleTimeString(); statusEl.className='sync-status ok'; }
+  if(btn){ btn.disabled=false; btn.innerHTML='<svg viewBox="0 0 20 20" style="width:13px;height:13px;fill:white"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Sync to Sheets'; }
+}
+
+// Agent section — sync current agent's full year
+async function syncAgentData(){
+  const yyEl = document.getElementById('ag-sel-year');
+  const aaEl = document.getElementById('ag-sel-agent');
+  if(!yyEl||!aaEl) return;
+
+  const year = parseInt(yyEl.value);
+  const ai   = parseInt(aaEl.value);
+  if(ai<0){ showToast('Select an agent first.','error'); return; }
+
+  const btn      = document.getElementById('ag-sync-btn');
+  const statusEl = document.getElementById('ag-sync-status');
+  if(btn){ btn.disabled=true; btn.textContent='Syncing...'; }
+  if(statusEl){ statusEl.textContent='Syncing all months...'; statusEl.className='sync-status'; }
+
+  let count = 0;
+  for(let mo=0; mo<12; mo++){
+    const dim = new Date(year,mo+1,0).getDate();
+    for(let d=1;d<=dim;d++){
+      if(isWeekend(year,mo,d)) continue;
+      const val = getDayValue(year,mo,ai,d);
       if(val===''||isNaN(val)) continue;
-      // Send directly (bypass debounce queue for manual sync)
-      _sendToSheet(year, month, d, ai, Number(val));
+      _sendToSheet(year, mo, d, ai, Number(val));
       count++;
-      await new Promise(r=>setTimeout(r,300)); // space out requests
+      await new Promise(r=>setTimeout(r,200));
     }
   }
 
-  const msg = 'Synced '+count+' entr'+(count===1?'y':'ies')+' to Sheets';
-  if(!silent) showToast('✅ '+msg,'success');
-  if(statusEl){ statusEl.textContent=msg+' '+new Date().toLocaleTimeString(); statusEl.className='sync-status ok'; }
-  if(!silent){
-    btn.disabled=false;
-    btn.innerHTML='<svg viewBox="0 0 20 20" style="width:14px;height:14px;fill:white"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Sync to Sheets';
-  }
+  const msg = count > 0 ? 'Synced '+count+' entries' : 'No data to sync';
+  showToast('✅ '+msg+' for '+MONTHS[0]+'-'+MONTHS[11]+' '+year,'success');
+  if(statusEl){ statusEl.textContent=msg+' · '+new Date().toLocaleTimeString(); statusEl.className='sync-status ok'; }
+  if(btn){ btn.disabled=false; btn.innerHTML='<svg viewBox="0 0 20 20" style="width:13px;height:13px;fill:white"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Sync to Sheets'; }
 }
+
+// Keep syncToSheets as alias for Ctrl+S shortcut
+async function syncToSheets(){ await syncMyData(); }
 
 // ══════════════════════════════════════════════
 // TOAST
