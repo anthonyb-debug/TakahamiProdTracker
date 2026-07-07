@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Productivity Tracker — Takahami Medical Billing</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://accounts.google.com/gsi/client"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 /* ═══════════════════════════════════════════════════
    DESIGN SYSTEM
@@ -487,50 +487,16 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
     <h1>Productivity Tracker</h1>
     <p class="login-sub">Takahami Medical Billing · Alliance Global Solutions</p>
 
-    <!-- Google Sign-In button container -->
-    <div id="gsi-container" style="display:flex;justify-content:center;min-height:44px;margin-bottom:8px">
-      <div id="g_id_onload"
-        data-client_id="519974257344-5u0bjm2sdctrnlq6b1oflsvesgn291fc.apps.googleusercontent.com"
-        data-callback="handleCredentialResponse"
-        data-auto_prompt="false"
-        data-itp_support="true">
-      </div>
-      <div class="g_id_signin"
-        data-type="standard"
-        data-size="large"
-        data-theme="outline"
-        data-text="sign_in_with"
-        data-shape="rectangular"
-        data-logo_alignment="left"
-        data-width="350">
-      </div>
-    </div>
-
-    <!-- Fallback button shown if GSI doesn't render -->
-    <div id="gsi-fallback" style="display:none;flex-direction:column;align-items:center;gap:10px">
-      <button id="fallback-btn" onclick="triggerGoogleSignIn()" style="
-        display:flex;align-items:center;justify-content:center;gap:12px;
-        width:350px;height:44px;border:1px solid #dadce0;border-radius:4px;
-        background:white;cursor:pointer;font-family:var(--font);
-        font-size:14px;font-weight:500;color:#3c4043;
-        box-shadow:0 1px 3px rgba(0,0,0,.08);transition:box-shadow .2s;
-      "
-      onmouseover="this.style.boxShadow='0 2px 6px rgba(0,0,0,.15)'"
-      onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,.08)'"
-      >
-        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/></svg>
-        Sign in with Google
-      </button>
-      <p style="font-size:12px;color:var(--text-muted)">
-        Make sure you use your <strong>@allianceglobalsolutions.com</strong> account
-      </p>
-    </div>
-
-    <div id="login-status" style="font-size:13px;color:var(--text-muted);margin:8px 0;min-height:20px;text-align:center"></div>
+    <div id="g_id_onload"
+      data-client_id="519974257344-5u0bjm2sdctrnlq6b1oflsvesgn291fc.apps.googleusercontent.com"
+      data-callback="handleCredentialResponse"
+      data-auto_prompt="false"></div>
+    <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline"
+      data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left" data-width="350"></div>
 
     <div id="login-error">
       <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-      <span id="login-error-msg">Access denied. Use your @allianceglobalsolutions.com account only.</span>
+      Access denied. Use your @allianceglobalsolutions.com account only.
     </div>
 
     <div class="login-divider"><span>secure access</span></div>
@@ -980,74 +946,22 @@ let currentUser=null, currentAgentIdx=-1, currentIsManager=false, data={}, selec
 // AUTH
 // ══════════════════════════════════════════════
 function handleCredentialResponse(response){
-  try {
-    const p = parseJwt(response.credential);
-    const email = (p.email || '').toLowerCase().trim();
-    const domain = email.split('@')[1] || '';
-
-    if(domain !== ALLOWED_DOMAIN){
-      const errEl = document.getElementById('login-error');
-      const msgEl = document.getElementById('login-error-msg');
-      if(msgEl) msgEl.textContent = `Access denied: ${email} is not an @${ALLOWED_DOMAIN} account.`;
-      if(errEl) errEl.style.display = 'flex';
-      setLoginStatus('');
-      return;
-    }
-
-    setLoginStatus('✓ Verified — loading your dashboard...');
-    currentUser = { email, name: p.name || email, picture: p.picture || '' };
-    currentAgentIdx = AGENTS.findIndex(a => a.email.toLowerCase() === email);
-    currentIsManager = isManager(email);
-    sessionStorage.setItem('user', JSON.stringify(currentUser));
-    sessionStorage.setItem('agentIdx', currentAgentIdx);
-    sessionStorage.setItem('isManager', currentIsManager);
-    setTimeout(() => startApp(), 300);
-  } catch(err) {
-    console.error('Auth error:', err);
-    setLoginStatus('Sign-in failed. Please try again.');
+  const p=parseJwt(response.credential);
+  const email=p.email||'';
+  if((email.split('@')[1]||'')!==ALLOWED_DOMAIN){
+    document.getElementById('login-error').style.display='flex'; return;
   }
+  currentUser={email,name:p.name,picture:p.picture};
+  currentAgentIdx=AGENTS.findIndex(a=>a.email.toLowerCase()===email.toLowerCase());
+  currentIsManager=isManager(email);
+  sessionStorage.setItem('user',JSON.stringify(currentUser));
+  sessionStorage.setItem('agentIdx',currentAgentIdx);
+  sessionStorage.setItem('isManager',currentIsManager);
+  startApp();
 }
 
 function parseJwt(token){
-  const base64 = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
-  const json = decodeURIComponent(
-    atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')
-  );
-  return JSON.parse(json);
-}
-
-function setLoginStatus(msg){
-  const el = document.getElementById('login-status');
-  if(el) el.textContent = msg;
-}
-
-function triggerGoogleSignIn(){
-  setLoginStatus('Opening Google sign-in...');
-  try {
-    if(window.google && google.accounts && google.accounts.id){
-      google.accounts.id.prompt();
-    } else {
-      setLoginStatus('Google sign-in not available. Check your internet connection.');
-    }
-  } catch(e) {
-    setLoginStatus('Error: ' + e.message);
-  }
-}
-
-// Check if GSI button rendered, show fallback if not
-function checkGSIRendered(){
-  setTimeout(() => {
-    const container = document.getElementById('gsi-container');
-    const fallback  = document.getElementById('gsi-fallback');
-    if(!container || !fallback) return;
-    // Check if Google rendered an iframe inside the signin div
-    const iframe = container.querySelector('iframe');
-    if(!iframe){
-      container.style.display = 'none';
-      fallback.style.display  = 'flex';
-      setLoginStatus('Click the button above to sign in with Google');
-    }
-  }, 2000); // give GSI 2 seconds to render
+  return JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
 }
 
 function signOut(){
@@ -2083,244 +1997,195 @@ function agCellChanged(year, month, ai, day, input){
 
 
 // ══════════════════════════════════════════════
-// SMART PASTE — Safe batch write from Excel/Sheets
+// SMART PASTE — Excel/Sheets multi-row support
 // ══════════════════════════════════════════════
-// KEY SAFETY PRINCIPLE:
-//   All values are parsed and validated FIRST into a batch map.
-//   Data is written to storage in ONE operation.
-//   UI is refreshed ONCE at the end.
-//   No UI rebuilds happen mid-paste (prevents data corruption).
+// Handles:
+//   • Single column paste (most common — agents copy their daily numbers)
+//   • Multi-column paste (managers paste full team data)
+//   • Tab-separated (Excel/Sheets default copy format)
+//   • Newline-separated (single column copy)
+//   • Skips weekends automatically
+//   • Works in main table (inp-{day}-{agentIdx})
+//   • Works in My Productivity table (my-inp-{day})
+//   • Works in Agent calendar table (ag-inp-{day}-{month})
 
 function setupPaste(){
   document.addEventListener('paste', e => {
     const target = e.target;
     if(!target || target.tagName !== 'INPUT') return;
     const id = target.id || '';
-    if(!id.startsWith('inp-') && !id.startsWith('my-inp-') && !id.startsWith('ag-inp-')) return;
 
-    e.preventDefault();
-
-    // ── Step 1: Read clipboard ──
+    // Get clipboard text
     const raw = (e.clipboardData || window.clipboardData).getData('text');
-    if(!raw || !raw.trim()) return;
+    if(!raw) return;
 
-    // ── Step 2: Parse into 2D grid (Excel = tab-separated rows) ──
-    const grid = raw.trim()
-      .split(/
-?
-/)
-      .map(row => row.split('	').map(cell => cell.trim().replace(/,/g, '')));
+    // Parse clipboard into 2D grid
+    // Excel copies as rows separated by \n, cells by \t
+    const rows = raw.trim().split(/\r?\n/).map(r => r.split('\t').map(v => v.trim()));
+    const isSingleCol = rows.every(r => r.length === 1);
 
-    const isSingleCol = grid.every(r => r.length === 1);
-
-    // ── Step 3: Validate all values before writing ANYTHING ──
-    // Only accept integers >= 0. Reject the entire paste if any cell is clearly wrong.
-    const MAX_REASONABLE = 9999; // sanity cap per cell
-    let validationErrors = [];
-    grid.forEach((row, ri) => {
-      row.forEach((cell, ci) => {
-        if(cell === '' || cell === '-' || cell === '—') return; // blanks OK
-        const n = parseInt(cell);
-        if(isNaN(n)){
-          validationErrors.push(`Row ${ri+1} col ${ci+1}: "${cell}" is not a number`);
-        } else if(n < 0){
-          validationErrors.push(`Row ${ri+1} col ${ci+1}: negative value (${n})`);
-        } else if(n > MAX_REASONABLE){
-          validationErrors.push(`Row ${ri+1} col ${ci+1}: value ${n} seems too large`);
-        }
-      });
-    });
-
-    if(validationErrors.length){
-      showToast('❌ Paste blocked — invalid data: ' + validationErrors[0], 'error');
-      console.warn('Paste validation failed:', validationErrors);
-      return;
-    }
-
-    // ── Step 4: Build a batch map of {year,month,agentIdx,day} → value ──
-    // Nothing is written to storage yet.
-    const batch = []; // [{year,month,ai,day,val}]
-
-    // ── MAIN TABLE ──
+    // ── MAIN TABLE: inp-{day}-{agentIdx} ──
     if(id.startsWith('inp-')){
-      const parts    = id.split('-');
+      e.preventDefault();
+      const parts = id.split('-');
       const startDay = parseInt(parts[1]);
       const agentIdx = parseInt(parts[2]);
-      const year     = parseInt(document.getElementById('sel-year').value);
-      const month    = parseInt(document.getElementById('sel-month').value);
-      const dim      = new Date(year, month+1, 0).getDate();
-
-      if(isSingleCol){
-        // Agent pasting their own column — most common case
-        if(!currentIsManager && agentIdx !== currentAgentIdx){
-          showToast('❌ You can only paste into your own column', 'error'); return;
-        }
-        let rowIdx = 0;
-        for(let d = startDay; d <= dim && rowIdx < grid.length; d++){
-          if(isWeekend(year, month, d)) continue;
-          const cell = grid[rowIdx][0]; rowIdx++;
-          if(cell === '' || cell === '-' || cell === '—') continue;
-          const val = parseInt(cell);
-          if(!isNaN(val) && val >= 0) batch.push({year, month, ai: agentIdx, day: d, val});
-        }
-      } else {
-        // Multi-column — managers only
-        if(!currentIsManager){
-          showToast('❌ Multi-column paste is for managers only', 'error'); return;
-        }
-        let dayIdx = 0;
-        for(let d = startDay; d <= dim && dayIdx < grid.length; d++){
-          if(isWeekend(year, month, d)) continue;
-          const row = grid[dayIdx++];
-          row.forEach((cell, colOffset) => {
-            const targetAi = agentIdx + colOffset;
-            if(targetAi >= AGENTS.length) return;
-            if(cell === '' || cell === '-' || cell === '—') return;
-            const val = parseInt(cell);
-            if(!isNaN(val) && val >= 0) batch.push({year, month, ai: targetAi, day: d, val});
-          });
-        }
-      }
-    }
-
-    // ── MY PRODUCTIVITY TABLE ──
-    else if(id.startsWith('my-inp-')){
-      const startDay = parseInt(id.replace('my-inp-', ''));
-      const msEl     = document.getElementById('my-sel-month');
-      const ysEl     = document.getElementById('my-sel-year');
-      const myAgSel  = document.getElementById('my-sel-agent');
-      if(!msEl || !ysEl) return;
-      const year  = parseInt(ysEl.value);
-      const month = parseInt(msEl.value);
-      const ai    = currentIsManager ? (myAgSel ? parseInt(myAgSel.value) : 0) : currentAgentIdx;
-      const dim   = new Date(year, month+1, 0).getDate();
-      let rowIdx = 0;
-      for(let d = startDay; d <= dim && rowIdx < grid.length; d++){
-        if(isWeekend(year, month, d)) continue;
-        const cell = grid[rowIdx][0]; rowIdx++;
-        if(cell === '' || cell === '-' || cell === '—') continue;
-        const val = parseInt(cell);
-        if(!isNaN(val) && val >= 0) batch.push({year, month, ai, day: d, val});
-      }
-    }
-
-    // ── AGENT CALENDAR ──
-    else if(id.startsWith('ag-inp-')){
-      const parts    = id.split('-');
-      const startDay = parseInt(parts[2]);
-      const startMon = parseInt(parts[3]);
-      const yyEl     = document.getElementById('ag-sel-year');
-      const aaEl     = document.getElementById('ag-sel-agent');
-      if(!yyEl || !aaEl) return;
-      const year = parseInt(yyEl.value);
-      const ai   = parseInt(aaEl.value);
-
-      if(isSingleCol){
-        const dim = new Date(year, startMon+1, 0).getDate();
-        let rowIdx = 0;
-        for(let d = startDay; d <= dim && rowIdx < grid.length; d++){
-          const dow = new Date(year, startMon, d).getDay();
-          if(dow === 0 || dow === 6) continue;
-          const cell = grid[rowIdx][0]; rowIdx++;
-          if(cell === '' || cell === '-' || cell === '—') continue;
-          const val = parseInt(cell);
-          if(!isNaN(val) && val >= 0) batch.push({year, month: startMon, ai, day: d, val});
-        }
-      } else {
-        grid.forEach((row, rIdx) => {
-          const d = startDay + rIdx;
-          if(d > 31) return;
-          row.forEach((cell, cIdx) => {
-            const mon = startMon + cIdx;
-            if(mon > 11) return;
-            const dow = new Date(year, mon, d).getDay();
-            if(dow === 0 || dow === 6) return;
-            if(cell === '' || cell === '-' || cell === '—') return;
-            const val = parseInt(cell);
-            if(!isNaN(val) && val >= 0) batch.push({year, month: mon, ai, day: d, val});
-          });
-        });
-      }
-    }
-
-    if(batch.length === 0){
-      showToast('⚠️ Nothing to paste — no valid numbers found', 'error'); return;
-    }
-
-    // ── Step 5: Show confirmation for large pastes ──
-    if(batch.length > 25 && !currentIsManager){
-      // Extra safety: confirm before overwriting lots of data
-      if(!confirm(`You are about to paste ${batch.length} values. Continue?`)) return;
-    }
-
-    // ── Step 6: Write ALL values to data store in one pass ──
-    // Uses raw data write — NO UI updates triggered per cell
-    batch.forEach(({year, month, ai, day, val}) => {
-      ensurePath(year, month);
-      data[year][month][ai][day] = val; // direct write, no triggers
-    });
-
-    // ── Step 7: Save to localStorage ONCE ──
-    saveToStorage();
-
-    // ── Step 8: Update all input elements to reflect new values ──
-    batch.forEach(({year, month, ai, day, val}) => {
-      // Main table
-      const mainInp = document.getElementById(`inp-${day}-${ai}`);
-      if(mainInp){ mainInp.value = val; highlightInput(mainInp); }
-      // My productivity table
-      const myInp = document.getElementById(`my-inp-${day}`);
-      if(myInp){ myInp.value = val; highlightInput(myInp); }
-      // Agent calendar
-      const agInp = document.getElementById(`ag-inp-${day}-${month}`);
-      if(agInp){ agInp.value = val; highlightInput(agInp); }
-    });
-
-    // ── Step 9: Refresh UI ONCE ──
-    if(id.startsWith('inp-')){
       const year  = parseInt(document.getElementById('sel-year').value);
       const month = parseInt(document.getElementById('sel-month').value);
       const dim   = new Date(year, month+1, 0).getDate();
+
+      if(isSingleCol){
+        // Single column: paste down the same agent column, skipping weekends
+        let rowIdx = 0;
+        for(let d = startDay; d <= dim && rowIdx < rows.length; d++){
+          if(isWeekend(year, month, d)) continue;
+          const val = parseInt(rows[rowIdx][0]);
+          rowIdx++;
+          if(isNaN(val)) continue;
+          const inp = document.getElementById(`inp-${d}-${agentIdx}`);
+          if(!inp || inp.readOnly) continue;
+          inp.value = val;
+          cellChanged(year, month, agentIdx, d, val);
+          highlightInput(inp);
+        }
+        showToast(`✅ Pasted ${rowIdx} value${rowIdx!==1?'s':''} into ${AGENTS[agentIdx]?.name.split(',')[1]?.trim()||'column'}`, 'success');
+      } else {
+        // Multi-column paste: each row = one day, each col = one agent
+        // Only managers can paste multi-column
+        if(!currentIsManager){
+          showToast('⚠️ Multi-column paste is for managers only', 'error');
+          return;
+        }
+        let dayIdx = 0, pastedCount = 0;
+        for(let d = startDay; d <= dim && dayIdx < rows.length; d++){
+          if(isWeekend(year, month, d)){ continue; }
+          const rowData = rows[dayIdx];
+          dayIdx++;
+          rowData.forEach((val, colOffset) => {
+            const targetAgent = agentIdx + colOffset;
+            if(targetAgent >= AGENTS.length) return;
+            const num = parseInt(val);
+            if(isNaN(num)) return;
+            const inp = document.getElementById(`inp-${d}-${targetAgent}`);
+            if(!inp) return;
+            inp.value = num;
+            cellChanged(year, month, targetAgent, d, num);
+            highlightInput(inp);
+            pastedCount++;
+          });
+        }
+        showToast(`✅ Pasted ${pastedCount} values across ${rows[0].length} agent${rows[0].length!==1?'s':''}`, 'success');
+      }
+
+      // Refresh totals
       updateTotals(year, month, dim);
       updateMTD();
       updateTargetBar();
       updateLeaderboard();
-    } else if(id.startsWith('my-inp-')){
-      // Rebuild my view once — safe now that all data is committed
-      loadMyView();
-    } else if(id.startsWith('ag-inp-')){
-      loadAgentView();
+      return;
     }
 
-    // ── Step 10: Confirm to user ──
-    const agentName = batch[0] && AGENTS[batch[0].ai]
-      ? AGENTS[batch[0].ai].name.split(',')[1]?.trim() || AGENTS[batch[0].ai].name
-      : '';
-    showToast(
-      `✅ Pasted ${batch.length} value${batch.length!==1?'s':''}${agentName?' for '+agentName:''}`,
-      'success'
-    );
-    console.log('Paste complete:', batch.length, 'values written:', batch);
+    // ── MY PRODUCTIVITY TABLE: my-inp-{day} ──
+    if(id.startsWith('my-inp-')){
+      e.preventDefault();
+      const startDay = parseInt(id.replace('my-inp-',''));
+      const msEl = document.getElementById('my-sel-month');
+      const ysEl = document.getElementById('my-sel-year');
+      const myAgSel = document.getElementById('my-sel-agent');
+      if(!msEl||!ysEl) return;
+      const year  = parseInt(ysEl.value);
+      const month = parseInt(msEl.value);
+      const ai    = currentIsManager ? (myAgSel ? parseInt(myAgSel.value) : 0) : currentAgentIdx;
+      const dim   = new Date(year, month+1, 0).getDate();
+
+      // Flatten to single column
+      const vals = rows.map(r => r[0]);
+      let rowIdx = 0;
+      for(let d = startDay; d <= dim && rowIdx < vals.length; d++){
+        if(isWeekend(year, month, d)) continue;
+        const num = parseInt(vals[rowIdx++]);
+        if(isNaN(num)) continue;
+        const inp = document.getElementById(`my-inp-${d}`);
+        if(!inp || inp.readOnly) continue;
+        inp.value = num;
+        myCellChanged(year, month, ai, d, num);
+        highlightInput(inp);
+      }
+      showToast(`✅ Pasted ${rowIdx} value${rowIdx!==1?'s':''}`,'success');
+      return;
+    }
+
+    // ── AGENT CALENDAR: ag-inp-{day}-{month} (if editable inputs exist) ──
+    if(id.startsWith('ag-inp-')){
+      e.preventDefault();
+      const parts   = id.split('-');
+      const startDay = parseInt(parts[2]);
+      const startMon = parseInt(parts[3]);
+      const yyEl    = document.getElementById('ag-sel-year');
+      const aaEl    = document.getElementById('ag-sel-agent');
+      if(!yyEl||!aaEl) return;
+      const year = parseInt(yyEl.value);
+      const ai   = parseInt(aaEl.value);
+
+      if(isSingleCol){
+        // Paste down same month column
+        const dim = new Date(year, startMon+1, 0).getDate();
+        let rowIdx = 0;
+        for(let d = startDay; d <= dim && rowIdx < rows.length; d++){
+          const dow = new Date(year, startMon, d).getDay();
+          if(dow===0||dow===6) continue;
+          const num = parseInt(rows[rowIdx++][0]);
+          if(isNaN(num)) continue;
+          const inp = document.getElementById(`ag-inp-${d}-${startMon}`);
+          if(!inp) continue;
+          inp.value = num;
+          agCellChanged(year, startMon, ai, d, inp);
+          highlightInput(inp);
+        }
+        showToast(`✅ Pasted ${rowIdx} values`,'success');
+      } else {
+        // Multi-col: each col = a month, each row = a day
+        let pastedCount = 0;
+        rows.forEach((row, rIdx) => {
+          const d = startDay + rIdx;
+          row.forEach((val, cIdx) => {
+            const mon = startMon + cIdx;
+            if(mon > 11) return;
+            const num = parseInt(val);
+            if(isNaN(num)) return;
+            const dow = new Date(year, mon, d).getDay();
+            if(dow===0||dow===6) return;
+            const inp = document.getElementById(`ag-inp-${d}-${mon}`);
+            if(!inp) return;
+            inp.value = num;
+            agCellChanged(year, mon, ai, d, inp);
+            highlightInput(inp);
+            pastedCount++;
+          });
+        });
+        showToast(`✅ Pasted ${pastedCount} values`,'success');
+      }
+      return;
+    }
   });
 }
 
 function highlightInput(inp){
-  if(!inp) return;
+  inp.style.background = 'var(--primary-light)';
+  inp.style.borderColor = 'var(--primary-muted)';
+  inp.style.color = 'var(--primary-dark)';
+  inp.style.fontWeight = '700';
   inp.classList.add('has-value');
-  inp.style.background    = 'var(--primary-light)';
-  inp.style.borderColor   = 'var(--primary-muted)';
-  inp.style.color         = 'var(--primary-dark)';
-  inp.style.fontWeight    = '700';
-  inp.style.transition    = 'box-shadow .25s';
-  inp.style.boxShadow     = '0 0 0 3px rgba(37,99,235,.25)';
-  setTimeout(() => { inp.style.boxShadow = ''; }, 700);
+  // Flash animation
+  inp.style.transition = 'box-shadow .2s';
+  inp.style.boxShadow = '0 0 0 3px rgba(37,99,235,.2)';
+  setTimeout(()=>{ inp.style.boxShadow = ''; }, 600);
 }
 
 // ══════════════════════════════════════════════
 // BOOT
 // ══════════════════════════════════════════════
 window.addEventListener('load',()=>{
-  checkGSIRendered();
   if(!checkSession()){
     document.getElementById('login-screen').style.display='flex';
     document.getElementById('app-screen').style.display='none';
