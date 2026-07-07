@@ -1231,9 +1231,13 @@ function ensurePath(y,m){
 function getDayValue(y,m,ai,d){try{return data[y][m][ai][d]??'';}catch(e){return '';}}
 function setDayValue(y,m,ai,d,val){
   ensurePath(y,m);
-  if(val===''||val===null||isNaN(val)) delete data[y][m][ai][d];
+  var isEmpty = (val===''||val===null||isNaN(val));
+  if(isEmpty) delete data[y][m][ai][d];
   else data[y][m][ai][d]=Number(val);
   saveToStorage(); updateMTD(); updateLeaderboard(); if(currentView==='dashboard') buildTodayCards();
+  // Auto-sync this single cell immediately — no button needed
+  var sendVal = isEmpty ? -1 : Number(val);
+  _sendToSheet(y, m, d, ai, sendVal);
 }
 
 // ══════════════════════════════════════════════
@@ -1624,33 +1628,43 @@ function updateLeaderboard(){
 // SYNC FUNCTIONS
 // ══════════════════════════════════════════════
 
-// Core send — minimal URL params: year, month index, day, agent index, value
+// Core send — fires immediately on every cell change
+// Sends just 5 numbers: year, month-index, day, agent-index, value
+// val=-1 means clear the cell
+var _syncDebounce = {};
 function _sendToSheet(year, month, day, agentIdx, claims){
   if(!APPS_SCRIPT_URL || !currentUser) return;
-  // Build the simplest possible URL — just numbers, no encoding issues
-  var url = APPS_SCRIPT_URL
-    + '?year=' + year
-    + '&mi='   + month
-    + '&day='  + day
-    + '&ai='   + agentIdx
-    + '&val='  + claims;
 
-  // XMLHttpRequest with no-cors equivalent — most compatible approach
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', url, true);
-  xhr.onreadystatechange = function(){
-    if(xhr.readyState === 4){
-      console.log('Sheet write:', year, MONTHS[month], day, AGENTS[agentIdx].name, claims, '→', xhr.responseText||'sent');
-    }
-  };
-  xhr.onerror = function(){
-    // Fallback: image tag
-    var img = new Image(); img.src = url;
-    console.log('Sheet write (img fallback):', url);
-  };
-  try { xhr.send(); } catch(e) {
-    var img = new Image(); img.src = url;
-  }
+  // Debounce per cell: if agent types quickly, only the last value sends
+  var key = year+'-'+month+'-'+day+'-'+agentIdx;
+  clearTimeout(_syncDebounce[key]);
+  _syncDebounce[key] = setTimeout(function(){
+    var url = APPS_SCRIPT_URL
+      + '?year=' + year
+      + '&mi='   + month
+      + '&day='  + day
+      + '&ai='   + agentIdx
+      + '&val='  + claims;
+
+    // Show syncing indicator
+    var st = document.getElementById('my-sync-status') || document.getElementById('ag-sync-status');
+    if(st){ st.textContent='Syncing...'; st.className='sync-status'; }
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onreadystatechange = function(){
+      if(xhr.readyState===4){
+        if(st){ st.textContent='Saved '+new Date().toLocaleTimeString(); st.className='sync-status ok'; }
+        console.log('Synced: ai='+agentIdx+' m='+month+' d='+day+' val='+claims+' → '+xhr.responseText);
+      }
+    };
+    xhr.onerror = function(){
+      // Fallback image tag
+      new Image().src = url;
+      if(st){ st.textContent='Saved '+new Date().toLocaleTimeString(); st.className='sync-status ok'; }
+    };
+    try{ xhr.send(); }catch(e){ new Image().src=url; }
+  }, 800); // 800ms debounce — waits for typing to stop
 }
 
 // My Productivity — sync button click
@@ -2295,7 +2309,7 @@ function loadAgentView(){
 
 function agCellChanged(year, month, ai, day, input){
   const v = input.value==='' ? '' : parseInt(input.value);
-  setDayValue(year, month, ai, day, v);
+  setDayValue(year, month, ai, day, v); // setDayValue already calls _sendToSheet
   const hasVal = v!==''&&!isNaN(v);
   input.style.background = hasVal?'var(--primary-light)':'var(--card)';
   input.style.borderColor = hasVal?'var(--primary-muted)':'var(--border)';
