@@ -460,6 +460,26 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
 }
 @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 .kpi-pip{flex:1;height:6px;border-radius:3px;background:var(--border);transition:background .3s}
+
+/* ── Agent Today Cards ── */
+.agent-today-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:1.25rem;box-shadow:var(--sh-sm);position:relative;overflow:hidden;
+  transition:box-shadow var(--transition),transform var(--transition);
+}
+.agent-today-card:hover{box-shadow:var(--sh);transform:translateY(-2px)}
+.agent-today-card .atc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.agent-today-card .atc-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0}
+.agent-today-card .atc-kpi{font-size:11px;font-weight:700;border-radius:5px;padding:3px 8px;letter-spacing:.3px}
+.agent-today-card .atc-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agent-today-card .atc-email{font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:12px}
+.agent-today-card .atc-count{font-size:36px;font-weight:800;color:var(--text);letter-spacing:-.5px;line-height:1}
+.agent-today-card .atc-label{font-size:11px;color:var(--text-muted);margin-top:3px;font-weight:500}
+.agent-today-card .atc-bar{margin-top:10px;background:var(--border-light);border-radius:var(--r-full);height:4px;overflow:hidden}
+.agent-today-card .atc-bar-fill{height:100%;border-radius:var(--r-full);transition:width .5s ease}
+.agent-today-card .atc-footer{display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--text-muted)}
+.agent-today-card.weekend-card{background:var(--bg);border-color:var(--border-light)}
+.agent-today-card .atc-rest{font-size:13px;color:var(--text-muted);font-style:italic}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes countUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .animate-in{animation:fadeUp .3s ease forwards}
@@ -549,11 +569,7 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
           <span class="nav-item-text">Agents</span>
           <span class="nav-tooltip">Agents</span>
         </a>
-        <a class="nav-item" href="#" onclick="return false" style="opacity:.5;cursor:default">
-          <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 00-2 0v2a1 1 0 102 0V9z" clip-rule="evenodd"/></svg>
-          <span class="nav-item-text">Leaderboard</span>
-          <span class="nav-tooltip">Leaderboard</span>
-        </a>
+
 
       </div>
       <div class="nav-section">
@@ -621,7 +637,7 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
       <!-- Banners -->
       <div class="banner banner-info" id="agent-banner">
         <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
-        <span>Signed in as <strong id="agent-full-name">—</strong> — you can only edit your own column.</span>
+        <span>Signed in as <strong id="agent-full-name">—</strong> — edit your daily entries in <strong>My Productivity</strong>.</span>
       </div>
       <div class="banner banner-muted" id="readonly-notice" style="display:none">
         <svg viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>
@@ -631,96 +647,81 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
       <!-- Section header -->
       <div class="section-header">
         <div>
-          <div class="section-title" id="page-title">Monthly Productivity</div>
+          <div class="section-title" id="page-title">Team Dashboard</div>
           <div class="section-sub" id="page-sub">Loading...</div>
         </div>
         <div class="section-actions">
-          <!-- Filter toolbar inline -->
           <div class="filter-toolbar" style="margin:0;padding:8px 12px;gap:8px">
             <span class="filter-label">Month</span>
             <select id="sel-month" class="filter-select" onchange="loadView()"></select>
             <select id="sel-year" class="filter-select" onchange="loadView()"></select>
-            <div style="width:1px;height:20px;background:var(--border);flex-shrink:0"></div>
-            <span class="filter-label">Agent</span>
-            <select id="sel-agent" class="filter-select" onchange="onAgentChange()"></select>
           </div>
         </div>
       </div>
 
-      <!-- Stats -->
-      <div class="stats-grid animate-in">
+      <!-- Team summary stats -->
+      <div class="stats-grid animate-in" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
         <div class="stat-card s-prod">
           <div class="stat-icon"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 00-2 0v2a1 1 0 102 0V9z" clip-rule="evenodd"/></svg></div>
+          <div class="stat-label">Team Today</div>
+          <div class="stat-value" id="team-today">—</div>
+          <div class="stat-sub">Total claims today</div>
+        </div>
+        <div class="stat-card s-ptg">
+          <div class="stat-icon"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></div>
           <div class="stat-label">MTD Productivity</div>
           <div class="stat-value" id="mtd-prod">—</div>
-          <div class="stat-sub" id="mtd-prod-sub">Total cases this month</div>
+          <div class="stat-sub" id="mtd-prod-sub">Team total this month</div>
           <div class="stat-bar"><div class="stat-bar-fill" id="mtd-progress-bar" style="width:0%"></div></div>
         </div>
         <div class="stat-card s-deficit">
           <div class="stat-icon"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/></svg></div>
-          <div class="stat-label">Deficit</div>
+          <div class="stat-label">Team Deficit</div>
           <div class="stat-value" id="mtd-deficit">—</div>
           <div class="stat-sub">vs. MTD target</div>
         </div>
-        <div class="stat-card s-ptg">
-          <div class="stat-icon"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></div>
-          <div class="stat-label">PTG %</div>
-          <div class="stat-value" id="mtd-ptg">—</div>
-          <div class="stat-sub">Productivity to goal</div>
-        </div>
         <div class="stat-card s-acpd">
           <div class="stat-icon"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg></div>
-          <div class="stat-label">ACPD</div>
+          <div class="stat-label">Team ACPD</div>
           <div class="stat-value" id="mtd-acpd">—</div>
           <div class="stat-sub">Avg cases per work day</div>
         </div>
         <div class="stat-card" id="kpi-card" style="border-top:3px solid #6366F1">
           <div class="stat-icon" style="background:#EEF2FF;color:#4F46E5"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></div>
-          <div class="stat-label">KPI Score</div>
+          <div class="stat-label">Avg KPI Score</div>
           <div class="stat-value" id="mtd-kpi" style="font-size:36px">—</div>
-          <div class="stat-sub" id="mtd-kpi-sub">out of 5</div>
+          <div class="stat-sub" id="mtd-kpi-sub">Team average</div>
           <div id="mtd-kpi-bar" style="margin-top:10px;display:flex;gap:4px">
-            <div class="kpi-pip" id="kpi-pip-1"></div>
-            <div class="kpi-pip" id="kpi-pip-2"></div>
-            <div class="kpi-pip" id="kpi-pip-3"></div>
-            <div class="kpi-pip" id="kpi-pip-4"></div>
+            <div class="kpi-pip" id="kpi-pip-1"></div><div class="kpi-pip" id="kpi-pip-2"></div>
+            <div class="kpi-pip" id="kpi-pip-3"></div><div class="kpi-pip" id="kpi-pip-4"></div>
             <div class="kpi-pip" id="kpi-pip-5"></div>
           </div>
         </div>
       </div>
 
-      <!-- Target strip -->
-
-
-      <!-- Leaderboard -->
-      <div id="leaderboard-section">
-        <div class="lb-card">
-          <div class="lb-header">
-            <h3>👑 Team Leaderboard</h3>
-            <span id="lb-subtitle">Month-to-date ranking</span>
-          </div>
-          <div id="leaderboard-body"></div>
+      <!-- Today's productivity per agent — CARDS -->
+      <div class="section-header" style="margin-top:0.5rem">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--text)" id="today-cards-title">Today's Productivity</div>
+          <div style="font-size:12px;color:var(--text-muted)" id="today-cards-sub">—</div>
         </div>
       </div>
+      <div id="today-agent-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:1.5rem"></div>
 
-      <!-- Table -->
-      <div class="table-card animate-in">
-        <div class="table-toolbar">
-          <div class="table-toolbar-left">
-            <h3 id="table-title">Daily Entries</h3>
-            <span class="badge badge-blue" id="table-month-badge">—</span>
-          </div>
-          <div class="table-toolbar-right">
-            <div class="table-hint"><span class="wknd-dot"></span>Weekends locked</div>
-            <div class="table-hint" style="margin-left:8px">Enter advances · Paste from Excel/Sheets</div>
-          </div>
+      <!-- Monthly Leaderboard -->
+      <div class="lb-card" id="leaderboard-section">
+        <div class="lb-header">
+          <h3>🏆 Monthly Leaderboard</h3>
+          <span id="lb-subtitle">Ranked by total claims processed</span>
         </div>
-        <div class="table-wrap">
-          <table id="main-table">
-            <thead id="table-head"></thead>
-            <tbody id="table-body"></tbody>
-          </table>
-        </div>
+        <div id="leaderboard-body"></div>
+      </div>
+
+      <!-- Hidden elements kept for JS compatibility -->
+      <div style="display:none">
+        <select id="sel-agent"></select>
+        <table id="main-table"><thead id="table-head"></thead><tbody id="table-body"></tbody></table>
+        <span id="table-title"></span><span id="table-month-badge"></span>
       </div>
 
       </div><!-- /view-dashboard -->
@@ -1221,7 +1222,7 @@ function setDayValue(y,m,ai,d,val){
   ensurePath(y,m);
   if(val===''||val===null||isNaN(val)) delete data[y][m][ai][d];
   else data[y][m][ai][d]=Number(val);
-  saveToStorage(); updateMTD(); updateTargetBar(); updateLeaderboard();
+  saveToStorage(); updateMTD(); updateLeaderboard(); if(currentView==='dashboard') buildTodayCards();
 }
 
 // ══════════════════════════════════════════════
@@ -1239,8 +1240,8 @@ function loadView(){
   const tbadge=document.getElementById('table-month-badge');
   if(tbadge) tbadge.textContent=`${MONTHS[month]} ${year}`;
   ensurePath(year,month);
-  buildTable(year,month,dim);
-  updateMTD(); updateTargetBar(); updateLeaderboard();
+  buildTodayCards();
+  updateMTD(); updateLeaderboard();
 }
 
 function isWeekend(y,m,d){ const dow=new Date(y,m,d).getDay(); return dow===0||dow===6; }
@@ -1460,9 +1461,9 @@ function updateMTD(){
   const today=new Date();
   const isCurrent=today.getFullYear()===year&&today.getMonth()===month;
   const lastDay=isCurrent?today.getDate():dim;
-  // If a specific agent is selected use them, else fall back
-  const agentIdx = selectedAgentIdx >= 0 ? selectedAgentIdx : (currentAgentIdx >= 0 ? currentAgentIdx : 0);
-  const showAll = currentIsManager && selectedAgentIdx < 0;
+  // Dashboard always shows team totals
+  const showAll = (currentView === 'dashboard');
+  const agentIdx = showAll ? 0 : (selectedAgentIdx >= 0 ? selectedAgentIdx : (currentAgentIdx >= 0 ? currentAgentIdx : 0));
 
   let total=0,workDays=0;
   for(let d=1;d<=lastDay;d++){
@@ -1584,18 +1585,20 @@ function updateLeaderboard(){
     const rankCls=idx===0?'r1':idx===1?'r2':idx===2?'r3':'rn';
     const rankLabel=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':(idx+1);
     const barColor=colors[idx]||'linear-gradient(90deg,#2563eb,#7c3aed)';
-    const ptgCls=s.ptg>=95?'ok':s.ptg>=75?'warn':'bad';
     const barPct=maxTotal>0?(s.total/maxTotal*100):0;
+    const kpiS=getKPIScore(s.acpd,s.agentIdx);
+    const kpiC=getKPIColor(kpiS);
     html+=`<div class="lb-row">
       <div class="lb-rank ${rankCls}">${rankLabel}</div>
       <div class="lb-name">${s.name}</div>
       <div class="lb-bar-wrap"><div class="lb-bar-fill" style="width:${barPct}%;background:${barColor}"></div></div>
-      <div class="lb-value">${s.total.toLocaleString()}</div>
-      <div class="lb-ptg ${ptgCls}">${s.ptg.toFixed(1)}%</div>
+      <div class="lb-value" style="font-weight:800;font-size:15px">${s.total.toLocaleString()} <span style="font-size:11px;color:var(--text-muted);font-weight:500">claims</span></div>
+      <div style="font-size:11px;font-weight:600;color:var(--text-secondary);min-width:60px;text-align:right">${s.acpd.toFixed(1)}/day</div>
+      <div style="min-width:52px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:${kpiC.bg};color:${kpiC.text};border:1px solid ${kpiC.border}">KPI ${kpiS}</div>
     </div>`;
   });
   document.getElementById('leaderboard-body').innerHTML=html;
-  document.getElementById('lb-subtitle').textContent=`${MONTHS[month]} ${year} · MTD ranking`;
+  document.getElementById('lb-subtitle').textContent=`${MONTHS[month]} ${year} · Ranked by total claims`;
 }
 
 // ══════════════════════════════════════════════
@@ -2417,6 +2420,99 @@ function highlightInput(inp){
   inp.style.transition = 'box-shadow .2s';
   inp.style.boxShadow = '0 0 0 3px rgba(37,99,235,.2)';
   setTimeout(()=>{ inp.style.boxShadow = ''; }, 600);
+}
+
+
+// ══════════════════════════════════════════════
+// TODAY CARDS — per-agent today view
+// ══════════════════════════════════════════════
+function buildTodayCards(){
+  const year  = parseInt(document.getElementById('sel-year').value);
+  const month = parseInt(document.getElementById('sel-month').value);
+  const now   = new Date();
+  const today = now.getDate();
+  const isCurrentMonth = now.getFullYear()===year && now.getMonth()===month;
+  const displayDay = isCurrentMonth ? today : new Date(year,month+1,0).getDate();
+  const DOW = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const dow = new Date(year, month, displayDay).getDay();
+  const isWeekendDay = dow===0||dow===6;
+
+  const titleEl = document.getElementById('today-cards-title');
+  const subEl   = document.getElementById('today-cards-sub');
+  const container = document.getElementById('today-agent-cards');
+  if(!container) return;
+
+  const dateLabel = isCurrentMonth
+    ? `Today — ${DOW[dow]}, ${new Date(year,month,displayDay).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}`
+    : `${MONTHS[month]} ${year} — Last day`;
+  if(titleEl) titleEl.textContent = isCurrentMonth ? "Today's Productivity" : "Latest Day's Productivity";
+  if(subEl)   subEl.textContent   = dateLabel;
+
+  // Avatar colors per agent
+  const avatarColors = [
+    'linear-gradient(135deg,#2563EB,#7C3AED)',
+    'linear-gradient(135deg,#0891B2,#2563EB)',
+    'linear-gradient(135deg,#7C3AED,#DB2777)',
+    'linear-gradient(135deg,#059669,#0891B2)',
+    'linear-gradient(135deg,#D97706,#DC2626)',
+  ];
+
+  if(isWeekendDay){
+    container.innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:2rem;background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);color:var(--text-muted)">
+        <div style="font-size:32px;margin-bottom:8px">☀️</div>
+        <div style="font-size:15px;font-weight:600;color:var(--text)">Rest Day</div>
+        <div style="font-size:13px;margin-top:4px">${DOW[dow]} — No entries scheduled</div>
+      </div>`;
+    // Zero out team today stat
+    const tt = document.getElementById('team-today');
+    if(tt) tt.textContent = '0';
+    return;
+  }
+
+  let teamToday = 0;
+  let html = '';
+
+  AGENTS.forEach((agent,i) => {
+    const val = getDayValue(year, month, i, displayDay);
+    const count = (val!==''&&!isNaN(val)) ? Number(val) : null;
+    if(count!==null) teamToday += count;
+
+    const rates = getKPIRates(i);
+    const kpiScore = count!==null ? getKPIScore(count, i) : null;
+    const kpiCol = kpiScore!==null ? getKPIColor(kpiScore) : null;
+    const pct = count!==null ? Math.min(100,(count/rates.score5)*100) : 0;
+    const barColor = kpiScore>=5?'#22C55E':kpiScore>=4?'#2563EB':kpiScore>=3?'#F59E0B':'#EF4444';
+    const initials = agent.initials;
+    const firstName = agent.name.split(',')[1]?.trim()||agent.name.split(' ')[0];
+    const hasData = count!==null;
+
+    html += `
+    <div class="agent-today-card" style="border-top:3px solid ${kpiCol?kpiCol.border:'var(--border)'}">
+      <div class="atc-top">
+        <div class="atc-avatar" style="background:${avatarColors[i%avatarColors.length]}">${initials}</div>
+        ${kpiScore!==null
+          ? `<div class="atc-kpi" style="background:${kpiCol.bg};color:${kpiCol.text};border:1px solid ${kpiCol.border}">KPI ${kpiScore}/5</div>`
+          : `<div class="atc-kpi" style="background:var(--bg);color:var(--text-muted);border:1px solid var(--border)">No entry</div>`
+        }
+      </div>
+      <div class="atc-name">${firstName}</div>
+      <div class="atc-email">${agent.email.split('@')[0]}</div>
+      <div class="atc-count" style="color:${hasData?'var(--text)':'var(--text-muted)'}">${hasData?count:'—'}</div>
+      <div class="atc-label">claims${hasData?'':' · not yet entered'}</div>
+      ${hasData?`
+      <div class="atc-bar"><div class="atc-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+      <div class="atc-footer">
+        <span>Target: ${rates.score4}+/day (KPI 4)</span>
+        <span>${count>=rates.score5?'⭐ Score 5':count>=rates.score4?'✓ Score 4':count+' / '+rates.score4+' needed'}</span>
+      </div>`:''}
+    </div>`;
+  });
+
+  container.innerHTML = html;
+
+  const tt = document.getElementById('team-today');
+  if(tt) tt.textContent = teamToday.toLocaleString();
 }
 
 // ══════════════════════════════════════════════
