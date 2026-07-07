@@ -907,8 +907,8 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
 // CONFIG
 // ══════════════════════════════════════════════
 const ALLOWED_DOMAIN   = 'allianceglobalsolutions.com';
-const SHEET_ID         = '1KAD9iBlcaYqHOPm364iwtZswcmp4Jx8JmzdqnLdj06I';
-const APPS_SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbwB4-mhI0vgK5k9QwYGOHX9zYfF7nKtpflsm1DyTk33bHacgmmHn9t30g48yvYIPV0K/exec';
+const SHEET_ID         = '1KIoDAnstMm64I9wvE18DVbxNwHVu_VqBfTD-F82oXig';
+const APPS_SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbxqxp1GGdP2sRyZbWj5Ya-2w5R5Nxwf7y_bCZHw_Cef7Sud3wpoMWtWhh33FWb7Z2dvSg/exec';
 
 const AGENTS = [
   { name:'Ado, Jaypee Dhan',     email:'jaypee@allianceglobalsolutions.com',     initials:'JA' },
@@ -1595,36 +1595,33 @@ async function writeToSheet(year, month, day, agentIdx, claims){
   const agent = AGENTS[agentIdx];
   if(!agent) return;
 
-  // Build date string e.g. "2026-07-07"
   const mm  = String(month+1).padStart(2,'0');
   const dd  = String(day).padStart(2,'0');
   const dateStr = year+'-'+mm+'-'+dd;
-
-  // Agent full name: "First Last" format
   const parts = agent.name.split(',');
   const agentName = parts.length>1 ? (parts[1].trim()+' '+parts[0].trim()) : agent.name;
 
-  const payload = {
+  // Use GET with URL params — no CORS issues, fully works with Apps Script doGet
+  const params = new URLSearchParams({
     year:       year,
     month:      MONTHS[month],
     date:       dateStr,
     claims:     claims,
     agentName:  agentName,
     agentEmail: agent.email,
-    submittedBy: currentUser.email,
-    timestamp:  new Date().toISOString()
-  };
+    submittedBy: currentUser.email
+  });
 
   const statusEl = document.getElementById('sync-status');
   try {
-    await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
-    });
+    // Use an image request — zero CORS restrictions, fires and forgets
+    // Apps Script doGet receives the params and writes to sheet
+    const img = new Image();
+    img.src = APPS_SCRIPT_URL + '?' + params.toString();
+    img.onload = img.onerror = function(){};
+
     if(statusEl){
-      statusEl.textContent = 'Saved to sheet '+new Date().toLocaleTimeString();
+      statusEl.textContent = 'Saved ' + new Date().toLocaleTimeString();
       statusEl.className = 'sync-status ok';
     }
   } catch(e) {
@@ -1657,7 +1654,7 @@ async function syncToSheets(silent=false){
       if(val!=='' && !isNaN(val)){
         await writeToSheet(year, month, d, ai, Number(val));
         count++;
-        await new Promise(r=>setTimeout(r,100)); // small delay to avoid overloading
+        await new Promise(r=>setTimeout(r,200));
       }
     }
   }
