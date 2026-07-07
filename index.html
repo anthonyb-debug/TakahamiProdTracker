@@ -1594,50 +1594,69 @@ function updateLeaderboard(){
 // ══════════════════════════════════════════════
 // REALTIME SHEET WRITE — one row per cell change
 // ══════════════════════════════════════════════
+// Queue of pending sheet writes — prevents duplicates and rapid-fire requests
+var _writeQueue = {};
+var _writeTimers = {};
+
 async function writeToSheet(year, month, day, agentIdx, claims){
   if(!APPS_SCRIPT_URL || !currentUser) return;
   const agent = AGENTS[agentIdx];
   if(!agent) return;
 
+  // Unique key for this cell
+  const key = year+'-'+month+'-'+day+'-'+agentIdx;
+
+  // Store latest value for this key
+  _writeQueue[key] = {year, month, day, agentIdx, claims};
+
+  // Debounce: wait 1.5s after last keystroke before sending
+  clearTimeout(_writeTimers[key]);
+  _writeTimers[key] = setTimeout(function(){
+    var entry = _writeQueue[key];
+    if(!entry) return;
+    delete _writeQueue[key];
+    _sendToSheet(entry.year, entry.month, entry.day, entry.agentIdx, entry.claims);
+  }, 1500);
+}
+
+function _sendToSheet(year, month, day, agentIdx, claims){
+  const agent = AGENTS[agentIdx];
+  if(!agent || !currentUser) return;
+
   const mm  = String(month+1).padStart(2,'0');
   const dd  = String(day).padStart(2,'0');
   const dateStr = year+'-'+mm+'-'+dd;
   const parts = agent.name.split(',');
-  const agentName = parts.length>1 ? (parts[1].trim()+' '+parts[0].trim()) : agent.name;
+  const agentName = parts.length>1?(parts[1].trim()+' '+parts[0].trim()):agent.name;
 
-  // Use GET with URL params — no CORS issues, fully works with Apps Script doGet
-  const params = new URLSearchParams({
-    year:       year,
-    month:      MONTHS[month],
-    date:       dateStr,
-    claims:     claims,
-    agentName:  agentName,
-    agentEmail: agent.email,
-    submittedBy: currentUser.email
-  });
+  const url = APPS_SCRIPT_URL
+    + '?year='       + encodeURIComponent(year)
+    + '&month='      + encodeURIComponent(MONTHS[month])
+    + '&date='       + encodeURIComponent(dateStr)
+    + '&claims='     + encodeURIComponent(claims)
+    + '&agentName='  + encodeURIComponent(agentName)
+    + '&agentEmail=' + encodeURIComponent(agent.email)
+    + '&submittedBy='+ encodeURIComponent(currentUser.email);
 
   const statusEl = document.getElementById('sync-status');
-  try {
-    // Use an image request — zero CORS restrictions, fires and forgets
-    // Apps Script doGet receives the params and writes to sheet
-    const img = new Image();
-    img.src = APPS_SCRIPT_URL + '?' + params.toString();
-    img.onload = img.onerror = function(){};
 
-    if(statusEl){
-      statusEl.textContent = 'Saved ' + new Date().toLocaleTimeString();
-      statusEl.className = 'sync-status ok';
-    }
-  } catch(e) {
-    console.warn('Sheet write failed:', e.message);
-    if(statusEl){
-      statusEl.textContent = 'Sheet write failed';
-      statusEl.className = 'sync-status err';
-    }
-  }
+  // Try fetch first (most reliable), fall back to image tag
+  fetch(url, {mode:'no-cors'})
+    .then(function(){
+      if(statusEl){ statusEl.textContent='Saved '+new Date().toLocaleTimeString(); statusEl.className='sync-status ok'; }
+      console.log('Sheet write OK:', dateStr, agentName, claims);
+    })
+    .catch(function(){
+      // Fallback: image tag has zero CORS restrictions
+      var img = new Image();
+      img.src = url;
+      if(statusEl){ statusEl.textContent='Saved '+new Date().toLocaleTimeString(); statusEl.className='sync-status ok'; }
+      console.log('Sheet write via img:', dateStr, agentName, claims);
+    });
 }
 
-// Manual sync button — writes ALL current month data to sheet
+// Manual sync — sends only the current agent's entries for the selected month
+// Managers send all agents. No duplicates: upsertRow in Apps Script handles that.
 async function syncToSheets(silent=false){
   const year  = parseInt(document.getElementById('sel-year').value);
   const month = parseInt(document.getElementById('sel-month').value);
@@ -1645,26 +1664,38 @@ async function syncToSheets(silent=false){
   const btn   = document.getElementById('sync-btn');
   const statusEl = document.getElementById('sync-status');
 
+  // Determine which agents to sync
+  const agentsToSync = currentIsManager
+    ? AGENTS.map((_,i)=>i)           // managers: all agents
+    : (currentAgentIdx>=0 ? [currentAgentIdx] : []); // agent: only themselves
+
+  if(agentsToSync.length===0){
+    showToast('Nothing to sync — no agent selected.','error'); return;
+  }
+
   if(!silent){
     btn.disabled=true;
-    btn.innerHTML='<svg viewBox="0 0 20 20" style="width:14px;height:14px;fill:white;animation:spin 1s linear infinite"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Syncing all...';
+    btn.innerHTML='<svg viewBox="0 0 20 20" style="width:14px;height:14px;fill:white;animation:spin 1s linear infinite"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Syncing...';
+    if(statusEl){ statusEl.textContent='Syncing...'; statusEl.className='sync-status'; }
   }
 
   let count = 0;
-  for(let ai=0; ai<AGENTS.length; ai++){
+  for(let a=0; a<agentsToSync.length; a++){
+    const ai = agentsToSync[a];
     for(let d=1; d<=dim; d++){
       if(isWeekend(year,month,d)) continue;
       const val = getDayValue(year,month,ai,d);
-      if(val!=='' && !isNaN(val)){
-        await writeToSheet(year, month, d, ai, Number(val));
-        count++;
-        await new Promise(r=>setTimeout(r,200));
-      }
+      if(val===''||isNaN(val)) continue;
+      // Send directly (bypass debounce queue for manual sync)
+      _sendToSheet(year, month, d, ai, Number(val));
+      count++;
+      await new Promise(r=>setTimeout(r,300)); // space out requests
     }
   }
 
-  if(!silent) showToast('✅ Synced '+count+' entries to Google Sheets!','success');
-  if(statusEl){ statusEl.textContent='All synced '+new Date().toLocaleTimeString(); statusEl.className='sync-status ok'; }
+  const msg = 'Synced '+count+' entr'+(count===1?'y':'ies')+' to Sheets';
+  if(!silent) showToast('✅ '+msg,'success');
+  if(statusEl){ statusEl.textContent=msg+' '+new Date().toLocaleTimeString(); statusEl.className='sync-status ok'; }
   if(!silent){
     btn.disabled=false;
     btn.innerHTML='<svg viewBox="0 0 20 20" style="width:14px;height:14px;fill:white"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Sync to Sheets';
