@@ -680,29 +680,22 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
           <div class="stat-value" id="mtd-deficit">—</div>
           <div class="stat-sub">vs. MTD target</div>
         </div>
-        <div class="stat-card s-acpd">
-          <div class="stat-icon"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg></div>
-          <div class="stat-label">Team ACPD</div>
-          <div class="stat-value" id="mtd-acpd">—</div>
-          <div class="stat-sub">Avg cases per work day</div>
-        </div>
-        <div class="stat-card" id="kpi-card" style="border-top:3px solid #6366F1">
-          <div class="stat-icon" style="background:#EEF2FF;color:#4F46E5"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></div>
-          <div class="stat-label">Avg KPI Score</div>
-          <div class="stat-value" id="mtd-kpi" style="font-size:36px">—</div>
-          <div class="stat-sub" id="mtd-kpi-sub">Team average</div>
-          <div id="mtd-kpi-bar" style="margin-top:10px;display:flex;gap:4px">
-            <div class="kpi-pip" id="kpi-pip-1"></div><div class="kpi-pip" id="kpi-pip-2"></div>
-            <div class="kpi-pip" id="kpi-pip-3"></div><div class="kpi-pip" id="kpi-pip-4"></div>
-            <div class="kpi-pip" id="kpi-pip-5"></div>
-          </div>
-        </div>
+        <!-- hidden stubs so JS doesn't crash -->
+        <span id="mtd-acpd" style="display:none"></span>
+        <span id="mtd-kpi" style="display:none"></span>
+        <span id="mtd-kpi-sub" style="display:none"></span>
+        <span id="kpi-card" style="display:none"></span>
+        <span id="kpi-pip-1" style="display:none"></span>
+        <span id="kpi-pip-2" style="display:none"></span>
+        <span id="kpi-pip-3" style="display:none"></span>
+        <span id="kpi-pip-4" style="display:none"></span>
+        <span id="kpi-pip-5" style="display:none"></span>
       </div>
 
       <!-- Today's productivity per agent — CARDS -->
       <div class="section-header" style="margin-top:0.5rem">
         <div>
-          <div style="font-size:14px;font-weight:700;color:var(--text)" id="today-cards-title">Today's Productivity</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text)" id="today-cards-title">MTD Productivity per Agent</div>
           <div style="font-size:12px;color:var(--text-muted)" id="today-cards-sub">—</div>
         </div>
       </div>
@@ -775,31 +768,17 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
             <div class="stat-value" id="my-ptg">—</div>
             <div class="stat-sub">Productivity to goal</div>
           </div>
-          <div class="stat-card s-acpd">
-            <div class="stat-icon"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg></div>
-            <div class="stat-label">ACPD</div>
-            <div class="stat-value" id="my-acpd">—</div>
-            <div class="stat-sub">Avg cases per work day</div>
-          </div>
-          <div class="stat-card" id="my-kpi-card" style="border-top:3px solid #6366F1">
-            <div class="stat-icon" style="background:#EEF2FF;color:#4F46E5"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></div>
-            <div class="stat-label">KPI Score</div>
-            <div class="stat-value" id="my-kpi" style="font-size:36px">—</div>
-            <div class="stat-sub" id="my-kpi-sub">out of 5</div>
-            <div id="my-kpi-bar" style="margin-top:10px;display:flex;gap:4px">
-              <div class="kpi-pip" id="my-kpi-pip-1"></div>
-              <div class="kpi-pip" id="my-kpi-pip-2"></div>
-              <div class="kpi-pip" id="my-kpi-pip-3"></div>
-              <div class="kpi-pip" id="my-kpi-pip-4"></div>
-              <div class="kpi-pip" id="my-kpi-pip-5"></div>
-            </div>
-          </div>
-          <div class="stat-card" style="border-top:3px solid #7C3AED">
-            <div class="stat-icon" style="background:#F5F3FF;color:#7C3AED"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"/></svg></div>
-            <div class="stat-label">Streak 🔥</div>
-            <div class="stat-value" id="my-streak">—</div>
-            <div class="stat-sub">Days on target</div>
-          </div>
+          <!-- hidden stubs so JS doesn't crash -->
+          <span id="my-acpd" style="display:none"></span>
+          <span id="my-kpi" style="display:none"></span>
+          <span id="my-kpi-sub" style="display:none"></span>
+          <span id="my-kpi-card" style="display:none"></span>
+          <span id="my-kpi-pip-1" style="display:none"></span>
+          <span id="my-kpi-pip-2" style="display:none"></span>
+          <span id="my-kpi-pip-3" style="display:none"></span>
+          <span id="my-kpi-pip-4" style="display:none"></span>
+          <span id="my-kpi-pip-5" style="display:none"></span>
+          <span id="my-streak" style="display:none"></span>
         </div>
         <div class="target-strip" id="my-target-bar">
           <div class="target-item">
@@ -1975,74 +1954,59 @@ function buildAgentSelectors(){
 }
 
 function downloadCSV(){
-  const yyEl = document.getElementById('ag-sel-year');
-  const csvAgEl = document.getElementById('csv-sel-agent');
-  const csvMoEl = document.getElementById('csv-sel-month');
+  var yyEl    = document.getElementById('ag-sel-year');
+  var csvAgEl = document.getElementById('csv-sel-agent');
+  var csvMoEl = document.getElementById('csv-sel-month');
   if(!yyEl||!csvAgEl) return;
-
-  const year    = parseInt(yyEl.value);
-  const ai      = parseInt(csvAgEl.value);
-  const monthFilter = csvMoEl ? parseInt(csvMoEl.value) : -1;
-  const agent   = AGENTS[ai];
+  var year        = parseInt(yyEl.value);
+  var ai          = parseInt(csvAgEl.value);
+  var monthFilter = csvMoEl ? parseInt(csvMoEl.value) : -1;
+  var agent       = AGENTS[ai];
   if(!agent) return;
+  var agentName   = agent.name.replace(/,/g,' ').trim();
+  var monthsToExp = monthFilter===-1 ? MONTHS.map(function(_,i){return i;}) : [monthFilter];
+  var now         = new Date();
+  var CRLF        = '\r\n';
+  var out         = 'Day,Month,Claims per Day,Monthly Total' + CRLF;
 
-  const agentName = agent.name.replace(/,/g,' ').trim();
-  const monthsToExport = monthFilter === -1 ? MONTHS.map((_,i)=>i) : [monthFilter];
-  const now = new Date();
-
-  let csv = 'Agent,Email,Year,Month,Date,Day,Cases,ACPD,KPI Score\n';
-
-  monthsToExport.forEach(month => {
-    if(year === now.getFullYear() && month > now.getMonth()) return;
-    const dim = new Date(year, month+1, 0).getDate();
-    const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-
-    // Calc ACPD for month
-    let mTotal=0, mDays=0;
-    for(let d=1;d<=dim;d++){
-      if(!isWeekend(year,month,d)){
-        const v=getDayValue(year,month,ai,d);
-        if(v!==''&&!isNaN(v)){mTotal+=Number(v);mDays++;}
+  monthsToExp.forEach(function(mo){
+    if(year===now.getFullYear() && mo>now.getMonth()) return;
+    var dim    = new Date(year,mo+1,0).getDate();
+    var mName  = MONTHS[mo];
+    var mTotal = 0;
+    for(var d=1;d<=dim;d++){
+      if(!isWeekend(year,mo,d)){
+        var v=getDayValue(year,mo,ai,d);
+        if(v!==''&&!isNaN(v)) mTotal+=Number(v);
       }
     }
-    const mAcpd = mDays>0?(mTotal/mDays).toFixed(1):'0';
-    const mKpi  = getKPIScore(parseFloat(mAcpd), ai);
-
-    for(let d=1;d<=dim;d++){
-      const dow = new Date(year,month,d).getDay();
-      const weekend = dow===0||dow===6;
-      const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      if(weekend){
-        csv += `"${agentName}","${agent.email}",${year},"${MONTHS[month]}","${dateStr}","${DOW[dow]}","REST","",""
-`;
-        continue;
+    for(var d=1;d<=dim;d++){
+      var dow   = new Date(year,mo,d).getDay();
+      var wknd  = (dow===0||dow===6);
+      var dNum  = d<10?'0'+d:''+d;
+      var moNum = (mo+1)<10?'0'+(mo+1):''+(mo+1);
+      var dateStr = dNum+' '+mName+' '+year;
+      var claims;
+      if(wknd){
+        claims = 'REST';
+      } else {
+        var val = getDayValue(year,mo,ai,d);
+        claims  = (val!==''&&!isNaN(val)) ? Number(val) : '';
       }
-      const val = getDayValue(year,month,ai,d);
-      const cases = val!==''&&!isNaN(val)?Number(val):'';
-      csv += `"${agentName}","${agent.email}",${year},"${MONTHS[month]}","${dateStr}","${DOW[dow]}",${cases},"${mAcpd}",${mKpi}
-`;
+      out += '"'+dateStr+'","'+mName+'","'+claims+'","'+mTotal+'"'+CRLF;
     }
-
-    // Monthly summary row
-    const rates = getKPIRates(ai);
-    csv += `"${agentName}","${agent.email}",${year},"${MONTHS[month]} TOTAL","","",${mTotal},"${mAcpd}",${mKpi}
-`;
-    csv += `"${agentName}","${agent.email}",${year},"${MONTHS[month]} GOAL","","","${rates.score4}+/day (Score 4)","",""
-`;
-    csv += `
-`;
+    out += CRLF;
   });
 
-  // Download
-  const blob = new Blob([csv], {type:'text/csv'});
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  const monthLabel = monthFilter===-1?'YTD':MONTHS[monthFilter];
-  a.href = url;
-  a.download = `${agentName.replace(/\s+/g,'_')}_${year}_${monthLabel}_Productivity.csv`;
+  var blob = new Blob([out],{type:'text/csv;charset=utf-8;'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  var ml   = monthFilter===-1 ? 'YTD' : MONTHS[monthFilter];
+  a.href   = url;
+  a.download = agentName.replace(/\s+/g,'_')+'_'+year+'_'+ml+'.csv';
   a.click();
   URL.revokeObjectURL(url);
-  showToast(`✅ Downloaded CSV for ${agentName} — ${monthLabel} ${year}`, 'success');
+  showToast('Downloaded: '+agentName+' - '+ml+' '+year,'success');
 }
 
 function loadAgentView(){
@@ -2427,92 +2391,81 @@ function highlightInput(inp){
 // TODAY CARDS — per-agent today view
 // ══════════════════════════════════════════════
 function buildTodayCards(){
-  const year  = parseInt(document.getElementById('sel-year').value);
-  const month = parseInt(document.getElementById('sel-month').value);
-  const now   = new Date();
-  const today = now.getDate();
-  const isCurrentMonth = now.getFullYear()===year && now.getMonth()===month;
-  const displayDay = isCurrentMonth ? today : new Date(year,month+1,0).getDate();
-  const DOW = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const dow = new Date(year, month, displayDay).getDay();
-  const isWeekendDay = dow===0||dow===6;
+  var year  = parseInt(document.getElementById('sel-year').value);
+  var month = parseInt(document.getElementById('sel-month').value);
+  var now   = new Date();
+  var isCurrentMonth = now.getFullYear()===year && now.getMonth()===month;
+  var lastDay = isCurrentMonth ? now.getDate() : new Date(year,month+1,0).getDate();
 
-  const titleEl = document.getElementById('today-cards-title');
-  const subEl   = document.getElementById('today-cards-sub');
-  const container = document.getElementById('today-agent-cards');
+  var titleEl   = document.getElementById('today-cards-title');
+  var subEl     = document.getElementById('today-cards-sub');
+  var container = document.getElementById('today-agent-cards');
   if(!container) return;
 
-  const dateLabel = isCurrentMonth
-    ? `Today — ${DOW[dow]}, ${new Date(year,month,displayDay).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}`
-    : `${MONTHS[month]} ${year} — Last day`;
-  if(titleEl) titleEl.textContent = isCurrentMonth ? "Today's Productivity" : "Latest Day's Productivity";
-  if(subEl)   subEl.textContent   = dateLabel;
+  if(titleEl) titleEl.textContent = 'MTD Productivity per Agent';
+  if(subEl)   subEl.textContent   = MONTHS[month]+' '+year+' · Through Day '+lastDay;
 
-  // Avatar colors per agent
-  const avatarColors = [
+  var elapsedWorkDays=0;
+  for(var d=1;d<=lastDay;d++){ if(!isWeekend(year,month,d)) elapsedWorkDays++; }
+
+  var avatarColors = [
     'linear-gradient(135deg,#2563EB,#7C3AED)',
     'linear-gradient(135deg,#0891B2,#2563EB)',
     'linear-gradient(135deg,#7C3AED,#DB2777)',
     'linear-gradient(135deg,#059669,#0891B2)',
-    'linear-gradient(135deg,#D97706,#DC2626)',
+    'linear-gradient(135deg,#D97706,#DC2626)'
   ];
 
-  if(isWeekendDay){
-    container.innerHTML = `
-      <div style="grid-column:1/-1;text-align:center;padding:2rem;background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);color:var(--text-muted)">
-        <div style="font-size:32px;margin-bottom:8px">☀️</div>
-        <div style="font-size:15px;font-weight:600;color:var(--text)">Rest Day</div>
-        <div style="font-size:13px;margin-top:4px">${DOW[dow]} — No entries scheduled</div>
-      </div>`;
-    // Zero out team today stat
-    const tt = document.getElementById('team-today');
-    if(tt) tt.textContent = '0';
-    return;
-  }
+  var teamTotal = 0;
+  var html = '';
 
-  let teamToday = 0;
-  let html = '';
+  AGENTS.forEach(function(agent,i){
+    var total = 0;
+    for(var d=1;d<=lastDay;d++){
+      if(!isWeekend(year,month,d)){
+        var v=getDayValue(year,month,i,d);
+        if(v!==''&&!isNaN(v)) total+=Number(v);
+      }
+    }
+    teamTotal += total;
 
-  AGENTS.forEach((agent,i) => {
-    const val = getDayValue(year, month, i, displayDay);
-    const count = (val!==''&&!isNaN(val)) ? Number(val) : null;
-    if(count!==null) teamToday += count;
+    var rates     = getKPIRates(i);
+    var acpd      = elapsedWorkDays>0 ? total/elapsedWorkDays : 0;
+    var kpiScore  = elapsedWorkDays>0 ? getKPIScore(acpd,i) : null;
+    var kpiCol    = kpiScore!==null ? getKPIColor(kpiScore) : null;
+    var mtdGoal   = rates.score4 * elapsedWorkDays;
+    var pct       = mtdGoal>0 ? Math.min(100,(total/mtdGoal)*100) : 0;
+    var deficit   = mtdGoal - total;
+    var barColor  = kpiScore>=5?'#22C55E':kpiScore>=4?'#2563EB':kpiScore>=3?'#F59E0B':'#EF4444';
+    var firstName = agent.name.split(',')[1]||agent.name.split(' ')[0];
+    if(firstName) firstName=firstName.trim();
+    var borderCol = kpiCol?kpiCol.border:'var(--border)';
+    var defColor  = deficit<=0?'var(--success-dark)':'var(--danger)';
+    var defText   = deficit<=0?('+'+Math.abs(deficit).toLocaleString()+' ahead'):(deficit.toLocaleString()+' behind');
+    var kpiBadge  = kpiScore!==null
+      ? ('<div class="atc-kpi" style="background:'+kpiCol.bg+';color:'+kpiCol.text+';border:1px solid '+kpiCol.border+'">KPI '+kpiScore+'/5</div>')
+      : ('<div class="atc-kpi" style="background:var(--bg);color:var(--text-muted);border:1px solid var(--border)">No data</div>');
 
-    const rates = getKPIRates(i);
-    const kpiScore = count!==null ? getKPIScore(count, i) : null;
-    const kpiCol = kpiScore!==null ? getKPIColor(kpiScore) : null;
-    const pct = count!==null ? Math.min(100,(count/rates.score5)*100) : 0;
-    const barColor = kpiScore>=5?'#22C55E':kpiScore>=4?'#2563EB':kpiScore>=3?'#F59E0B':'#EF4444';
-    const initials = agent.initials;
-    const firstName = agent.name.split(',')[1]?.trim()||agent.name.split(' ')[0];
-    const hasData = count!==null;
-
-    html += `
-    <div class="agent-today-card" style="border-top:3px solid ${kpiCol?kpiCol.border:'var(--border)'}">
-      <div class="atc-top">
-        <div class="atc-avatar" style="background:${avatarColors[i%avatarColors.length]}">${initials}</div>
-        ${kpiScore!==null
-          ? `<div class="atc-kpi" style="background:${kpiCol.bg};color:${kpiCol.text};border:1px solid ${kpiCol.border}">KPI ${kpiScore}/5</div>`
-          : `<div class="atc-kpi" style="background:var(--bg);color:var(--text-muted);border:1px solid var(--border)">No entry</div>`
-        }
-      </div>
-      <div class="atc-name">${firstName}</div>
-      <div class="atc-email">${agent.email.split('@')[0]}</div>
-      <div class="atc-count" style="color:${hasData?'var(--text)':'var(--text-muted)'}">${hasData?count:'—'}</div>
-      <div class="atc-label">claims${hasData?'':' · not yet entered'}</div>
-      ${hasData?`
-      <div class="atc-bar"><div class="atc-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
-      <div class="atc-footer">
-        <span>Target: ${rates.score4}+/day (KPI 4)</span>
-        <span>${count>=rates.score5?'⭐ Score 5':count>=rates.score4?'✓ Score 4':count+' / '+rates.score4+' needed'}</span>
-      </div>`:''}
-    </div>`;
+    html += '<div class="agent-today-card" style="border-top:3px solid '+borderCol+'">'
+      + '<div class="atc-top">'
+        + '<div class="atc-avatar" style="background:'+avatarColors[i%avatarColors.length]+'">'+agent.initials+'</div>'
+        + kpiBadge
+      + '</div>'
+      + '<div class="atc-name">'+firstName+'</div>'
+      + '<div class="atc-email">'+agent.email.split('@')[0]+'</div>'
+      + '<div class="atc-count">'+total.toLocaleString()+'</div>'
+      + '<div class="atc-label">claims MTD</div>'
+      + '<div class="atc-bar"><div class="atc-bar-fill" style="width:'+pct+'%;background:'+barColor+'"></div></div>'
+      + '<div class="atc-footer">'
+        + '<span>Goal: '+mtdGoal.toLocaleString()+'</span>'
+        + '<span style="color:'+defColor+'">'+defText+'</span>'
+      + '</div>'
+      + '</div>';
   });
 
   container.innerHTML = html;
-
-  const tt = document.getElementById('team-today');
-  if(tt) tt.textContent = teamToday.toLocaleString();
+  var tt = document.getElementById('team-today');
+  if(tt) tt.textContent = teamTotal.toLocaleString();
 }
 
 // ══════════════════════════════════════════════
