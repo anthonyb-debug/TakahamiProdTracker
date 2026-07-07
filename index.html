@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Productivity Tracker — Takahami Medical Billing</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 /* ═══════════════════════════════════════════════════
    DESIGN SYSTEM
@@ -459,27 +459,6 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
   .topbar{padding:0 1rem}
 }
 @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-.kpi-pip{flex:1;height:6px;border-radius:3px;background:var(--border);transition:background .3s}
-
-/* ── Agent Today Cards ── */
-.agent-today-card{
-  background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);
-  padding:1.25rem;box-shadow:var(--sh-sm);position:relative;overflow:hidden;
-  transition:box-shadow var(--transition),transform var(--transition);
-}
-.agent-today-card:hover{box-shadow:var(--sh);transform:translateY(-2px)}
-.agent-today-card .atc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.agent-today-card .atc-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0}
-.agent-today-card .atc-kpi{font-size:11px;font-weight:700;border-radius:5px;padding:3px 8px;letter-spacing:.3px}
-.agent-today-card .atc-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.agent-today-card .atc-email{font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:12px}
-.agent-today-card .atc-count{font-size:36px;font-weight:800;color:var(--text);letter-spacing:-.5px;line-height:1}
-.agent-today-card .atc-label{font-size:11px;color:var(--text-muted);margin-top:3px;font-weight:500}
-.agent-today-card .atc-bar{margin-top:10px;background:var(--border-light);border-radius:var(--r-full);height:4px;overflow:hidden}
-.agent-today-card .atc-bar-fill{height:100%;border-radius:var(--r-full);transition:width .5s ease}
-.agent-today-card .atc-footer{display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--text-muted)}
-.agent-today-card.weekend-card{background:var(--bg);border-color:var(--border-light)}
-.agent-today-card .atc-rest{font-size:13px;color:var(--text-muted);font-style:italic}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes countUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .animate-in{animation:fadeUp .3s ease forwards}
@@ -508,44 +487,22 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
     <h1>Productivity Tracker</h1>
     <p class="login-sub">Takahami Medical Billing · Alliance Global Solutions</p>
 
-    <div style="margin:1.5rem 0 0;text-align:left">
-      <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px">Work Email</label>
-      <input id="login-email" type="email" placeholder="you@allianceglobalsolutions.com"
-        style="width:100%;padding:11px 14px;border:1.5px solid #E5E7EB;border-radius:8px;
-          font-size:14px;font-family:inherit;outline:none;transition:border .15s;color:#111827"
-        onkeydown="if(event.key==='Enter')doLogin()"
-        onfocus="this.style.borderColor='#2563EB';this.style.boxShadow='0 0 0 3px rgba(37,99,235,.1)'"
-        onblur="this.style.borderColor='#E5E7EB';this.style.boxShadow='none'"
-      />
+    <div id="g_id_onload"
+      data-client_id="519974257344-5u0bjm2sdctrnlq6b1oflsvesgn291fc.apps.googleusercontent.com"
+      data-callback="handleCredentialResponse"
+      data-auto_prompt="false"></div>
+    <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline"
+      data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left" data-width="350"></div>
 
-      <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin:14px 0 6px">Password</label>
-      <input id="login-pass" type="password" placeholder="Enter your password"
-        style="width:100%;padding:11px 14px;border:1.5px solid #E5E7EB;border-radius:8px;
-          font-size:14px;font-family:inherit;outline:none;transition:border .15s;color:#111827"
-        onkeydown="if(event.key==='Enter')doLogin()"
-        onfocus="this.style.borderColor='#2563EB';this.style.boxShadow='0 0 0 3px rgba(37,99,235,.1)'"
-        onblur="this.style.borderColor='#E5E7EB';this.style.boxShadow='none'"
-      />
-
-      <button onclick="doLogin()" id="login-btn"
-        style="width:100%;margin-top:16px;padding:12px;background:linear-gradient(135deg,#2563EB,#1D4ED8);
-          color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;
-          font-family:inherit;cursor:pointer;transition:all .15s;letter-spacing:.1px"
-        onmouseover="this.style.opacity='.9'"
-        onmouseout="this.style.opacity='1'">
-        Sign In
-      </button>
+    <div id="login-error">
+      <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+      Access denied. Use your @allianceglobalsolutions.com account only.
     </div>
 
-    <div id="login-status" style="font-size:13px;color:#6B7280;margin:10px 0;min-height:18px;text-align:center"></div>
-    <div id="login-error" style="display:none;padding:12px 14px;background:#FEF2F2;border:1px solid #FECACA;color:#DC2626;border-radius:8px;font-size:13px;margin-top:8px;text-align:left">
-      ⚠️ <span id="login-error-msg">Access denied.</span>
-    </div>
-
-    <div class="login-divider" style="margin-top:1.5rem"><span>secure access</span></div>
+    <div class="login-divider"><span>secure access</span></div>
     <div class="login-notice">
       <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
-      <span>Use your @allianceglobalsolutions.com email only</span>
+      <span>Company email only · Agents may only edit their own column · Data auto-saves locally</span>
     </div>
   </div>
 </div>
@@ -582,7 +539,11 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
           <span class="nav-item-text">My Productivity</span>
           <span class="nav-tooltip">My Productivity</span>
         </a>
-
+        <a class="nav-item" href="#" onclick="return false" style="opacity:.4;cursor:default">
+          <svg viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+          <span class="nav-item-text">Reports</span>
+          <span class="nav-tooltip">Reports</span>
+        </a>
       </div>
       <div class="nav-section">
         <div class="nav-label">Team</div>
@@ -591,8 +552,16 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
           <span class="nav-item-text">Agents</span>
           <span class="nav-tooltip">Agents</span>
         </a>
-
-
+        <a class="nav-item" href="#" onclick="return false" style="opacity:.5;cursor:default">
+          <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 00-2 0v2a1 1 0 102 0V9z" clip-rule="evenodd"/></svg>
+          <span class="nav-item-text">Leaderboard</span>
+          <span class="nav-tooltip">Leaderboard</span>
+        </a>
+        <a class="nav-item" href="#" onclick="return false" style="opacity:.5;cursor:default">
+          <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"/></svg>
+          <span class="nav-item-text">Coaching</span>
+          <span class="nav-tooltip">Coaching</span>
+        </a>
       </div>
       <div class="nav-section">
         <div class="nav-label">System</div>
@@ -659,7 +628,7 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
       <!-- Banners -->
       <div class="banner banner-info" id="agent-banner">
         <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
-        <span>Signed in as <strong id="agent-full-name">—</strong> — edit your daily entries in <strong>My Productivity</strong>.</span>
+        <span>Signed in as <strong id="agent-full-name">—</strong> — you can only edit your own column.</span>
       </div>
       <div class="banner banner-muted" id="readonly-notice" style="display:none">
         <svg viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>
@@ -669,65 +638,100 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
       <!-- Section header -->
       <div class="section-header">
         <div>
-          <div class="section-title" id="page-title">Team Dashboard</div>
+          <div class="section-title" id="page-title">Monthly Productivity</div>
           <div class="section-sub" id="page-sub">Loading...</div>
         </div>
         <div class="section-actions">
+          <!-- Filter toolbar inline -->
           <div class="filter-toolbar" style="margin:0;padding:8px 12px;gap:8px">
             <span class="filter-label">Month</span>
             <select id="sel-month" class="filter-select" onchange="loadView()"></select>
             <select id="sel-year" class="filter-select" onchange="loadView()"></select>
+            <div style="width:1px;height:20px;background:var(--border);flex-shrink:0"></div>
+            <span class="filter-label">Agent</span>
+            <select id="sel-agent" class="filter-select" onchange="onAgentChange()"></select>
           </div>
         </div>
       </div>
 
-      <!-- Team summary stats -->
-      <div class="stats-grid animate-in" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+      <!-- Stats -->
+      <div class="stats-grid animate-in">
         <div class="stat-card s-prod">
           <div class="stat-icon"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 00-2 0v2a1 1 0 102 0V9z" clip-rule="evenodd"/></svg></div>
-          <div class="stat-label">Team Today</div>
-          <div class="stat-value" id="team-today">—</div>
-          <div class="stat-sub">Total claims today</div>
-        </div>
-        <div class="stat-card s-ptg">
-          <div class="stat-icon"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></div>
           <div class="stat-label">MTD Productivity</div>
           <div class="stat-value" id="mtd-prod">—</div>
-          <div class="stat-sub" id="mtd-prod-sub">Team total this month</div>
+          <div class="stat-sub" id="mtd-prod-sub">Total cases this month</div>
           <div class="stat-bar"><div class="stat-bar-fill" id="mtd-progress-bar" style="width:0%"></div></div>
         </div>
         <div class="stat-card s-deficit">
           <div class="stat-icon"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/></svg></div>
-          <div class="stat-label">Team Deficit</div>
+          <div class="stat-label">Deficit</div>
           <div class="stat-value" id="mtd-deficit">—</div>
           <div class="stat-sub">vs. MTD target</div>
         </div>
-<div style="display:none"><span id="mtd-acpd"></span><span id="mtd-kpi"></span><span id="mtd-kpi-sub"></span><span id="kpi-card"></span><span id="kpi-pip-1"></span><span id="kpi-pip-2"></span><span id="kpi-pip-3"></span><span id="kpi-pip-4"></span><span id="kpi-pip-5"></span></div>
-      </div>
-
-      <!-- MTD Productivity per agent — CARDS -->
-      <div class="section-header" style="margin-top:0.5rem">
-        <div>
-          <div style="font-size:14px;font-weight:700;color:var(--text)" id="today-cards-title">MTD Productivity per Agent</div>
-          <div style="font-size:12px;color:var(--text-muted)" id="today-cards-sub">—</div>
+        <div class="stat-card s-ptg">
+          <div class="stat-icon"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></div>
+          <div class="stat-label">PTG %</div>
+          <div class="stat-value" id="mtd-ptg">—</div>
+          <div class="stat-sub">Productivity to goal</div>
+        </div>
+        <div class="stat-card s-acpd">
+          <div class="stat-icon"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg></div>
+          <div class="stat-label">ACPD</div>
+          <div class="stat-value" id="mtd-acpd">—</div>
+          <div class="stat-sub">Avg cases per work day</div>
         </div>
       </div>
-      <div id="today-agent-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:1.5rem"></div>
 
-      <!-- Monthly Leaderboard -->
-      <div class="lb-card" id="leaderboard-section">
-        <div class="lb-header">
-          <h3>🏆 Monthly Leaderboard</h3>
-          <span id="lb-subtitle">Ranked by total claims processed</span>
+      <!-- Target strip -->
+      <div class="target-strip" id="target-bar">
+        <div class="target-item">
+          <div class="target-item-label">Daily Target</div>
+          <div class="target-item-value"><span class="t-badge t-blue" id="daily-target-badge">—</span></div>
         </div>
-        <div id="leaderboard-body"></div>
+        <div class="target-item">
+          <div class="target-item-label">Pace Needed</div>
+          <div class="target-item-value"><span class="t-badge t-blue" id="pace-badge">—</span></div>
+        </div>
+        <div class="target-item">
+          <div class="target-item-label">Remaining</div>
+          <div class="target-item-value"><span class="t-badge t-blue" id="remaining-badge">—</span></div>
+        </div>
+        <div class="target-item" style="border-right:none">
+          <div class="target-item-label">Streak 🔥</div>
+          <div class="target-item-value"><span class="streak-pill" id="streak-badge">— days</span></div>
+        </div>
       </div>
 
-      <!-- Hidden elements kept for JS compatibility -->
-      <div style="display:none">
-        <select id="sel-agent"></select>
-        <table id="main-table"><thead id="table-head"></thead><tbody id="table-body"></tbody></table>
-        <span id="table-title"></span><span id="table-month-badge"></span>
+      <!-- Leaderboard -->
+      <div id="leaderboard-section">
+        <div class="lb-card">
+          <div class="lb-header">
+            <h3>👑 Team Leaderboard</h3>
+            <span id="lb-subtitle">Month-to-date ranking</span>
+          </div>
+          <div id="leaderboard-body"></div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-card animate-in">
+        <div class="table-toolbar">
+          <div class="table-toolbar-left">
+            <h3 id="table-title">Daily Entries</h3>
+            <span class="badge badge-blue" id="table-month-badge">—</span>
+          </div>
+          <div class="table-toolbar-right">
+            <div class="table-hint"><span class="wknd-dot"></span>Weekends locked</div>
+            <div class="table-hint" style="margin-left:8px">Enter advances · Paste from Excel/Sheets</div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="main-table">
+            <thead id="table-head"></thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
       </div>
 
       </div><!-- /view-dashboard -->
@@ -781,7 +785,18 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
             <div class="stat-value" id="my-ptg">—</div>
             <div class="stat-sub">Productivity to goal</div>
           </div>
-<div style="display:none"><span id="my-acpd"></span><span id="my-kpi"></span><span id="my-kpi-sub"></span><span id="my-kpi-card"></span><span id="my-kpi-pip-1"></span><span id="my-kpi-pip-2"></span><span id="my-kpi-pip-3"></span><span id="my-kpi-pip-4"></span><span id="my-kpi-pip-5"></span><span id="my-streak"></span></div>
+          <div class="stat-card s-acpd">
+            <div class="stat-icon"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg></div>
+            <div class="stat-label">ACPD</div>
+            <div class="stat-value" id="my-acpd">—</div>
+            <div class="stat-sub">Avg cases per work day</div>
+          </div>
+          <div class="stat-card" style="border-top:3px solid #7C3AED">
+            <div class="stat-icon" style="background:#F5F3FF;color:#7C3AED"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"/></svg></div>
+            <div class="stat-label">Streak 🔥</div>
+            <div class="stat-value" id="my-streak">—</div>
+            <div class="stat-sub">Days on target</div>
+          </div>
         </div>
         <div class="target-strip" id="my-target-bar">
           <div class="target-item">
@@ -873,18 +888,7 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
               <span class="badge badge-blue" id="ag-year-badge">—</span>
             </div>
             <div class="table-toolbar-right">
-              <span style="font-size:12px;color:var(--text-muted);margin-right:8px" id="ag-editable-hint"></span>
-              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                <select id="csv-sel-agent" class="filter-select" style="font-size:12px;padding:5px 10px">
-                </select>
-                <select id="csv-sel-month" class="filter-select" style="font-size:12px;padding:5px 10px">
-                  <option value="-1">All Months</option>
-                </select>
-                <button onclick="downloadCSV()" class="btn btn-outline btn-sm" style="display:flex;align-items:center;gap:6px">
-                  <svg viewBox="0 0 20 20" style="width:13px;height:13px;fill:currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-                  Download CSV
-                </button>
-              </div>
+              <span style="font-size:12px;color:var(--text-muted)" id="ag-editable-hint"></span>
             </div>
           </div>
           <div class="table-wrap">
@@ -928,66 +932,7 @@ const MANAGERS = [
   { name:'Zaldy',      email:'zaldy@allianceglobalsolutions.com',      initials:'ZL' },
 ];
 
-// ── KPI Daily Rate Thresholds ──────────────────────────────────
-// Each agent has { score4: daily min for KPI 4, score5: daily min for KPI 5 }
-// Goal is derived dynamically: score4 threshold × work days in period
-const KPI_RATES = {
-  default: { score4: 60, score5: 80 },   // all agents
-  2:       { score4: 43, score5: 59 },   // Christia Mapa (index 2)
-};
-
-// Get KPI thresholds for a given agent index
-function getKPIRates(agentIdx){
-  return KPI_RATES[agentIdx] || KPI_RATES.default;
-}
-
-// Get KPI score based on ACPD
-function getKPIScore(acpd, agentIdx){
-  const r = getKPIRates(agentIdx);
-  if(acpd >= r.score5) return 5;
-  if(acpd >= r.score4) return 4;
-  if(acpd >= r.score4 * 0.75) return 3;
-  if(acpd >= r.score4 * 0.5)  return 2;
-  return 1;
-}
-
-// Get KPI score color
-function getKPIColor(score){
-  if(score === 5) return { bg:'#F0FDF4', text:'#15803D', border:'#86EFAC' };
-  if(score === 4) return { bg:'#EFF6FF', text:'#1D4ED8', border:'#93C5FD' };
-  if(score === 3) return { bg:'#FFFBEB', text:'#B45309', border:'#FCD34D' };
-  if(score === 2) return { bg:'#FEF3C7', text:'#92400E', border:'#FDE68A' };
-  return                 { bg:'#FEF2F2', text:'#B91C1C', border:'#FCA5A5' };
-}
-
-// Dynamic monthly goal = score4 threshold × work days in month
-function getMonthlyGoal(agentIdx, year, month){
-  const r = getKPIRates(agentIdx);
-  const dim = new Date(year, month+1, 0).getDate();
-  let workDays = 0;
-  for(let d=1; d<=dim; d++){
-    const dow = new Date(year,month,d).getDay();
-    if(dow!==0 && dow!==6) workDays++;
-  }
-  return r.score4 * workDays;
-}
-
-// Legacy compatibility — returns score4-based goal for given month/year
-// Uses default rates (non-agent-specific) for team-level display
-function getTeamMonthlyGoal(year, month){
-  const dim = new Date(year, month+1, 0).getDate();
-  let workDays = 0;
-  for(let d=1; d<=dim; d++){
-    const dow = new Date(year,month,d).getDay();
-    if(dow!==0 && dow!==6) workDays++;
-  }
-  return KPI_RATES.default.score4 * workDays;
-}
-
-// Keep MONTHLY_GOALS as a computed proxy for backwards compat
-// Simple function instead of Proxy to avoid compatibility issues
-function MONTHLY_GOALS_get(month){ return getTeamMonthlyGoal(new Date().getFullYear(), parseInt(month)); }
-const MONTHLY_GOALS = { get: MONTHLY_GOALS_get };
+const MONTHLY_GOALS = {0:1890,1:1800,2:1980,3:1890,4:1710,5:1890,6:180,7:1890,8:1890,9:1890,10:1890,11:1890};
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 function isManager(email){ return MANAGERS.some(m=>m.email.toLowerCase()===(email||'').toLowerCase()); }
@@ -995,160 +940,44 @@ function isManager(email){ return MANAGERS.some(m=>m.email.toLowerCase()===(emai
 // ══════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════
-let currentUser=null, currentAgentIdx=-1, currentIsManager=false, data={}, selectedAgentIdx=-1, currentView="dashboard";
+let currentUser=null, currentAgentIdx=-1, currentIsManager=false, data={}, selectedAgentIdx=-1;
 
 // ══════════════════════════════════════════════
 // AUTH
 // ══════════════════════════════════════════════
-function doLogin(){
-  const emailEl = document.getElementById('login-email');
-  const passEl  = document.getElementById('login-pass');
-  const btn     = document.getElementById('login-btn');
-  if(!emailEl || !passEl) return;
-
-  const email = (emailEl.value || '').toLowerCase().trim();
-  const pass  = (passEl.value || '').trim();
-
-  // Clear previous errors
-  const errEl = document.getElementById('login-error');
-  if(errEl) errEl.style.display = 'none';
-  setLoginStatus('Signing in...');
-  if(btn) btn.disabled = true;
-
-  setTimeout(() => {
-    try {
-      // Domain check
-      const domain = email.split('@')[1] || '';
-      if(domain !== ALLOWED_DOMAIN){
-        showLoginError('Access denied. Use your @' + ALLOWED_DOMAIN + ' email.');
-        if(btn){ btn.disabled=false; btn.textContent='Sign In'; }
-        setLoginStatus('');
-        return;
-      }
-
-      // Check against known users (agents + managers)
-      const allUsers = [...AGENTS, ...MANAGERS];
-      const matchedUser = allUsers.find(u => u.email.toLowerCase() === email);
-
-      if(!matchedUser){
-        showLoginError('Email not found in the system: ' + email);
-        if(btn){ btn.disabled=false; }
-        setLoginStatus('');
-        return;
-      }
-
-      // Password: first part before @ (e.g. jaypee, a.hubilla, anthony.b)
-      // OR the word "takahami" as master password for managers
-      const expectedPass = email.split('@')[0].toLowerCase();
-      const masterPass   = 'takahami2026';
-
-      if(pass !== expectedPass && pass !== masterPass){
-        showLoginError('Incorrect password. Use your email username (before the @) as password.');
-        if(btn){ btn.disabled=false; }
-        setLoginStatus('');
-        return;
-      }
-
-      // Success — set up session
-      currentUser      = { email, name: matchedUser.name, picture: '' };
-      currentAgentIdx  = AGENTS.findIndex(a => a.email.toLowerCase() === email);
-      currentIsManager = isManager(email);
-
-      try {
-        localStorage.setItem('tmb_user',      JSON.stringify(currentUser));
-        localStorage.setItem('tmb_agentIdx',  currentAgentIdx);
-        localStorage.setItem('tmb_isManager', currentIsManager);
-      } catch(e){ console.warn('localStorage error:', e); }
-
-      setLoginStatus('✓ Welcome ' + matchedUser.name.split(',')[0] + '! Loading...');
-      setTimeout(() => startApp(), 400);
-
-    } catch(err){
-      console.error('Login error:', err);
-      showLoginError('Login error: ' + err.message);
-      if(btn){ btn.disabled=false; }
-      setLoginStatus('');
-    }
-  }, 300);
-}
-
-function handleCredentialResponse(response){ /* GSI disabled */ }
-function triggerGSI(){ doLogin(); }
-
-function showLoginError(msg){
-  const el  = document.getElementById('login-error');
-  const msg2 = document.getElementById('login-error-msg');
-  if(el)  el.style.display = 'block';
-  if(msg2) msg2.textContent = msg;
-  const st = document.getElementById('login-status');
-  if(st) st.textContent = '';
-  console.error('Login error:', msg);
-}
-
-function setLoginStatus(msg){
-  const el = document.getElementById('login-status');
-  if(el) el.textContent = msg;
-}
-
-function triggerGSI(){
-  setLoginStatus('Opening Google sign-in...');
-  try {
-    google.accounts.id.prompt();
-  } catch(e) {
-    setLoginStatus('Error: ' + e.message);
+function handleCredentialResponse(response){
+  const p=parseJwt(response.credential);
+  const email=p.email||'';
+  if((email.split('@')[1]||'')!==ALLOWED_DOMAIN){
+    document.getElementById('login-error').style.display='flex'; return;
   }
+  currentUser={email,name:p.name,picture:p.picture};
+  currentAgentIdx=AGENTS.findIndex(a=>a.email.toLowerCase()===email.toLowerCase());
+  currentIsManager=isManager(email);
+  sessionStorage.setItem('user',JSON.stringify(currentUser));
+  sessionStorage.setItem('agentIdx',currentAgentIdx);
+  sessionStorage.setItem('isManager',currentIsManager);
+  startApp();
 }
 
 function parseJwt(token){
-  try {
-    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    // Pad base64 if needed
-    const padded = base64 + '=='.slice(0, (4 - base64.length % 4) % 4);
-    const binary = atob(padded);
-    // Handle Unicode safely
-    const bytes = new Uint8Array(binary.length);
-    for(let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    const json = new TextDecoder().decode(bytes);
-    return JSON.parse(json);
-  } catch(e) {
-    // Fallback: simple atob
-    const base64 = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
-    return JSON.parse(atob(base64));
-  }
+  return JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
 }
 
 function signOut(){
-  localStorage.removeItem('tmb_user');
-  localStorage.removeItem('tmb_agentIdx');
-  localStorage.removeItem('tmb_isManager');
-  currentUser = null; currentAgentIdx = -1; currentIsManager = false;
-  document.getElementById('app-screen').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
-  const errEl = document.getElementById('login-error');
-  if(errEl) errEl.style.display = 'none';
-  setLoginStatus('');
-  const passEl = document.getElementById('login-pass');
-  if(passEl) passEl.value = '';
+  sessionStorage.clear(); currentUser=null; currentAgentIdx=-1; currentIsManager=false;
+  document.getElementById('app-screen').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  google.accounts.id.disableAutoSelect();
 }
 
 function checkSession(){
-  try {
-    const s = localStorage.getItem('tmb_user');
-    if(s){
-      const parsed = JSON.parse(s);
-      // Validate the stored session has required fields
-      if(!parsed || !parsed.email) return false;
-      currentUser = parsed;
-      currentAgentIdx = parseInt(localStorage.getItem('tmb_agentIdx') || '-1');
-      currentIsManager = localStorage.getItem('tmb_isManager') === 'true';
-      startApp();
-      return true;
-    }
-  } catch(e) {
-    console.warn('Session restore failed:', e);
-    localStorage.removeItem('tmb_user');
-    localStorage.removeItem('tmb_agentIdx');
-    localStorage.removeItem('tmb_isManager');
+  const s=sessionStorage.getItem('user');
+  if(s){
+    currentUser=JSON.parse(s);
+    currentAgentIdx=parseInt(sessionStorage.getItem('agentIdx')||'-1');
+    currentIsManager=sessionStorage.getItem('isManager')==='true';
+    startApp(); return true;
   }
   return false;
 }
@@ -1169,101 +998,58 @@ function updateTopbarDate(){
 }
 
 function startApp(){
-  try {
-    // Show app, hide login
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app-screen').style.display='block';
-    updateTopbarDate();
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').style.display='block';
+  document.getElementById('app-screen').className='';
+  updateTopbarDate();
 
-    const agent = AGENTS[currentAgentIdx] || null;
-    const mgr   = currentIsManager
-      ? MANAGERS.find(m => m.email.toLowerCase() === (currentUser.email||'').toLowerCase()) || null
-      : null;
+  const agent=AGENTS[currentAgentIdx];
+  const mgr=currentIsManager?MANAGERS.find(m=>m.email.toLowerCase()===currentUser.email.toLowerCase()):null;
+  const initials=agent?agent.initials:mgr?mgr.initials:currentUser.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
 
-    // Initials
-    const initials = agent ? agent.initials
-      : mgr ? mgr.initials
-      : ((currentUser.name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'U');
+  document.getElementById('user-initials').textContent=initials;
+  const sbi=document.getElementById('sidebar-initials');
+  if(sbi) sbi.textContent=initials;
+  const sbn=document.getElementById('sidebar-name');
+  const sbr=document.getElementById('sidebar-role');
+  document.getElementById('user-name-display').textContent=
+    agent?agent.name.split(',')[1].trim():mgr?mgr.name:currentUser.name;
 
-    // Topbar user
-    const userInitEl = document.getElementById('user-initials');
-    if(userInitEl) userInitEl.textContent = initials;
-    const userNameEl = document.getElementById('user-name-display');
-    if(userNameEl) userNameEl.textContent =
-      agent ? (agent.name.split(',')[1]||agent.name).trim()
-      : mgr  ? mgr.name
-      : (currentUser.name||currentUser.email);
-
-    // Sidebar user
-    const sbi = document.getElementById('sidebar-initials');
-    const sbn = document.getElementById('sidebar-name');
-    const sbr = document.getElementById('sidebar-role');
-    if(sbi) sbi.textContent = initials;
-
-    // Banners & role
-    const agentBanner   = document.getElementById('agent-banner');
-    const readonlyNotice= document.getElementById('readonly-notice');
-    const lbSection     = document.getElementById('leaderboard-section');
-
-    if(currentIsManager){
-      const n = mgr ? mgr.name : (currentUser.name||currentUser.email);
-      if(sbn) sbn.textContent = n;
-      if(sbr){ sbr.textContent='Manager'; sbr.style.color='#D97706'; }
-      if(agentBanner){
-        agentBanner.className = 'banner banner-warning';
-        agentBanner.style.display = 'flex';
-        agentBanner.innerHTML =
-          '<svg viewBox="0 0 20 20" style="width:15px;height:15px;fill:currentColor;flex-shrink:0"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>'
-          +'<span>Signed in as <strong>'+n+' 👑</strong> — Manager · Full access</span>';
-      }
-      if(readonlyNotice) readonlyNotice.style.display='none';
-      if(lbSection) lbSection.style.display='block';
-    } else if(currentAgentIdx >= 0){
-      const agentName = agent.name;
-      if(sbn) sbn.textContent = (agentName.split(',')[1]||agentName).trim();
-      if(sbr) sbr.textContent = 'Agent';
-      if(agentBanner){
-        agentBanner.className = 'banner banner-info';
-        agentBanner.style.display = 'flex';
-        agentBanner.innerHTML =
-          '<svg viewBox="0 0 20 20" style="width:15px;height:15px;fill:currentColor;flex-shrink:0"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>'
-          +'<span>Signed in as <strong>'+agentName+'</strong> — edit your entries in My Productivity</span>';
-      }
-      if(readonlyNotice) readonlyNotice.style.display='none';
-      if(lbSection) lbSection.style.display='none';
-    } else {
-      if(agentBanner) agentBanner.style.display='none';
-      if(readonlyNotice) readonlyNotice.style.display='flex';
-      if(lbSection) lbSection.style.display='none';
-    }
-
-    buildSelectors();
-    buildMySelectors();
-    buildAgentSelectors();
-    loadFromStorage();
-    loadView();
-    setupKeyboard();
-    setupPaste();
-
-    // Nav visibility
-    const myNav = document.getElementById('nav-my');
-    if(myNav) myNav.style.display = currentIsManager ? 'none' : 'flex';
-    const agNav = document.getElementById('nav-agents');
-    if(agNav) agNav.style.display = currentIsManager ? 'flex' : 'none';
-
-  } catch(err) {
-    // If startApp crashes, show it on screen instead of silently bouncing to login
-    console.error('startApp crashed:', err);
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app-screen').style.display='block';
-    document.getElementById('app-screen').innerHTML =
-      '<div style="padding:40px;font-family:sans-serif;max-width:600px;margin:auto">'
-      +'<h2 style="color:#dc2626">App Error</h2>'
-      +'<p style="color:#6b7280;margin:12px 0">Something went wrong loading the dashboard. Please share this error with your admin:</p>'
-      +'<pre style="background:#f8f9fa;padding:16px;border-radius:8px;overflow:auto;font-size:13px;color:#1f2937">'+err.toString()+'\n\n'+err.stack+'</pre>'
-      +'<button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#2563eb;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px">Reload page</button>'
-      +'</div>';
+  if(currentIsManager){
+    const n=mgr?mgr.name:currentUser.name;
+    if(sbn) sbn.textContent=n;
+    if(sbr){ sbr.textContent='Manager'; sbr.style.color='#D97706'; }
+    document.getElementById('agent-banner').className='banner banner-warning';
+    document.getElementById('agent-banner').querySelector('span').innerHTML=
+      'Signed in as <strong>'+n+' 👑</strong> — Manager · Full access · Leaderboard enabled.';
+    document.getElementById('agent-banner').style.display='flex';
+    document.getElementById('readonly-notice').style.display='none';
+    document.getElementById('leaderboard-section').style.display='block';
+  } else if(currentAgentIdx>=0){
+    const agentName=AGENTS[currentAgentIdx].name;
+    document.getElementById('agent-full-name').textContent=agentName;
+    if(sbn) sbn.textContent=agentName.split(',')[1]?.trim()||agentName;
+    if(sbr) sbr.textContent='Agent';
+    document.getElementById('agent-banner').style.display='flex';
+    document.getElementById('readonly-notice').style.display='none';
+    document.getElementById('leaderboard-section').style.display='none';
+  } else {
+    document.getElementById('agent-banner').style.display='none';
+    document.getElementById('readonly-notice').style.display='flex';
   }
+
+  buildSelectors();
+  buildMySelectors();
+  buildAgentSelectors();
+  loadFromStorage();
+  loadView();
+  setupKeyboard();
+  setupPaste();
+  // Nav visibility
+  const myNav = document.getElementById('nav-my');
+  if (myNav) myNav.style.display = currentIsManager ? 'none' : 'flex';
+  const agNav = document.getElementById('nav-agents');
+  if (agNav) agNav.style.display = currentIsManager ? 'flex' : 'none';
 }
 
 function buildSelectors(){
@@ -1363,7 +1149,7 @@ function setDayValue(y,m,ai,d,val){
   ensurePath(y,m);
   if(val===''||val===null||isNaN(val)) delete data[y][m][ai][d];
   else data[y][m][ai][d]=Number(val);
-  saveToStorage(); updateMTD(); updateLeaderboard(); if(currentView==='dashboard') buildTodayCards();
+  saveToStorage(); updateMTD(); updateTargetBar(); updateLeaderboard();
 }
 
 // ══════════════════════════════════════════════
@@ -1375,14 +1161,14 @@ function loadView(){
   const dim=new Date(year,month+1,0).getDate();
   document.getElementById('table-title').textContent=`${MONTHS[month]} ${year} — Daily Entries`;
   document.getElementById('page-title').textContent=`${MONTHS[month]} ${year}`;
-  document.getElementById('page-sub').textContent=`Takahami Medical Billing · ${AGENTS.length} Agents · Monthly Goal: ${(MONTHLY_GOALS_get(month)||1890).toLocaleString()}`;
+  document.getElementById('page-sub').textContent=`Takahami Medical Billing · ${AGENTS.length} Agents · Monthly Goal: ${(MONTHLY_GOALS[month]||1890).toLocaleString()}`;
   document.getElementById('topbar-title').textContent=`${MONTHS[month]} ${year}`;
   document.getElementById('breadcrumb-active').textContent=`${MONTHS[month]} ${year}`;
   const tbadge=document.getElementById('table-month-badge');
   if(tbadge) tbadge.textContent=`${MONTHS[month]} ${year}`;
   ensurePath(year,month);
-  buildTodayCards();
-  updateMTD(); updateLeaderboard();
+  buildTable(year,month,dim);
+  updateMTD(); updateTargetBar(); updateLeaderboard();
 }
 
 function isWeekend(y,m,d){ const dow=new Date(y,m,d).getDay(); return dow===0||dow===6; }
@@ -1395,7 +1181,7 @@ function isCurrentDay(y,m,d){
 function buildTable(year,month,dim){
   const thead=document.getElementById('table-head');
   const tbody=document.getElementById('table-body');
-  const goal=MONTHLY_GOALS_get(month)||1890;
+  const goal=MONTHLY_GOALS[month]||1890;
 
   // Header — name only, clean, no inline elements that push height
   let hh=`<tr>`;
@@ -1447,13 +1233,8 @@ function buildTable(year,month,dim){
     </td>`;
   });
   bb+=`</tr>`;
-  const year_g=parseInt(document.getElementById('sel-year').value);
-  const month_g=parseInt(document.getElementById('sel-month').value);
-  bb+=`<tr class="goal-row"><td>Goal (Score 4)</td>`;
-  AGENTS.forEach((_,i)=>{
-    const r=getKPIRates(i);
-    bb+=`<td title="Score 4: ${r.score4}+/day · Score 5: ${r.score5}+/day">${r.score4}/day</td>`;
-  });
+  bb+=`<tr class="goal-row"><td>Goal</td>`;
+  AGENTS.forEach(()=>{bb+=`<td>${goal}</td>`;});
   bb+=`</tr>`;
   bb+=`<tr class="deficit-row"><td>Deficit</td>`;
   AGENTS.forEach((_,i)=>{bb+=`<td id="deficit-${i}">—</td>`;});
@@ -1478,7 +1259,7 @@ function cellChanged(year,month,ai,day,val){
 }
 
 function updateTotals(year,month,dim){
-  const goal=MONTHLY_GOALS_get(month)||1890;
+  const goal=MONTHLY_GOALS[month]||1890;
   AGENTS.forEach((_,i)=>{
     let total=0;
     for(let d=1;d<=dim;d++){
@@ -1492,12 +1273,11 @@ function updateTotals(year,month,dim){
     const del=document.getElementById(`deficit-${i}`);
     if(del){del.textContent=deficit<=0?`+${Math.abs(deficit)}`:deficit;del.className=deficit<=0?'on-target':'';}
     // Mini progress bar
-    const agentGoal2 = getMonthlyGoal(i, year, month);
-    const pct=Math.min(100,(total/agentGoal2)*100);
+    const pct=Math.min(100,(total/goal)*100);
     const mb=document.getElementById(`mini-bar-${i}`);
     if(mb){
       mb.style.width=pct+'%';
-      mb.style.background=kpiScore>=5?'linear-gradient(90deg,#22c55e,#16a34a)':kpiScore>=4?'linear-gradient(90deg,#2563eb,#7c3aed)':kpiScore>=3?'linear-gradient(90deg,#f59e0b,#d97706)':'linear-gradient(90deg,#ef4444,#f97316)';
+      mb.style.background=pct>=100?'linear-gradient(90deg,#34d399,#10b981)':pct>=75?'linear-gradient(90deg,#60a5fa,#a78bfa)':'linear-gradient(90deg,#f87171,#fb923c)';
     }
     // At-risk flag
     // AT RISK indicator in column header
@@ -1520,6 +1300,7 @@ function updateTotals(year,month,dim){
 function updateTargetBar(){
   const year=parseInt(document.getElementById('sel-year').value);
   const month=parseInt(document.getElementById('sel-month').value);
+  const goal=MONTHLY_GOALS[month]||1890;
   const today=new Date();
   const isCurrentMonth=today.getFullYear()===year&&today.getMonth()===month;
   const agentIdx=selectedAgentIdx>=0?selectedAgentIdx:(currentAgentIdx>=0?currentAgentIdx:0);
@@ -1539,8 +1320,7 @@ function updateTargetBar(){
   let remainingWorkDays=0;
   for(let d=lastDay;d<=dim;d++){if(!isWeekend(year,month,d))remainingWorkDays++;}
 
-  const r = getKPIRates(agentIdx);
-  const dailyTarget = r.score4; // Score 4 threshold is the daily target
+  const dailyTarget=totalWorkDays>0?Math.ceil(goal/totalWorkDays):0;
 
   // Agent total so far
   let total=0;
@@ -1551,8 +1331,7 @@ function updateTargetBar(){
     }
   }
 
-  const agentMonthlyGoal = getMonthlyGoal(agentIdx, year, month);
-  const remaining=Math.max(0,agentMonthlyGoal-total);
+  const remaining=Math.max(0,goal-total);
   const paceNeeded=remainingWorkDays>0?Math.ceil(remaining/remainingWorkDays):0;
 
   const dtBadge=document.getElementById('daily-target-badge');
@@ -1587,9 +1366,8 @@ function updateTargetBar(){
     streakBadge.style.borderColor=streak>=5?'#e9d5ff':streak>=3?'#bfdbfe':'#e5e7eb';
   }
 
-  // Show target bar only when viewing a specific agent
-  const showTargetBar = !currentIsManager || selectedAgentIdx >= 0;
-  document.getElementById('target-bar').style.display=showTargetBar?'flex':'none';
+  // Hide target bar for managers (show leaderboard instead)
+  document.getElementById('target-bar').style.display=currentIsManager?'none':'flex';
 }
 
 // ══════════════════════════════════════════════
@@ -1599,12 +1377,13 @@ function updateMTD(){
   const year=parseInt(document.getElementById('sel-year').value);
   const month=parseInt(document.getElementById('sel-month').value);
   const dim=new Date(year,month+1,0).getDate();
+  const goal=MONTHLY_GOALS[month]||1890;
   const today=new Date();
   const isCurrent=today.getFullYear()===year&&today.getMonth()===month;
   const lastDay=isCurrent?today.getDate():dim;
-  // Dashboard always shows team totals
-  const showAll = (currentView === 'dashboard');
-  const agentIdx = showAll ? 0 : (selectedAgentIdx >= 0 ? selectedAgentIdx : (currentAgentIdx >= 0 ? currentAgentIdx : 0));
+  // If a specific agent is selected use them, else fall back
+  const agentIdx = selectedAgentIdx >= 0 ? selectedAgentIdx : (currentAgentIdx >= 0 ? currentAgentIdx : 0);
+  const showAll = currentIsManager && selectedAgentIdx < 0;
 
   let total=0,workDays=0;
   for(let d=1;d<=lastDay;d++){
@@ -1621,13 +1400,7 @@ function updateMTD(){
   let totalWorkDays=0;
   for(let d=1;d<=dim;d++){if(!isWeekend(year,month,d))totalWorkDays++;}
 
-  // Per-agent or team goal based on KPI score4 threshold × work days
-  let goalBase;
-  if(showAll){
-    goalBase = AGENTS.reduce((sum,_,i) => sum + getMonthlyGoal(i, year, month), 0);
-  } else {
-    goalBase = getMonthlyGoal(agentIdx, year, month);
-  }
+  const goalBase=showAll?goal*AGENTS.length:goal;
   const mtdGoal=Math.round((goalBase/totalWorkDays)*workDays);
   const deficit=total-mtdGoal;
   const ptg=mtdGoal>0?((total/mtdGoal)*100).toFixed(1):'0.0';
@@ -1641,39 +1414,6 @@ function updateMTD(){
   document.getElementById('mtd-ptg').textContent=`${ptg}%`;
   document.getElementById('mtd-ptg').style.color=parseFloat(ptg)>=95?'var(--success)':parseFloat(ptg)>=75?'var(--warning)':'var(--danger)';
   document.getElementById('mtd-acpd').textContent=acpd;
-
-  // ── KPI Score ──
-  const acpdNum = parseFloat(acpd);
-  const kpiAgentIdx = showAll ? -1 : agentIdx;
-  const kpiScore = kpiAgentIdx >= 0 ? getKPIScore(acpdNum, kpiAgentIdx) : null;
-
-  const kpiEl    = document.getElementById('mtd-kpi');
-  const kpiSub   = document.getElementById('mtd-kpi-sub');
-  const kpiCard  = document.getElementById('kpi-card');
-
-  if(kpiEl && kpiScore !== null){
-    const col = getKPIColor(kpiScore);
-    kpiEl.textContent = kpiScore;
-    kpiEl.style.color = col.text;
-    if(kpiCard){
-      kpiCard.style.borderTopColor = col.border;
-      kpiCard.querySelector('.stat-icon').style.background = col.bg;
-      kpiCard.querySelector('.stat-icon').style.color = col.text;
-    }
-    const r = getKPIRates(kpiAgentIdx);
-    if(kpiSub) kpiSub.textContent = `Score ${kpiScore}/5 · Need ${r.score4}+/day for 4, ${r.score5}+/day for 5`;
-    // Pips
-    for(let p=1;p<=5;p++){
-      const pip = document.getElementById(`kpi-pip-${p}`);
-      if(pip){
-        const col2 = getKPIColor(p);
-        pip.style.background = p <= kpiScore ? col2.text : 'var(--border)';
-      }
-    }
-  } else if(kpiEl){
-    kpiEl.textContent = '—';
-    if(kpiSub) kpiSub.textContent = 'Select an agent to see KPI score';
-  }
   const bar=document.getElementById('mtd-progress-bar');
   bar.style.width=pct+'%';
   bar.style.background=pct>=100?'linear-gradient(90deg,#059669,#10b981)':pct>=75?'linear-gradient(90deg,#2563eb,#7c3aed)':'linear-gradient(90deg,#d97706,#f59e0b)';
@@ -1691,6 +1431,7 @@ function updateLeaderboard(){
   if(!currentIsManager) return;
   const year=parseInt(document.getElementById('sel-year').value);
   const month=parseInt(document.getElementById('sel-month').value);
+  const goal=MONTHLY_GOALS[month]||1890;
   const today=new Date();
   const isCurrent=today.getFullYear()===year&&today.getMonth()===month;
   const lastDay=isCurrent?today.getDate():new Date(year,month+1,0).getDate();
@@ -1698,23 +1439,18 @@ function updateLeaderboard(){
 
   // Calc totals per agent
   const scores=AGENTS.map((a,i)=>{
-    let total=0, elapsed=0;
-    for(let d=1;d<=dim;d++){
+    let total=0;
+    for(let d=1;d<=lastDay;d++){
       if(!isWeekend(year,month,d)){
-        if(d<=lastDay){
-          elapsed++;
-          const v=getDayValue(year,month,i,d);
-          if(v!==''&&!isNaN(v))total+=Number(v);
-        }
+        const v=getDayValue(year,month,i,d);
+        if(v!==''&&!isNaN(v))total+=Number(v);
       }
     }
-    let totalWorkDays=0;
-    for(let d=1;d<=dim;d++){if(!isWeekend(year,month,d))totalWorkDays++;}
-    const agentGoal = getMonthlyGoal(i, year, month);
-    const mtdGoal = totalWorkDays>0?Math.round((agentGoal/totalWorkDays)*elapsed):agentGoal;
+    let totalWorkDays=0,elapsed=0;
+    for(let d=1;d<=dim;d++){if(!isWeekend(year,month,d)){totalWorkDays++;if(d<=lastDay)elapsed++;}}
+    const mtdGoal=Math.round((goal/totalWorkDays)*elapsed);
     const ptg=mtdGoal>0?(total/mtdGoal*100):0;
-    const acpd = elapsed>0?total/elapsed:0;
-    return {name:a.name.split(',')[1]?.trim()||a.name,total,mtdGoal,ptg,acpd,elapsed,initials:a.initials,agentIdx:i};
+    return {name:a.name.split(',')[1]?.trim()||a.name,total,mtdGoal,ptg,initials:a.initials};
   }).sort((a,b)=>b.total-a.total);
 
   const maxTotal=scores[0]?.total||1;
@@ -1726,20 +1462,18 @@ function updateLeaderboard(){
     const rankCls=idx===0?'r1':idx===1?'r2':idx===2?'r3':'rn';
     const rankLabel=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':(idx+1);
     const barColor=colors[idx]||'linear-gradient(90deg,#2563eb,#7c3aed)';
+    const ptgCls=s.ptg>=95?'ok':s.ptg>=75?'warn':'bad';
     const barPct=maxTotal>0?(s.total/maxTotal*100):0;
-    const kpiS=getKPIScore(s.acpd,s.agentIdx);
-    const kpiC=getKPIColor(kpiS);
     html+=`<div class="lb-row">
       <div class="lb-rank ${rankCls}">${rankLabel}</div>
       <div class="lb-name">${s.name}</div>
       <div class="lb-bar-wrap"><div class="lb-bar-fill" style="width:${barPct}%;background:${barColor}"></div></div>
-      <div class="lb-value" style="font-weight:800;font-size:15px">${s.total.toLocaleString()} <span style="font-size:11px;color:var(--text-muted);font-weight:500">claims</span></div>
-      <div style="font-size:11px;font-weight:600;color:var(--text-secondary);min-width:60px;text-align:right">${s.acpd.toFixed(1)}/day</div>
-      <div style="min-width:52px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:${kpiC.bg};color:${kpiC.text};border:1px solid ${kpiC.border}">KPI ${kpiS}</div>
+      <div class="lb-value">${s.total.toLocaleString()}</div>
+      <div class="lb-ptg ${ptgCls}">${s.ptg.toFixed(1)}%</div>
     </div>`;
   });
   document.getElementById('leaderboard-body').innerHTML=html;
-  document.getElementById('lb-subtitle').textContent=`${MONTHS[month]} ${year} · Ranked by total claims`;
+  document.getElementById('lb-subtitle').textContent=`${MONTHS[month]} ${year} · MTD ranking`;
 }
 
 // ══════════════════════════════════════════════
@@ -1764,7 +1498,7 @@ async function syncToSheets(){
   }
 
   const payload={year,month,monthName:MONTHS[month],sheetId:SHEET_ID,
-    agents:AGENTS.map(a=>a.name),goal:MONTHLY_GOALS_get(month)||1890,
+    agents:AGENTS.map(a=>a.name),goal:MONTHLY_GOALS[month]||1890,
     rows,submittedBy:currentUser.email,timestamp:new Date().toISOString()};
 
   try{
@@ -1806,6 +1540,8 @@ function showToast(msg,type=''){
 // ══════════════════════════════════════════════
 // VIEW SWITCHING
 // ══════════════════════════════════════════════
+let currentView = 'dashboard';
+
 function switchView(view) {
   currentView = view;
   document.getElementById('view-dashboard').style.display = view === 'dashboard' ? 'block' : 'none';
@@ -1881,7 +1617,7 @@ function loadMyView() {
   if (!msEl || !ysEl) return;
   const month = parseInt(msEl.value);
   const year  = parseInt(ysEl.value);
-  const goal  = getMonthlyGoal(ai, year, month);
+  const goal  = MONTHLY_GOALS[month] || 1890;
   const dim   = new Date(year, month + 1, 0).getDate();
   const now   = new Date();
   const isCurrent = now.getFullYear() === year && now.getMonth() === month;
@@ -1899,8 +1635,7 @@ function loadMyView() {
   if (tb) tb.textContent = MONTHS[month] + ' ' + year;
 
   const goalBadge = document.getElementById('my-goal-badge');
-  const myRatesDisplay = getKPIRates(ai);
-  if (goalBadge) goalBadge.textContent = `${myRatesDisplay.score4}+/day (Score 4) · ${myRatesDisplay.score5}+/day (Score 5)`;
+  if (goalBadge) goalBadge.textContent = goal.toLocaleString() + ' cases';
 
   // Build table
   const thead = document.getElementById('my-table-head');
@@ -1915,8 +1650,7 @@ function loadMyView() {
 
   let bb = '';
   let streak = 0, streakActive = true;
-  const myKPIRates = getKPIRates(ai);
-  const dailyTarget = myKPIRates.score4; // Score 4 threshold
+  const dailyTarget = totalWorkDays > 0 ? Math.ceil(goal / totalWorkDays) : 0;
 
   for (let d = 1; d <= dim; d++) {
     const dow = new Date(year, month, d).getDay();
@@ -2003,29 +1737,6 @@ function loadMyView() {
     myPtg.style.color = parseFloat(ptg) >= 95 ? 'var(--success-dark)' : parseFloat(ptg) >= 75 ? 'var(--warning-dark)' : 'var(--danger)';
   }
   if (myAcpd) myAcpd.textContent = acpd;
-
-  // ── My KPI Score ──
-  const myKpiEl   = document.getElementById('my-kpi');
-  const myKpiSub  = document.getElementById('my-kpi-sub');
-  const myKpiCard = document.getElementById('my-kpi-card');
-  const myAcpdNum = elapsedWorkDays > 0 ? totalCases / elapsedWorkDays : 0;
-  const myKpiScore = getKPIScore(myAcpdNum, ai);
-  const myCol = getKPIColor(myKpiScore);
-  if(myKpiEl){
-    myKpiEl.textContent = myKpiScore;
-    myKpiEl.style.color = myCol.text;
-  }
-  if(myKpiCard){
-    myKpiCard.style.borderTopColor = myCol.border;
-    const icon = myKpiCard.querySelector('.stat-icon');
-    if(icon){ icon.style.background = myCol.bg; icon.style.color = myCol.text; }
-  }
-  const myRates = getKPIRates(ai);
-  if(myKpiSub) myKpiSub.textContent = `Score ${myKpiScore}/5 · Target: ${myRates.score4}+/day for 4, ${myRates.score5}+/day for 5`;
-  for(let p=1;p<=5;p++){
-    const pip = document.getElementById(`my-kpi-pip-${p}`);
-    if(pip) pip.style.background = p <= myKpiScore ? myCol.text : 'var(--border)';
-  }
   if (myStreak) myStreak.textContent = streak + ' day' + (streak !== 1 ? 's' : '');
   if (myBar) {
     const pct = Math.min(100, mtdGoal > 0 ? (totalCases / mtdGoal * 100) : 0);
@@ -2079,13 +1790,8 @@ function myCellChanged(year, month, ai, day, val) {
 function buildAgentSelectors(){
   const yy = document.getElementById('ag-sel-year');
   const aa = document.getElementById('ag-sel-agent');
-  const csvAg = document.getElementById('csv-sel-agent');
-  const csvMo = document.getElementById('csv-sel-month');
   if(!yy || !aa) return;
   yy.innerHTML=''; aa.innerHTML='';
-  if(csvAg) csvAg.innerHTML='';
-  if(csvMo){ csvMo.innerHTML='<option value="-1">All Months</option>'; }
-
   const now = new Date();
   for(let y=2024; y<=now.getFullYear(); y++){
     const o=document.createElement('option');
@@ -2098,61 +1804,7 @@ function buildAgentSelectors(){
     o.value=i;
     o.textContent=a.name.split(',')[1]?.trim()||a.name;
     aa.appendChild(o);
-    if(csvAg){
-      const o2=document.createElement('option');
-      o2.value=i; o2.textContent=a.name.split(',')[1]?.trim()||a.name;
-      csvAg.appendChild(o2);
-    }
   });
-  if(csvMo){
-    MONTHS.forEach((m,i)=>{
-      const o=document.createElement('option');
-      o.value=i; o.textContent=m;
-      csvMo.appendChild(o);
-    });
-  }
-}
-
-function downloadCSV(){
-  var yyEl=document.getElementById('ag-sel-year');
-  var csvAgEl=document.getElementById('csv-sel-agent');
-  var csvMoEl=document.getElementById('csv-sel-month');
-  if(!yyEl||!csvAgEl) return;
-  var year=parseInt(yyEl.value);
-  var ai=parseInt(csvAgEl.value);
-  var monthFilter=csvMoEl?parseInt(csvMoEl.value):-1;
-  var agent=AGENTS[ai];
-  if(!agent) return;
-  var agentName=agent.name.replace(/,/g,' ').trim();
-  var monthsToExport=monthFilter===-1?MONTHS.map(function(_,i){return i;}):[monthFilter];
-  var now=new Date();
-  var out='Day,Month,Claims per Day,Monthly Total\r\n';
-  monthsToExport.forEach(function(month){
-    if(year===now.getFullYear()&&month>now.getMonth()) return;
-    var dim=new Date(year,month+1,0).getDate();
-    var mName=MONTHS[month];
-    var mTotal=0;
-    for(var d=1;d<=dim;d++){
-      if(!isWeekend(year,month,d)){
-        var v=getDayValue(year,month,ai,d);
-        if(v!==''&&!isNaN(v)) mTotal+=Number(v);
-      }
-    }
-    for(var d=1;d<=dim;d++){
-      var dow=new Date(year,month,d).getDay();
-      var dateLabel=d+' '+mName+' '+year;
-      var claims=(dow===0||dow===6)?'REST':(function(){var v=getDayValue(year,month,ai,d);return(v!==''&&!isNaN(v))?Number(v):'';})();
-      out+='"'+dateLabel+'","'+mName+'","'+claims+'","'+mTotal+'"\r\n';
-    }
-    out+='\r\n';
-  });
-  var blob=new Blob([out],{type:'text/csv;charset=utf-8;'});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement('a');
-  var ml=monthFilter===-1?'YTD':MONTHS[monthFilter];
-  a.href=url; a.download=agentName.replace(/\s+/g,'_')+'_'+year+'_'+ml+'.csv'; a.click();
-  URL.revokeObjectURL(url);
-  showToast('Downloaded: '+agentName+' - '+ml+' '+year,'success');
 }
 
 function loadAgentView(){
@@ -2194,8 +1846,7 @@ function loadAgentView(){
   let hh = '<tr><th style="text-align:left;min-width:50px;position:sticky;left:0;background:var(--bg);z-index:2">Day</th>';
   MONTHS.forEach((m,mi) => {
     const future = year===now.getFullYear() && mi > lastMonth;
-    const agRates = getKPIRates(ai);
-    hh += `<th style="min-width:80px;${future?'opacity:.35':''}"><div style="font-size:11px;font-weight:700">${m.slice(0,3)}</div><div style="font-size:10px;color:var(--text-muted);font-weight:500">${agRates.score4}+/day</div></th>`;
+    hh += `<th style="min-width:80px;${future?'opacity:.35':''}"><div style="font-size:11px;font-weight:700">${m.slice(0,3)}</div><div style="font-size:10px;color:var(--text-muted);font-weight:500">${MONTHLY_GOALS[mi]||1890}</div></th>`;
   });
   hh += '</tr>';
   thead.innerHTML = hh;
@@ -2292,7 +1943,7 @@ function loadAgentView(){
 
   MONTHS.forEach((_,mi)=>{
     const future = year===now.getFullYear() && mi > lastMonthForYear;
-    const goal = MONTHLY_GOALS_get(mi)||1890;
+    const goal = MONTHLY_GOALS[mi]||1890;
     const total = monthTotals[mi];
     const deficit = goal - total;
 
@@ -2304,11 +1955,10 @@ function loadAgentView(){
       const defColor = deficit<=0?'var(--success-dark)':'var(--danger)';
       const defVal = deficit<=0?`+${Math.abs(deficit)}`:deficit;
       fprod += `<td style="font-weight:700;font-size:13px;color:var(--text)">${total||''}</td>`;
-      const agGoalDisplay = getKPIRates(ai);
-    fgoal += `<td style="font-size:12px;color:var(--text-secondary)">${getMonthlyGoal(ai, year, mi)}</td>`;
+      fgoal += `<td style="font-size:12px;color:var(--text-secondary)">${goal}</td>`;
       fdef  += `<td style="font-weight:700;font-size:13px;color:${defColor}">${total?defVal:''}</td>`;
       ytdTotal += total;
-      ytdGoal  += getMonthlyGoal(ai, year, mi);
+      ytdGoal  += goal;
       if(total>bestMonthVal){bestMonthVal=total;bestMonthName=MONTHS[mi];}
     }
   });
@@ -2532,119 +2182,14 @@ function highlightInput(inp){
   setTimeout(()=>{ inp.style.boxShadow = ''; }, 600);
 }
 
-
-// ══════════════════════════════════════════════
-// ══════════════════════════════════════════════
-// MTD PER-AGENT CARDS
-// ══════════════════════════════════════════════
-function buildTodayCards(){
-  const year  = parseInt(document.getElementById('sel-year').value);
-  const month = parseInt(document.getElementById('sel-month').value);
-  const now   = new Date();
-  const isCurrentMonth = now.getFullYear()===year && now.getMonth()===month;
-  const lastDay = isCurrentMonth ? now.getDate() : new Date(year,month+1,0).getDate();
-  const dim = new Date(year,month+1,0).getDate();
-
-  const titleEl = document.getElementById('today-cards-title');
-  const subEl   = document.getElementById('today-cards-sub');
-  const container = document.getElementById('today-agent-cards');
-  if(!container) return;
-
-  if(titleEl) titleEl.textContent = 'MTD Productivity per Agent';
-  if(subEl)   subEl.textContent   = MONTHS[month]+' '+year+' · Through Day '+lastDay;
-
-  // Work days elapsed
-  let elapsedWorkDays=0, totalWorkDays=0;
-  for(let d=1;d<=dim;d++){
-    if(!isWeekend(year,month,d)){
-      totalWorkDays++;
-      if(d<=lastDay) elapsedWorkDays++;
-    }
-  }
-
-  const avatarColors = [
-    'linear-gradient(135deg,#2563EB,#7C3AED)',
-    'linear-gradient(135deg,#0891B2,#2563EB)',
-    'linear-gradient(135deg,#7C3AED,#DB2777)',
-    'linear-gradient(135deg,#059669,#0891B2)',
-    'linear-gradient(135deg,#D97706,#DC2626)',
-  ];
-
-  let teamToday = 0;
-  let html = '';
-
-  AGENTS.forEach((agent,i) => {
-    // Sum all workday entries up to lastDay
-    let total=0;
-    for(let d=1;d<=lastDay;d++){
-      if(!isWeekend(year,month,d)){
-        const v=getDayValue(year,month,i,d);
-        if(v!==''&&!isNaN(v)) total+=Number(v);
-      }
-    }
-    teamToday += total;
-
-    const rates = getKPIRates(i);
-    const acpd  = elapsedWorkDays>0 ? total/elapsedWorkDays : 0;
-    const kpiScore = elapsedWorkDays>0 ? getKPIScore(acpd, i) : null;
-    const kpiCol   = kpiScore!==null ? getKPIColor(kpiScore) : null;
-    // MTD goal = score4 threshold × elapsed work days
-    const mtdGoal  = rates.score4 * elapsedWorkDays;
-    const pct      = mtdGoal>0 ? Math.min(100,(total/mtdGoal)*100) : 0;
-    const deficit  = mtdGoal - total;
-    const barColor = kpiScore>=5?'#22C55E':kpiScore>=4?'#2563EB':kpiScore>=3?'#F59E0B':'#EF4444';
-    const firstName = agent.name.split(',')[1]?.trim()||agent.name.split(' ')[0];
-
-    html += `
-    <div class="agent-today-card" style="border-top:3px solid ${kpiCol?kpiCol.border:'var(--border)'}">
-      <div class="atc-top">
-        <div class="atc-avatar" style="background:${avatarColors[i%avatarColors.length]}">${agent.initials}</div>
-        ${kpiScore!==null
-          ? `<div class="atc-kpi" style="background:${kpiCol.bg};color:${kpiCol.text};border:1px solid ${kpiCol.border}">KPI ${kpiScore}/5</div>`
-          : `<div class="atc-kpi" style="background:var(--bg);color:var(--text-muted);border:1px solid var(--border)">No data</div>`
-        }
-      </div>
-      <div class="atc-name">${firstName}</div>
-      <div class="atc-email">${agent.email.split('@')[0]}</div>
-      <div class="atc-count">${total.toLocaleString()}</div>
-      <div class="atc-label">claims MTD</div>
-      <div class="atc-bar"><div class="atc-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
-      <div class="atc-footer">
-        <span>MTD Goal: ${mtdGoal.toLocaleString()}</span>
-        <span style="color:${deficit<=0?'var(--success-dark)':'var(--danger)'}">
-          ${deficit<=0?'+'+Math.abs(deficit).toLocaleString()+' ahead':deficit.toLocaleString()+' behind'}
-        </span>
-      </div>
-    </div>`;
-  });
-
-  container.innerHTML = html;
-  const tt = document.getElementById('team-today');
-  if(tt){ tt.textContent = teamToday.toLocaleString(); }
-}
-
 // ══════════════════════════════════════════════
 // BOOT
 // ══════════════════════════════════════════════
-window.addEventListener('load', () => {
-  // Always start on login screen
-  document.getElementById('app-screen').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
-
-  // Try restore existing session first
-  if (checkSession()) return;
-
-  // Check if Google button rendered; show fallback if not
-  setTimeout(() => {
-    const wrap = document.getElementById('gsi-btn-wrap');
-    const fallback = document.getElementById('gsi-fallback');
-    const hasBtn = wrap && wrap.querySelector('iframe');
-    if (!hasBtn && fallback) {
-      if(wrap) wrap.style.display = 'none';
-      fallback.style.display = 'flex';
-      setLoginStatus('');
-    }
-  }, 2500);
+window.addEventListener('load',()=>{
+  if(!checkSession()){
+    document.getElementById('login-screen').style.display='flex';
+    document.getElementById('app-screen').style.display='none';
+  }
 });
 
 </script>
