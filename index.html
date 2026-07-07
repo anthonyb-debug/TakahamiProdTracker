@@ -1697,9 +1697,8 @@ async function syncMyData(){
   for(let d=1; d<=dim; d++){
     if(isWeekend(year,month,d)) continue;
     const val = getDayValue(year,month,ai,d);
-    // Send actual value, or -1 to signal "clear this cell"
-    var numVal = (val===''||isNaN(val)) ? -1 : Number(val);
-    _sendToSheet(year, month, d, ai, numVal);
+    if(val===''||isNaN(val)) continue;
+    _sendToSheet(year, month, d, ai, Number(val));
     count++;
     await new Promise(r=>setTimeout(r,250));
   }
@@ -1734,16 +1733,15 @@ async function syncAgentData(){
     for(let d=1;d<=dim;d++){
       if(isWeekend(year,mo,d)) continue;
       const val = getDayValue(year,mo,ai,d);
-      // Send actual value, or -1 to signal "clear this cell"
-      var numVal2 = (val===''||isNaN(val)) ? -1 : Number(val);
-      _sendToSheet(year, mo, d, ai, numVal2);
+      if(val===''||isNaN(val)) continue; // skip empty cells
+      _sendToSheet(year, mo, d, ai, Number(val));
       count++;
-      await new Promise(r=>setTimeout(r,200));
+      await new Promise(r=>setTimeout(r,150));
     }
   }
 
   const msg = count > 0 ? 'Synced '+count+' entries' : 'No data to sync';
-  showToast('✅ '+msg+' for '+MONTHS[0]+'-'+MONTHS[11]+' '+year,'success');
+  showToast('✅ '+msg+' for '+year,'success');
   if(statusEl){ statusEl.textContent=msg+' · '+new Date().toLocaleTimeString(); statusEl.className='sync-status ok'; }
   if(btn){ btn.disabled=false; btn.innerHTML='<svg viewBox="0 0 20 20" style="width:13px;height:13px;fill:white"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Sync to Sheets'; }
 }
