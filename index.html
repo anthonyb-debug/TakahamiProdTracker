@@ -2344,14 +2344,45 @@ function loadAgentView(){
 
 function agCellChanged(year, month, ai, day, input){
   const v = input.value==='' ? '' : parseInt(input.value);
-  setDayValue(year, month, ai, day, v); // setDayValue already calls _sendToSheet
+  setDayValue(year, month, ai, day, v); // _sendToSheet fires inside setDayValue
   const hasVal = v!==''&&!isNaN(v);
+  // Style the input in-place — do NOT call loadAgentView() (rebuilds table, cancels XHR)
   input.style.background = hasVal?'var(--primary-light)':'var(--card)';
   input.style.borderColor = hasVal?'var(--primary-muted)':'var(--border)';
   input.style.fontWeight  = hasVal?'700':'400';
   input.style.color = hasVal?'var(--primary-dark)':'var(--text)';
-  // Refresh footer totals
-  loadAgentView();
+  // Just refresh the footer total for this month column only
+  refreshAgFooter(year, month, ai);
+}
+
+function refreshAgFooter(year, month, ai){
+  // Recompute total for this agent+month and update footer cells
+  const dim = new Date(year,month+1,0).getDate();
+  let total = 0;
+  for(let d=1;d<=dim;d++){
+    if(isWeekend(year,month,d)) continue;
+    const v=getDayValue(year,month,ai,d);
+    if(v!==''&&!isNaN(v)) total+=Number(v);
+  }
+  // Find the tfoot cell for this month column
+  // Footer is inside ag-calendar-foot — prod row col = month+1 (col 1 is Day label)
+  const tfoot = document.getElementById('ag-calendar-foot');
+  if(!tfoot) return;
+  const rows = tfoot.querySelectorAll('tr');
+  if(rows[0]) {
+    const cells = rows[0].querySelectorAll('td');
+    if(cells[month+1]) cells[month+1].textContent = total||'';
+  }
+  // Update deficit row
+  const goal = getMonthlyGoal(ai, year, month);
+  const deficit = goal - total;
+  if(rows[2]) {
+    const cells = rows[2].querySelectorAll('td');
+    if(cells[month+1]){
+      cells[month+1].textContent = total ? (deficit<=0?'+'+Math.abs(deficit):deficit) : '';
+      cells[month+1].style.color = deficit<=0?'var(--success-dark)':'var(--danger)';
+    }
+  }
 }
 
 
