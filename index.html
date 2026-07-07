@@ -75,8 +75,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 #login-error svg{width:14px;height:14px;fill:var(--danger);flex-shrink:0}
 
 /* ═══════════════ APP SHELL ═══════════════ */
-#app-screen{display:none;min-height:100vh;flex-direction:column}
-#app-screen.visible{display:flex}
+#app-screen{display:none;min-height:100vh}
+#app-screen.active{display:block}
 
 /* ── Sidebar ── */
 .sidebar{
@@ -270,6 +270,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .banner svg{width:15px;height:15px;fill:currentColor;flex-shrink:0}
 .banner-info{background:var(--primary-light);border:1px solid var(--primary-muted);color:#1E40AF}
 .banner-warning{background:var(--warning-light);border:1px solid #FDE68A;color:var(--warning-dark)}
+.banner-yellow{background:var(--warning-light);border:1px solid #FDE68A;color:var(--warning-dark)}
 .banner-muted{background:var(--bg);border:1px solid var(--border);color:var(--text-secondary)}
 
 /* ── Stats grid ── */
@@ -369,7 +370,7 @@ thead th{
 }
 thead th:first-child{text-align:left;min-width:90px}
 .col-head{display:flex;flex-direction:column;align-items:center;gap:3px}
-.col-risk{display:none;align-items:center;gap:3px;font-size:10px;color:var(--danger);font-weight:700}
+.col-risk{display:none;align-items:center;gap:3px;font-size:10px;color:var(--danger);font-weight:700;white-space:nowrap}
 .col-risk svg{width:9px;height:9px;fill:var(--danger)}
 tbody tr{border-bottom:1px solid var(--border-light);transition:background var(--transition)}
 tbody tr:last-child{border-bottom:none}
@@ -464,6 +465,18 @@ tr.deficit-row td.on-target{background:#064E3B;color:#6EE7B7}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes countUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .animate-in{animation:fadeUp .3s ease forwards}
+
+/* ── Additional classes used by JS ── */
+.banner-warning{background:var(--warning-light);border:1px solid #FDE68A;color:var(--warning-dark)}
+.t-green{background:var(--success-light);color:var(--success-dark)}
+.t-amber{background:var(--warning-light);color:var(--warning-dark)}
+.t-red{background:var(--danger-light);color:var(--danger-dark)}
+.chip-ok{background:var(--success-light);color:var(--success-dark)}
+.chip-warn{background:var(--warning-light);color:var(--warning-dark)}
+.chip-bad{background:var(--danger-light);color:var(--danger-dark)}
+.mini-bar-wrap{height:3px;background:rgba(255,255,255,.15);border-radius:var(--r-full);overflow:hidden;width:70px;margin:4px auto 0}
+.mini-bar-fill{height:100%;border-radius:var(--r-full);transition:width .5s ease}
+.on-target{background:#064E3B !important;color:#6EE7B7 !important}
 </style>
 </head>
 <body>
@@ -524,12 +537,12 @@ tr.deficit-row td.on-target{background:#064E3B;color:#6EE7B7}
           <span class="nav-item-text">Dashboard</span>
           <span class="nav-tooltip">Dashboard</span>
         </a>
-        <a class="nav-item" href="#" onclick="showToast('Coming soon!','info');return false">
+        <a class="nav-item" href="#" onclick="return false" style="opacity:.5;cursor:default">
           <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
           <span class="nav-item-text">Productivity</span>
           <span class="nav-tooltip">Productivity</span>
         </a>
-        <a class="nav-item" href="#" onclick="showToast('Coming soon!','info');return false">
+        <a class="nav-item" href="#" onclick="return false" style="opacity:.5;cursor:default">
           <svg viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
           <span class="nav-item-text">Reports</span>
           <span class="nav-tooltip">Reports</span>
@@ -537,17 +550,17 @@ tr.deficit-row td.on-target{background:#064E3B;color:#6EE7B7}
       </div>
       <div class="nav-section">
         <div class="nav-label">Team</div>
-        <a class="nav-item" href="#" onclick="showToast('Coming soon!','info');return false">
+        <a class="nav-item" href="#" onclick="return false" style="opacity:.5;cursor:default">
           <svg viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/></svg>
           <span class="nav-item-text">Agents</span>
           <span class="nav-tooltip">Agents</span>
         </a>
-        <a class="nav-item" href="#" onclick="showToast('Coming soon!','info');return false">
+        <a class="nav-item" href="#" onclick="return false" style="opacity:.5;cursor:default">
           <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 00-2 0v2a1 1 0 102 0V9z" clip-rule="evenodd"/></svg>
           <span class="nav-item-text">Leaderboard</span>
           <span class="nav-tooltip">Leaderboard</span>
         </a>
-        <a class="nav-item" href="#" onclick="showToast('Coming soon!','info');return false">
+        <a class="nav-item" href="#" onclick="return false" style="opacity:.5;cursor:default">
           <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"/></svg>
           <span class="nav-item-text">Coaching</span>
           <span class="nav-tooltip">Coaching</span>
@@ -555,7 +568,7 @@ tr.deficit-row td.on-target{background:#064E3B;color:#6EE7B7}
       </div>
       <div class="nav-section">
         <div class="nav-label">System</div>
-        <a class="nav-item" href="#" onclick="showToast('Coming soon!','info');return false">
+        <a class="nav-item" href="#" onclick="return false" style="opacity:.5;cursor:default">
           <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
           <span class="nav-item-text">Settings</span>
           <span class="nav-tooltip">Settings</span>
@@ -816,9 +829,8 @@ function updateTopbarDate(){
 
 function startApp(){
   document.getElementById('login-screen').style.display='none';
-  document.getElementById('app-screen').style.display='flex';
+  document.getElementById('app-screen').style.display='block';
   document.getElementById('app-screen').className='';
-  document.getElementById('app-screen').style.display='flex';
   updateTopbarDate();
 
   const agent=AGENTS[currentAgentIdx];
