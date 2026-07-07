@@ -1230,7 +1230,6 @@ function ensurePath(y,m){
 }
 function getDayValue(y,m,ai,d){try{return data[y][m][ai][d]??'';}catch(e){return '';}}
 function setDayValue(y,m,ai,d,val){
-  console.log('[AUTO-SYNC] setDayValue called:', y, MONTHS[m], 'day='+d, 'ai='+ai, 'val='+val);
   ensurePath(y,m);
   var isEmpty = (val===''||val===null||isNaN(val));
   if(isEmpty) delete data[y][m][ai][d];
