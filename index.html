@@ -606,17 +606,18 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
         <div class="topbar-date" id="topbar-date">—</div>
       </div>
       <div class="topbar-right">
-        <div class="kb-hint"><span class="kb">Ctrl</span>+<span class="kb">S</span> sync</div>
-        <div class="topbar-divider"></div>
-        <span id="sync-status" class="sync-status"></span>
-        <button class="btn btn-outline btn-sm" onclick="exportToExcel()" style="display:flex;align-items:center;gap:6px">
-          <svg viewBox="0 0 20 20" style="width:14px;height:14px;fill:currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-          Export Excel
-        </button>
-        <button class="btn btn-primary btn-sm" id="sync-btn" onclick="syncToSheets()">
-          <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
-          Sync to Sheets
-        </button>
+        <span id="sync-status" class="sync-status" style="display:none"></span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <select id="export-agent" class="filter-select" style="font-size:12px;padding:5px 10px;border-radius:6px"></select>
+          <select id="export-month" class="filter-select" style="font-size:12px;padding:5px 10px;border-radius:6px">
+            <option value="-1">All Months</option>
+          </select>
+          <button class="btn btn-outline btn-sm" onclick="exportToExcel()" style="display:flex;align-items:center;gap:6px">
+            <svg viewBox="0 0 20 20" style="width:14px;height:14px;fill:currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            Export Excel
+          </button>
+        </div>
+<span id="sync-btn" style="display:none"></span>
         <div class="topbar-divider"></div>
         <div class="topbar-user">
           <div class="topbar-avatar" id="user-initials">--</div>
@@ -879,23 +880,11 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
               <span class="badge badge-blue" id="ag-year-badge">—</span>
             </div>
             <div class="table-toolbar-right">
-              <span style="font-size:12px;color:var(--text-muted);margin-right:8px" id="ag-editable-hint"></span>
-              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                <span id="ag-sync-status" class="sync-status"></span>
-                <button class="btn btn-primary btn-sm" id="ag-sync-btn" onclick="syncAgentData()" style="display:flex;align-items:center;gap:6px">
-                  <svg viewBox="0 0 20 20" style="width:13px;height:13px;fill:white"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
-                  Sync to Sheets
-                </button>
-                <select id="csv-sel-agent" class="filter-select" style="font-size:12px;padding:5px 10px">
-                </select>
-                <select id="csv-sel-month" class="filter-select" style="font-size:12px;padding:5px 10px">
-                  <option value="-1">All Months</option>
-                </select>
-                <button onclick="downloadCSV()" class="btn btn-outline btn-sm" style="display:flex;align-items:center;gap:6px">
-                  <svg viewBox="0 0 20 20" style="width:13px;height:13px;fill:currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-                  Download CSV
-                </button>
-              </div>
+<span id="ag-editable-hint" style="display:none"></span>
+              <span id="ag-sync-status" class="sync-status"></span>
+              <span id="ag-sync-btn" style="display:none"></span>
+              <select id="csv-sel-agent" style="display:none"></select>
+              <select id="csv-sel-month" style="display:none"><option value="-1">All Months</option></select>
             </div>
           </div>
           <div class="table-wrap">
@@ -1107,6 +1096,7 @@ function startApp(){
   buildSelectors();
   buildMySelectors();
   buildAgentSelectors();
+  buildExportSelectors();
   loadFromStorage();
   loadView();
   setupKeyboard();
@@ -2554,6 +2544,35 @@ function buildTodayCards(){
 }
 
 
+
+function buildExportSelectors(){
+  var agEl = document.getElementById('export-agent');
+  var moEl = document.getElementById('export-month');
+  if(!agEl||!moEl) return;
+  agEl.innerHTML='';
+  moEl.innerHTML='<option value="-1">All Months</option>';
+
+  // Agent options — managers see all, agents see only themselves
+  if(currentIsManager){
+    var all=document.createElement('option'); all.value=-1; all.textContent='All Agents'; agEl.appendChild(all);
+  }
+  AGENTS.forEach(function(a,i){
+    if(!currentIsManager && i!==currentAgentIdx) return;
+    var o=document.createElement('option');
+    o.value=i;
+    o.textContent=a.name.split(',')[1]?.trim()||a.name;
+    if(i===currentAgentIdx) o.selected=true;
+    agEl.appendChild(o);
+  });
+
+  // Month options
+  MONTHS.forEach(function(m,i){
+    var o=document.createElement('option');
+    o.value=i; o.textContent=m;
+    moEl.appendChild(o);
+  });
+}
+
 // ══════════════════════════════════════════════
 // EXPORT ALL DATA TO EXCEL (CSV)
 // Exports every entry from localStorage
@@ -2561,43 +2580,49 @@ function buildTodayCards(){
 // ══════════════════════════════════════════════
 function exportToExcel(){
   var stored = localStorage.getItem('takahami_prod_data');
-  if(!stored){
-    showToast('No data found in the app to export.', 'error');
-    return;
-  }
+  if(!stored){ showToast('No data found to export.','error'); return; }
 
   var allData;
-  try { allData = JSON.parse(stored); } catch(e){ showToast('Could not read data.','error'); return; }
+  try { allData=JSON.parse(stored); } catch(e){ showToast('Could not read data.','error'); return; }
 
-  var DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  // Read picker values
+  var agEl = document.getElementById('export-agent');
+  var moEl = document.getElementById('export-month');
+  var selectedAi    = agEl  ? parseInt(agEl.value)  : -1;
+  var selectedMonth = moEl  ? parseInt(moEl.value)  : -1;
+
+  var DOW  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var rows = [['Year','Month','Date','Day','Agent','Claims']];
   var total = 0;
 
-  // Loop year → month → agent → day
   Object.keys(allData).sort().forEach(function(year){
     Object.keys(allData[year]).sort(function(a,b){return parseInt(a)-parseInt(b);}).forEach(function(monthIdx){
-      var monthNum = parseInt(monthIdx);
-      var monthName = MONTHS[monthNum];
-      var dim = new Date(parseInt(year), monthNum+1, 0).getDate();
+      var mi = parseInt(monthIdx);
+      // Filter by selected month
+      if(selectedMonth !== -1 && mi !== selectedMonth) return;
 
-      for(var d=1; d<=dim; d++){
-        var dow = new Date(parseInt(year), monthNum, d).getDay();
-        if(dow===0||dow===6) continue; // skip weekends
+      var monthName = MONTHS[mi];
+      var dim = new Date(parseInt(year), mi+1, 0).getDate();
 
-        var mm  = String(monthNum+1).padStart(2,'0');
-        var dd  = String(d).padStart(2,'0');
-        var dateStr = year+'-'+mm+'-'+dd;
-        var dayName = DOW[dow];
+      for(var d=1;d<=dim;d++){
+        var dow = new Date(parseInt(year),mi,d).getDay();
+        if(dow===0||dow===6) continue;
 
-        AGENTS.forEach(function(agent, ai){
-          var agentData = allData[year][monthIdx][ai];
+        var mm=String(mi+1).padStart(2,'0'), dd=String(d).padStart(2,'0');
+        var dateStr=year+'-'+mm+'-'+dd;
+        var dayName=DOW[dow];
+
+        AGENTS.forEach(function(agent,ai){
+          // Filter by selected agent
+          if(selectedAi !== -1 && ai !== selectedAi) return;
+
+          var agentData = allData[year] && allData[year][monthIdx] && allData[year][monthIdx][ai];
           if(!agentData) return;
           var val = agentData[d];
-          if(val === undefined || val === null || val === '') return;
+          if(val===undefined||val===null||val==='') return;
 
-          var parts = agent.name.split(',');
-          var fullName = parts.length>1 ? (parts[1].trim()+' '+parts[0].trim()) : agent.name;
-
+          var parts=agent.name.split(',');
+          var fullName=parts.length>1?(parts[1].trim()+' '+parts[0].trim()):agent.name;
           rows.push([year, monthName, dateStr, dayName, fullName, Number(val)]);
           total++;
         });
@@ -2605,33 +2630,24 @@ function exportToExcel(){
     });
   });
 
-  if(total === 0){
-    showToast('No entries found to export.', 'error');
-    return;
-  }
+  if(total===0){ showToast('No entries found for the selected filter.','error'); return; }
 
   // Build CSV
   var csv = rows.map(function(row){
-    return row.map(function(cell){
-      return '"' + String(cell).replace(/"/g,'""') + '"';
-    }).join(',');
+    return row.map(function(cell){ return '"'+String(cell).replace(/"/g,'""')+'"'; }).join(',');
   }).join('\r\n');
 
-  // Download
-  var blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-  var url  = URL.createObjectURL(blob);
-  var a    = document.createElement('a');
-  var now  = new Date();
-  a.href   = url;
-  a.download = 'Takahami_Productivity_Backup_' + now.getFullYear() + '-' +
-    String(now.getMonth()+1).padStart(2,'0') + '-' +
-    String(now.getDate()).padStart(2,'0') + '.csv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  var now=new Date();
+  var agLabel  = selectedAi!==-1   ? (AGENTS[selectedAi].name.split(',')[1]||'Agent').trim() : 'AllAgents';
+  var moLabel  = selectedMonth!==-1 ? MONTHS[selectedMonth] : 'AllMonths';
+  a.href=url;
+  a.download='Takahami_'+agLabel+'_'+moLabel+'_'+now.getFullYear()+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
-
-  showToast('✅ Exported ' + total + ' entries to Excel!', 'success');
+  showToast('✅ Exported '+total+' entries','success');
 }
 
 // ══════════════════════════════════════════════
