@@ -723,7 +723,7 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
           </div>
           <div class="table-toolbar-right">
             <div class="table-hint"><span class="wknd-dot"></span>Weekends locked</div>
-            <div class="table-hint" style="margin-left:8px">Enter key advances rows</div>
+            <div class="table-hint" style="margin-left:8px">Enter advances · Paste from Excel/Sheets</div>
           </div>
         </div>
         <div class="table-wrap">
@@ -1044,6 +1044,7 @@ function startApp(){
   loadFromStorage();
   loadView();
   setupKeyboard();
+  setupPaste();
   // Nav visibility
   const myNav = document.getElementById('nav-my');
   if (myNav) myNav.style.display = currentIsManager ? 'none' : 'flex';
@@ -1992,6 +1993,193 @@ function agCellChanged(year, month, ai, day, input){
   input.style.color = hasVal?'var(--primary-dark)':'var(--text)';
   // Refresh footer totals
   loadAgentView();
+}
+
+
+// ══════════════════════════════════════════════
+// SMART PASTE — Excel/Sheets multi-row support
+// ══════════════════════════════════════════════
+// Handles:
+//   • Single column paste (most common — agents copy their daily numbers)
+//   • Multi-column paste (managers paste full team data)
+//   • Tab-separated (Excel/Sheets default copy format)
+//   • Newline-separated (single column copy)
+//   • Skips weekends automatically
+//   • Works in main table (inp-{day}-{agentIdx})
+//   • Works in My Productivity table (my-inp-{day})
+//   • Works in Agent calendar table (ag-inp-{day}-{month})
+
+function setupPaste(){
+  document.addEventListener('paste', e => {
+    const target = e.target;
+    if(!target || target.tagName !== 'INPUT') return;
+    const id = target.id || '';
+
+    // Get clipboard text
+    const raw = (e.clipboardData || window.clipboardData).getData('text');
+    if(!raw) return;
+
+    // Parse clipboard into 2D grid
+    // Excel copies as rows separated by \n, cells by \t
+    const rows = raw.trim().split(/\r?\n/).map(r => r.split('\t').map(v => v.trim()));
+    const isSingleCol = rows.every(r => r.length === 1);
+
+    // ── MAIN TABLE: inp-{day}-{agentIdx} ──
+    if(id.startsWith('inp-')){
+      e.preventDefault();
+      const parts = id.split('-');
+      const startDay = parseInt(parts[1]);
+      const agentIdx = parseInt(parts[2]);
+      const year  = parseInt(document.getElementById('sel-year').value);
+      const month = parseInt(document.getElementById('sel-month').value);
+      const dim   = new Date(year, month+1, 0).getDate();
+
+      if(isSingleCol){
+        // Single column: paste down the same agent column, skipping weekends
+        let rowIdx = 0;
+        for(let d = startDay; d <= dim && rowIdx < rows.length; d++){
+          if(isWeekend(year, month, d)) continue;
+          const val = parseInt(rows[rowIdx][0]);
+          rowIdx++;
+          if(isNaN(val)) continue;
+          const inp = document.getElementById(`inp-${d}-${agentIdx}`);
+          if(!inp || inp.readOnly) continue;
+          inp.value = val;
+          cellChanged(year, month, agentIdx, d, val);
+          highlightInput(inp);
+        }
+        showToast(`✅ Pasted ${rowIdx} value${rowIdx!==1?'s':''} into ${AGENTS[agentIdx]?.name.split(',')[1]?.trim()||'column'}`, 'success');
+      } else {
+        // Multi-column paste: each row = one day, each col = one agent
+        // Only managers can paste multi-column
+        if(!currentIsManager){
+          showToast('⚠️ Multi-column paste is for managers only', 'error');
+          return;
+        }
+        let dayIdx = 0, pastedCount = 0;
+        for(let d = startDay; d <= dim && dayIdx < rows.length; d++){
+          if(isWeekend(year, month, d)){ continue; }
+          const rowData = rows[dayIdx];
+          dayIdx++;
+          rowData.forEach((val, colOffset) => {
+            const targetAgent = agentIdx + colOffset;
+            if(targetAgent >= AGENTS.length) return;
+            const num = parseInt(val);
+            if(isNaN(num)) return;
+            const inp = document.getElementById(`inp-${d}-${targetAgent}`);
+            if(!inp) return;
+            inp.value = num;
+            cellChanged(year, month, targetAgent, d, num);
+            highlightInput(inp);
+            pastedCount++;
+          });
+        }
+        showToast(`✅ Pasted ${pastedCount} values across ${rows[0].length} agent${rows[0].length!==1?'s':''}`, 'success');
+      }
+
+      // Refresh totals
+      updateTotals(year, month, dim);
+      updateMTD();
+      updateTargetBar();
+      updateLeaderboard();
+      return;
+    }
+
+    // ── MY PRODUCTIVITY TABLE: my-inp-{day} ──
+    if(id.startsWith('my-inp-')){
+      e.preventDefault();
+      const startDay = parseInt(id.replace('my-inp-',''));
+      const msEl = document.getElementById('my-sel-month');
+      const ysEl = document.getElementById('my-sel-year');
+      const myAgSel = document.getElementById('my-sel-agent');
+      if(!msEl||!ysEl) return;
+      const year  = parseInt(ysEl.value);
+      const month = parseInt(msEl.value);
+      const ai    = currentIsManager ? (myAgSel ? parseInt(myAgSel.value) : 0) : currentAgentIdx;
+      const dim   = new Date(year, month+1, 0).getDate();
+
+      // Flatten to single column
+      const vals = rows.map(r => r[0]);
+      let rowIdx = 0;
+      for(let d = startDay; d <= dim && rowIdx < vals.length; d++){
+        if(isWeekend(year, month, d)) continue;
+        const num = parseInt(vals[rowIdx++]);
+        if(isNaN(num)) continue;
+        const inp = document.getElementById(`my-inp-${d}`);
+        if(!inp || inp.readOnly) continue;
+        inp.value = num;
+        myCellChanged(year, month, ai, d, num);
+        highlightInput(inp);
+      }
+      showToast(`✅ Pasted ${rowIdx} value${rowIdx!==1?'s':''}`,'success');
+      return;
+    }
+
+    // ── AGENT CALENDAR: ag-inp-{day}-{month} (if editable inputs exist) ──
+    if(id.startsWith('ag-inp-')){
+      e.preventDefault();
+      const parts   = id.split('-');
+      const startDay = parseInt(parts[2]);
+      const startMon = parseInt(parts[3]);
+      const yyEl    = document.getElementById('ag-sel-year');
+      const aaEl    = document.getElementById('ag-sel-agent');
+      if(!yyEl||!aaEl) return;
+      const year = parseInt(yyEl.value);
+      const ai   = parseInt(aaEl.value);
+
+      if(isSingleCol){
+        // Paste down same month column
+        const dim = new Date(year, startMon+1, 0).getDate();
+        let rowIdx = 0;
+        for(let d = startDay; d <= dim && rowIdx < rows.length; d++){
+          const dow = new Date(year, startMon, d).getDay();
+          if(dow===0||dow===6) continue;
+          const num = parseInt(rows[rowIdx++][0]);
+          if(isNaN(num)) continue;
+          const inp = document.getElementById(`ag-inp-${d}-${startMon}`);
+          if(!inp) continue;
+          inp.value = num;
+          agCellChanged(year, startMon, ai, d, inp);
+          highlightInput(inp);
+        }
+        showToast(`✅ Pasted ${rowIdx} values`,'success');
+      } else {
+        // Multi-col: each col = a month, each row = a day
+        let pastedCount = 0;
+        rows.forEach((row, rIdx) => {
+          const d = startDay + rIdx;
+          row.forEach((val, cIdx) => {
+            const mon = startMon + cIdx;
+            if(mon > 11) return;
+            const num = parseInt(val);
+            if(isNaN(num)) return;
+            const dow = new Date(year, mon, d).getDay();
+            if(dow===0||dow===6) return;
+            const inp = document.getElementById(`ag-inp-${d}-${mon}`);
+            if(!inp) return;
+            inp.value = num;
+            agCellChanged(year, mon, ai, d, inp);
+            highlightInput(inp);
+            pastedCount++;
+          });
+        });
+        showToast(`✅ Pasted ${pastedCount} values`,'success');
+      }
+      return;
+    }
+  });
+}
+
+function highlightInput(inp){
+  inp.style.background = 'var(--primary-light)';
+  inp.style.borderColor = 'var(--primary-muted)';
+  inp.style.color = 'var(--primary-dark)';
+  inp.style.fontWeight = '700';
+  inp.classList.add('has-value');
+  // Flash animation
+  inp.style.transition = 'box-shadow .2s';
+  inp.style.boxShadow = '0 0 0 3px rgba(37,99,235,.2)';
+  setTimeout(()=>{ inp.style.boxShadow = ''; }, 600);
 }
 
 // ══════════════════════════════════════════════
