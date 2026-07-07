@@ -2114,71 +2114,45 @@ function buildAgentSelectors(){
 }
 
 function downloadCSV(){
-  const yyEl    = document.getElementById('ag-sel-year');
-  const csvAgEl = document.getElementById('csv-sel-agent');
-  const csvMoEl = document.getElementById('csv-sel-month');
+  var yyEl=document.getElementById('ag-sel-year');
+  var csvAgEl=document.getElementById('csv-sel-agent');
+  var csvMoEl=document.getElementById('csv-sel-month');
   if(!yyEl||!csvAgEl) return;
-
-  const year        = parseInt(yyEl.value);
-  const ai          = parseInt(csvAgEl.value);
-  const monthFilter = csvMoEl ? parseInt(csvMoEl.value) : -1;
-  const agent       = AGENTS[ai];
+  var year=parseInt(yyEl.value);
+  var ai=parseInt(csvAgEl.value);
+  var monthFilter=csvMoEl?parseInt(csvMoEl.value):-1;
+  var agent=AGENTS[ai];
   if(!agent) return;
-
-  const agentName   = agent.name.replace(/,/g,' ').trim();
-  const monthsToExport = monthFilter === -1 ? MONTHS.map((_,i)=>i) : [monthFilter];
-  const now = new Date();
-  const DOW_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-
-  // Header
-  let csv = 'Day,Month,Claims per Day,Monthly Total
-';
-
-  monthsToExport.forEach(month => {
-    if(year === now.getFullYear() && month > now.getMonth()) return;
-    const dim = new Date(year, month+1, 0).getDate();
-    const monthName = MONTHS[month];
-
-    // Calc monthly total first
-    let monthTotal = 0;
-    for(let d=1;d<=dim;d++){
+  var agentName=agent.name.replace(/,/g,' ').trim();
+  var monthsToExport=monthFilter===-1?MONTHS.map(function(_,i){return i;}):[monthFilter];
+  var now=new Date();
+  var out='Day,Month,Claims per Day,Monthly Total\r\n';
+  monthsToExport.forEach(function(month){
+    if(year===now.getFullYear()&&month>now.getMonth()) return;
+    var dim=new Date(year,month+1,0).getDate();
+    var mName=MONTHS[month];
+    var mTotal=0;
+    for(var d=1;d<=dim;d++){
       if(!isWeekend(year,month,d)){
-        const v=getDayValue(year,month,ai,d);
-        if(v!==''&&!isNaN(v)) monthTotal+=Number(v);
+        var v=getDayValue(year,month,ai,d);
+        if(v!==''&&!isNaN(v)) mTotal+=Number(v);
       }
     }
-
-    // Write each day
-    for(let d=1;d<=dim;d++){
-      const dow = new Date(year,month,d).getDay();
-      const isWknd = dow===0||dow===6;
-      const dateLabel = d+' '+monthName+' '+year;
-
-      if(isWknd){
-        csv += '"'+dateLabel+'","'+monthName+'","REST","'+monthTotal+'"
-';
-      } else {
-        const val = getDayValue(year,month,ai,d);
-        const claims = (val!==''&&!isNaN(val)) ? Number(val) : '';
-        csv += '"'+dateLabel+'","'+monthName+'","'+claims+'","'+monthTotal+'"
-';
-      }
+    for(var d=1;d<=dim;d++){
+      var dow=new Date(year,month,d).getDay();
+      var dateLabel=d+' '+mName+' '+year;
+      var claims=(dow===0||dow===6)?'REST':(function(){var v=getDayValue(year,month,ai,d);return(v!==''&&!isNaN(v))?Number(v):'';})();
+      out+='"'+dateLabel+'","'+mName+'","'+claims+'","'+mTotal+'"\r\n';
     }
-    // Blank separator between months
-    csv += '
-';
+    out+='\r\n';
   });
-
-  // Download
-  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  const monthLabel = monthFilter===-1?'YTD':MONTHS[monthFilter];
-  a.href = url;
-  a.download = agentName.replace(/\s+/g,'_')+'_'+year+'_'+monthLabel+'.csv';
-  a.click();
+  var blob=new Blob([out],{type:'text/csv;charset=utf-8;'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  var ml=monthFilter===-1?'YTD':MONTHS[monthFilter];
+  a.href=url; a.download=agentName.replace(/\s+/g,'_')+'_'+year+'_'+ml+'.csv'; a.click();
   URL.revokeObjectURL(url);
-  showToast('✅ Downloaded: '+agentName+' — '+monthLabel+' '+year, 'success');
+  showToast('Downloaded: '+agentName+' - '+ml+' '+year,'success');
 }
 
 function loadAgentView(){
