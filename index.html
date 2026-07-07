@@ -2022,14 +2022,49 @@ function loadMyView() {
 
 function myCellChanged(year, month, ai, day, val) {
   const v = val === '' ? '' : parseInt(val);
-  setDayValue(year, month, ai, day, v);
-  const inp = document.getElementById(`my-inp-${day}`);
+  setDayValue(year, month, ai, day, v); // _sendToSheet is called inside here
+  const inp = document.getElementById('my-inp-'+day);
   if (inp) {
     if (v !== '' && !isNaN(v)) inp.classList.add('has-value');
     else inp.classList.remove('has-value');
   }
-  // Also refresh dashboard if it was loaded
-  loadMyView();
+  // Update stats only — do NOT rebuild table (would cancel XHR and reset inputs)
+  updateMyStats(year, month, ai);
+}
+
+function updateMyStats(year, month, ai){
+  const msEl = document.getElementById('my-sel-month');
+  const ysEl = document.getElementById('my-sel-year');
+  if(!msEl||!ysEl) return;
+  const y = parseInt(ysEl.value), m = parseInt(msEl.value);
+  if(y!==year||m!==month) return;
+  const now = new Date();
+  const dim = new Date(y,m+1,0).getDate();
+  const isCurrent = now.getFullYear()===y && now.getMonth()===m;
+  const lastDay = isCurrent ? now.getDate() : dim;
+  let totalWorkDays=0, elapsedWorkDays=0, totalCases=0;
+  for(let d=1;d<=dim;d++){
+    if(!isWeekend(y,m,d)){
+      totalWorkDays++;
+      if(d<=lastDay){
+        elapsedWorkDays++;
+        const v=getDayValue(y,m,ai,d);
+        if(v!==''&&!isNaN(v)) totalCases+=Number(v);
+      }
+    }
+  }
+  const goal = getMonthlyGoal(ai,y,m);
+  const mtdGoal = totalWorkDays>0?Math.round((goal/totalWorkDays)*elapsedWorkDays):0;
+  const deficit = totalCases-mtdGoal;
+  const ptg = mtdGoal>0?((totalCases/mtdGoal)*100).toFixed(1):'0.0';
+  const myTot=document.getElementById('my-total');
+  const myDef=document.getElementById('my-deficit');
+  const myPtg=document.getElementById('my-ptg');
+  const myBar=document.getElementById('my-progress-bar');
+  if(myTot) myTot.textContent=totalCases.toLocaleString();
+  if(myDef){ myDef.textContent=deficit>=0?'+'+deficit.toLocaleString():deficit.toLocaleString(); myDef.style.color=deficit>=0?'var(--success-dark)':'var(--danger)'; }
+  if(myPtg){ myPtg.textContent=ptg+'%'; }
+  if(myBar){ const pct=Math.min(100,mtdGoal>0?(totalCases/mtdGoal*100):0); myBar.style.width=pct+'%'; }
 }
 
 
