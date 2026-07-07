@@ -908,7 +908,7 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
 // ══════════════════════════════════════════════
 const ALLOWED_DOMAIN   = 'allianceglobalsolutions.com';
 const SHEET_ID         = '1KAD9iBlcaYqHOPm364iwtZswcmp4Jx8JmzdqnLdj06I';
-const APPS_SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbyzaYxtRzCMtGisJ8BvcifuL1MXu8l3_ZvKu5pMo02nMD3MeDAJSFPqJ3ghdaU8fJOcAg/exec';
+const APPS_SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbwB4-mhI0vgK5k9QwYGOHX9zYfF7nKtpflsm1DyTk33bHacgmmHn9t30g48yvYIPV0K/exec';
 
 const AGENTS = [
   { name:'Ado, Jaypee Dhan',     email:'jaypee@allianceglobalsolutions.com',     initials:'JA' },
@@ -1202,7 +1202,10 @@ function setDayValue(y,m,ai,d,val){
   if(val===''||val===null||isNaN(val)) delete data[y][m][ai][d];
   else data[y][m][ai][d]=Number(val);
   saveToStorage(); updateMTD(); updateLeaderboard(); if(currentView==='dashboard') buildTodayCards();
-  scheduleAutoSync();
+  // Realtime write to Google Sheet on every cell change
+  if(val!=='' && !isNaN(Number(val)) && currentUser){
+    writeToSheet(y, m, d, ai, Number(val));
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -1584,46 +1587,83 @@ function updateLeaderboard(){
 // ══════════════════════════════════════════════
 // SYNC
 // ══════════════════════════════════════════════
-async function syncToSheets(silent=false){
-  const year=parseInt(document.getElementById('sel-year').value);
-  const month=parseInt(document.getElementById('sel-month').value);
-  const dim=new Date(year,month+1,0).getDate();
-  const btn=document.getElementById('sync-btn');
-  const statusEl=document.getElementById('sync-status');
-  if(!silent){
-    btn.disabled=true;
-    btn.innerHTML='<svg viewBox="0 0 20 20" style="width:14px;height:14px;fill:white;animation:spin 1s linear infinite"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Syncing…';
-  }
+// ══════════════════════════════════════════════
+// REALTIME SHEET WRITE — one row per cell change
+// ══════════════════════════════════════════════
+async function writeToSheet(year, month, day, agentIdx, claims){
+  if(!APPS_SCRIPT_URL || !currentUser) return;
+  const agent = AGENTS[agentIdx];
+  if(!agent) return;
 
-  const rows=[];
-  for(let d=1;d<=dim;d++){
-    const dow=new Date(year,month,d).getDay();
-    const weekend=dow===0||dow===6;
-    const rd={day:d,weekend};
-    AGENTS.forEach((a,i)=>{rd[a.email]=weekend?null:(getDayValue(year,month,i,d)??null);});
-    rows.push(rd);
-  }
+  // Build date string e.g. "2026-07-07"
+  const mm  = String(month+1).padStart(2,'0');
+  const dd  = String(day).padStart(2,'0');
+  const dateStr = year+'-'+mm+'-'+dd;
 
-  const payload={year,month,monthName:MONTHS[month],sheetId:SHEET_ID,
-    agents:AGENTS.map(a=>a.name),goal:MONTHLY_GOALS[month]||1890,
-    rows,submittedBy:currentUser.email,timestamp:new Date().toISOString()};
+  // Agent full name: "First Last" format
+  const parts = agent.name.split(',');
+  const agentName = parts.length>1 ? (parts[1].trim()+' '+parts[0].trim()) : agent.name;
 
-  try{
-    // Use no-cors fetch with text/plain — bypasses CORS preflight
-    // Apps Script reads this via e.postData.contents in doPost
+  const payload = {
+    year:       year,
+    month:      MONTHS[month],
+    date:       dateStr,
+    claims:     claims,
+    agentName:  agentName,
+    agentEmail: agent.email,
+    submittedBy: currentUser.email,
+    timestamp:  new Date().toISOString()
+  };
+
+  const statusEl = document.getElementById('sync-status');
+  try {
     await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload)
     });
-    // no-cors = opaque response, cannot read result, but if no exception = sent successfully
-    if(!silent) showToast('✅ Synced to Google Sheets!','success');
-    statusEl.textContent='Synced '+new Date().toLocaleTimeString(); statusEl.className='sync-status ok';
-  }catch(e){
-    if(!silent) showToast('❌ Sync failed: '+e.message,'error');
-    statusEl.textContent='Sync failed'; statusEl.className='sync-status err';
+    if(statusEl){
+      statusEl.textContent = 'Saved to sheet '+new Date().toLocaleTimeString();
+      statusEl.className = 'sync-status ok';
+    }
+  } catch(e) {
+    console.warn('Sheet write failed:', e.message);
+    if(statusEl){
+      statusEl.textContent = 'Sheet write failed';
+      statusEl.className = 'sync-status err';
+    }
   }
+}
+
+// Manual sync button — writes ALL current month data to sheet
+async function syncToSheets(silent=false){
+  const year  = parseInt(document.getElementById('sel-year').value);
+  const month = parseInt(document.getElementById('sel-month').value);
+  const dim   = new Date(year,month+1,0).getDate();
+  const btn   = document.getElementById('sync-btn');
+  const statusEl = document.getElementById('sync-status');
+
+  if(!silent){
+    btn.disabled=true;
+    btn.innerHTML='<svg viewBox="0 0 20 20" style="width:14px;height:14px;fill:white;animation:spin 1s linear infinite"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Syncing all...';
+  }
+
+  let count = 0;
+  for(let ai=0; ai<AGENTS.length; ai++){
+    for(let d=1; d<=dim; d++){
+      if(isWeekend(year,month,d)) continue;
+      const val = getDayValue(year,month,ai,d);
+      if(val!=='' && !isNaN(val)){
+        await writeToSheet(year, month, d, ai, Number(val));
+        count++;
+        await new Promise(r=>setTimeout(r,100)); // small delay to avoid overloading
+      }
+    }
+  }
+
+  if(!silent) showToast('✅ Synced '+count+' entries to Google Sheets!','success');
+  if(statusEl){ statusEl.textContent='All synced '+new Date().toLocaleTimeString(); statusEl.className='sync-status ok'; }
   if(!silent){
     btn.disabled=false;
     btn.innerHTML='<svg viewBox="0 0 20 20" style="width:14px;height:14px;fill:white"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Sync to Sheets';
@@ -1634,24 +1674,6 @@ async function syncToSheets(silent=false){
 // TOAST
 // ══════════════════════════════════════════════
 let toastTimer;
-let autoSyncTimer = null;
-let autoSyncPending = false;
-
-// Auto-sync: fires 4 seconds after the last cell change
-// Debounced so rapid edits only trigger one sync
-function scheduleAutoSync(){
-  autoSyncPending = true;
-  clearTimeout(autoSyncTimer);
-  // Update sync status to show pending
-  const statusEl = document.getElementById('sync-status');
-  if(statusEl){ statusEl.textContent = 'Unsaved changes...'; statusEl.className = 'sync-status'; }
-  autoSyncTimer = setTimeout(async function(){
-    if(!autoSyncPending) return;
-    autoSyncPending = false;
-    await syncToSheets(true);
-  }, 4000);
-}
-
 function showToast(msg,type=''){
   const t=document.getElementById('toast');
   t.textContent=msg; t.className=`show ${type}`;
