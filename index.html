@@ -1235,9 +1235,12 @@ function setDayValue(y,m,ai,d,val){
   if(isEmpty) delete data[y][m][ai][d];
   else data[y][m][ai][d]=Number(val);
   saveToStorage(); updateMTD(); updateLeaderboard(); if(currentView==='dashboard') buildTodayCards();
-  // Auto-sync this single cell immediately — no button needed
-  var sendVal = isEmpty ? -1 : Number(val);
-  _sendToSheet(y, m, d, ai, sendVal);
+  // Track this cell as pending sync
+  if(!isEmpty){
+    var key = y+'-'+m+'-'+d+'-'+ai;
+    _pendingCells[key] = {year:y, month:m, day:d, ai:ai, val:Number(val)};
+    showPendingBadge();
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -1632,6 +1635,16 @@ function updateLeaderboard(){
 // Sends just 5 numbers: year, month-index, day, agent-index, value
 // val=-1 means clear the cell
 var _syncDebounce = {};
+function showPendingBadge(){
+  var count = Object.keys(_pendingCells).length;
+  var myBtn = document.getElementById('my-sync-btn');
+  var agBtn = document.getElementById('ag-sync-btn');
+  var label = count > 0 ? 'Sync ('+count+' pending)' : 'Sync to Sheets';
+  var svgIcon = '<svg viewBox="0 0 20 20" style="width:13px;height:13px;fill:white"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> ';
+  if(myBtn && count>0) myBtn.innerHTML = svgIcon + label;
+  if(agBtn && count>0) agBtn.innerHTML = svgIcon + label;
+}
+
 function _sendToSheet(year, month, day, agentIdx, claims){
   console.log('[AUTO-SYNC] _sendToSheet called:', year, MONTHS[month], 'day='+day, 'ai='+agentIdx, 'val='+claims, 'user='+(!currentUser?'NULL':'OK'));
   if(!APPS_SCRIPT_URL || !currentUser){ console.warn('[AUTO-SYNC] Blocked - URL:'+!!APPS_SCRIPT_URL+' user:'+!!currentUser); return; }
@@ -1671,45 +1684,7 @@ function _sendToSheet(year, month, day, agentIdx, claims){
 // My Productivity — sync button click
 // Sends only the logged-in agent's entries for the selected month
 async function syncMyData(){
-  const msEl = document.getElementById('my-sel-month');
-  const ysEl = document.getElementById('my-sel-year');
-  if(!msEl||!ysEl) return;
-
-  const year  = parseInt(ysEl.value);
-  const month = parseInt(msEl.value);
-  const dim   = new Date(year,month+1,0).getDate();
-
-  // Who to sync
-  const myAgSel = document.getElementById('my-sel-agent');
-  const ai = currentIsManager
-    ? (myAgSel ? parseInt(myAgSel.value) : 0)
-    : currentAgentIdx;
-
-  if(ai < 0){ showToast('No agent selected.','error'); return; }
-
-  const btn      = document.getElementById('my-sync-btn');
-  const statusEl = document.getElementById('my-sync-status');
-
-  if(btn){ btn.disabled=true; btn.textContent='Syncing...'; }
-  if(statusEl){ statusEl.textContent='Syncing...'; statusEl.className='sync-status'; }
-
-  let count = 0;
-  for(let d=1; d<=dim; d++){
-    if(isWeekend(year,month,d)) continue;
-    const val = getDayValue(year,month,ai,d);
-    if(val===''||isNaN(val)) continue;
-    _sendToSheet(year, month, d, ai, Number(val));
-    count++;
-    await new Promise(r=>setTimeout(r,250));
-  }
-
-  const msg = count > 0
-    ? 'Synced '+count+' entr'+(count===1?'y':'ies')
-    : 'No data to sync';
-
-  showToast('✅ '+msg+' to Google Sheets!','success');
-  if(statusEl){ statusEl.textContent=msg+' · '+new Date().toLocaleTimeString(); statusEl.className='sync-status ok'; }
-  if(btn){ btn.disabled=false; btn.innerHTML='<svg viewBox="0 0 20 20" style="width:13px;height:13px;fill:white"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Sync to Sheets'; }
+  await syncPendingCells('my');
 }
 
 // Agent section — sync current agent's full year
@@ -1744,6 +1719,44 @@ async function syncAgentData(){
   showToast('✅ '+msg+' for '+year,'success');
   if(statusEl){ statusEl.textContent=msg+' · '+new Date().toLocaleTimeString(); statusEl.className='sync-status ok'; }
   if(btn){ btn.disabled=false; btn.innerHTML='<svg viewBox="0 0 20 20" style="width:13px;height:13px;fill:white"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Sync to Sheets'; }
+}
+
+
+// ══════════════════════════════════════════════
+// SYNC ONLY CHANGED CELLS
+// ══════════════════════════════════════════════
+async function syncPendingCells(source){
+  const pending = Object.values(_pendingCells);
+
+  if(pending.length === 0){
+    showToast('No changes to sync.', 'info');
+    return;
+  }
+
+  const btnId    = source==='my' ? 'my-sync-btn' : 'ag-sync-btn';
+  const statusId = source==='my' ? 'my-sync-status' : 'ag-sync-status';
+  const btn      = document.getElementById(btnId);
+  const statusEl = document.getElementById(statusId);
+  const svgIcon  = '<svg viewBox="0 0 20 20" style="width:13px;height:13px;fill:white;animation:spin 1s linear infinite"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> ';
+  if(btn){ btn.disabled=true; btn.innerHTML = svgIcon+'Syncing '+pending.length+'...'; }
+  if(statusEl){ statusEl.textContent='Syncing '+pending.length+' change'+(pending.length!==1?'s':'')+'...'; statusEl.className='sync-status'; }
+
+  let synced=0;
+  for(var i=0;i<pending.length;i++){
+    var p = pending[i];
+    _sendToSheet(p.year, p.month, p.day, p.ai, p.val);
+    synced++;
+    await new Promise(r=>setTimeout(r,150));
+  }
+
+  // Clear pending after sync
+  _pendingCells = {};
+
+  const msg = 'Synced '+synced+' cell'+(synced!==1?'s':'');
+  showToast('✅ '+msg, 'success');
+  if(statusEl){ statusEl.textContent=msg+' · '+new Date().toLocaleTimeString(); statusEl.className='sync-status ok'; }
+  const doneLabel = svgIcon.replace('spin 1s linear infinite','')+'Sync to Sheets';
+  if(btn){ btn.disabled=false; btn.innerHTML=doneLabel; }
 }
 
 // Keep syncToSheets as alias for Ctrl+S shortcut
