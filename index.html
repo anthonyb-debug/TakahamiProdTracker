@@ -1606,30 +1606,33 @@ function updateLeaderboard(){
 // SYNC FUNCTIONS
 // ══════════════════════════════════════════════
 
-// Core send function — sends one cell to Google Sheet
-function _sendToSheet(year, month, day, agentIdx, claims, statusId){
-  const agent = AGENTS[agentIdx];
-  if(!agent || !currentUser || !APPS_SCRIPT_URL) return;
+// Core send — minimal URL params: year, month index, day, agent index, value
+function _sendToSheet(year, month, day, agentIdx, claims){
+  if(!APPS_SCRIPT_URL || !currentUser) return;
+  // Build the simplest possible URL — just numbers, no encoding issues
+  var url = APPS_SCRIPT_URL
+    + '?year=' + year
+    + '&mi='   + month
+    + '&day='  + day
+    + '&ai='   + agentIdx
+    + '&val='  + claims;
 
-  const mm  = String(month+1).padStart(2,'0');
-  const dd  = String(day).padStart(2,'0');
-  const dateStr = year+'-'+mm+'-'+dd;
-  const parts = agent.name.split(',');
-  const agentName = parts.length>1?(parts[1].trim()+' '+parts[0].trim()):agent.name;
-
-  const url = APPS_SCRIPT_URL
-    + '?year='        + encodeURIComponent(year)
-    + '&month='       + encodeURIComponent(MONTHS[month])
-    + '&date='        + encodeURIComponent(dateStr)
-    + '&claims='      + encodeURIComponent(claims)
-    + '&agentName='   + encodeURIComponent(agentName)
-    + '&agentEmail='  + encodeURIComponent(agent.email)
-    + '&submittedBy=' + encodeURIComponent(currentUser.email);
-
-  // Try fetch no-cors, fall back to image tag
-  fetch(url, {mode:'no-cors'}).catch(function(){
+  // XMLHttpRequest with no-cors equivalent — most compatible approach
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url, true);
+  xhr.onreadystatechange = function(){
+    if(xhr.readyState === 4){
+      console.log('Sheet write:', year, MONTHS[month], day, AGENTS[agentIdx].name, claims, '→', xhr.responseText||'sent');
+    }
+  };
+  xhr.onerror = function(){
+    // Fallback: image tag
     var img = new Image(); img.src = url;
-  });
+    console.log('Sheet write (img fallback):', url);
+  };
+  try { xhr.send(); } catch(e) {
+    var img = new Image(); img.src = url;
+  }
 }
 
 // My Productivity — sync button click
