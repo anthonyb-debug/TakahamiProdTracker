@@ -540,11 +540,7 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
           <span class="nav-item-text">My Productivity</span>
           <span class="nav-tooltip">My Productivity</span>
         </a>
-        <a class="nav-item" href="#" onclick="return false" style="opacity:.4;cursor:default">
-          <svg viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
-          <span class="nav-item-text">Reports</span>
-          <span class="nav-tooltip">Reports</span>
-        </a>
+
       </div>
       <div class="nav-section">
         <div class="nav-label">Team</div>
@@ -558,11 +554,7 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
           <span class="nav-item-text">Leaderboard</span>
           <span class="nav-tooltip">Leaderboard</span>
         </a>
-        <a class="nav-item" href="#" onclick="return false" style="opacity:.5;cursor:default">
-          <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"/></svg>
-          <span class="nav-item-text">Coaching</span>
-          <span class="nav-tooltip">Coaching</span>
-        </a>
+
       </div>
       <div class="nav-section">
         <div class="nav-label">System</div>
@@ -698,24 +690,7 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
       </div>
 
       <!-- Target strip -->
-      <div class="target-strip" id="target-bar">
-        <div class="target-item">
-          <div class="target-item-label">Daily Target</div>
-          <div class="target-item-value"><span class="t-badge t-blue" id="daily-target-badge">—</span></div>
-        </div>
-        <div class="target-item">
-          <div class="target-item-label">Pace Needed</div>
-          <div class="target-item-value"><span class="t-badge t-blue" id="pace-badge">—</span></div>
-        </div>
-        <div class="target-item">
-          <div class="target-item-label">Remaining</div>
-          <div class="target-item-value"><span class="t-badge t-blue" id="remaining-badge">—</span></div>
-        </div>
-        <div class="target-item" style="border-right:none">
-          <div class="target-item-label">Streak 🔥</div>
-          <div class="target-item-value"><span class="streak-pill" id="streak-badge">— days</span></div>
-        </div>
-      </div>
+
 
       <!-- Leaderboard -->
       <div id="leaderboard-section">
@@ -915,7 +890,18 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
               <span class="badge badge-blue" id="ag-year-badge">—</span>
             </div>
             <div class="table-toolbar-right">
-              <span style="font-size:12px;color:var(--text-muted)" id="ag-editable-hint"></span>
+              <span style="font-size:12px;color:var(--text-muted);margin-right:8px" id="ag-editable-hint"></span>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <select id="csv-sel-agent" class="filter-select" style="font-size:12px;padding:5px 10px">
+                </select>
+                <select id="csv-sel-month" class="filter-select" style="font-size:12px;padding:5px 10px">
+                  <option value="-1">All Months</option>
+                </select>
+                <button onclick="downloadCSV()" class="btn btn-outline btn-sm" style="display:flex;align-items:center;gap:6px">
+                  <svg viewBox="0 0 20 20" style="width:13px;height:13px;fill:currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                  Download CSV
+                </button>
+              </div>
             </div>
           </div>
           <div class="table-wrap">
@@ -1392,7 +1378,6 @@ function updateTotals(year,month,dim){
 function updateTargetBar(){
   const year=parseInt(document.getElementById('sel-year').value);
   const month=parseInt(document.getElementById('sel-month').value);
-  const goal=MONTHLY_GOALS[month]||1890;
   const today=new Date();
   const isCurrentMonth=today.getFullYear()===year&&today.getMonth()===month;
   const agentIdx=selectedAgentIdx>=0?selectedAgentIdx:(currentAgentIdx>=0?currentAgentIdx:0);
@@ -1460,8 +1445,9 @@ function updateTargetBar(){
     streakBadge.style.borderColor=streak>=5?'#e9d5ff':streak>=3?'#bfdbfe':'#e5e7eb';
   }
 
-  // Hide target bar for managers (show leaderboard instead)
-  document.getElementById('target-bar').style.display=currentIsManager?'none':'flex';
+  // Show target bar only when viewing a specific agent
+  const showTargetBar = !currentIsManager || selectedAgentIdx >= 0;
+  document.getElementById('target-bar').style.display=showTargetBar?'flex':'none';
 }
 
 // ══════════════════════════════════════════════
@@ -1471,7 +1457,6 @@ function updateMTD(){
   const year=parseInt(document.getElementById('sel-year').value);
   const month=parseInt(document.getElementById('sel-month').value);
   const dim=new Date(year,month+1,0).getDate();
-  const goal=MONTHLY_GOALS[month]||1890;
   const today=new Date();
   const isCurrent=today.getFullYear()===year&&today.getMonth()===month;
   const lastDay=isCurrent?today.getDate():dim;
@@ -1564,7 +1549,6 @@ function updateLeaderboard(){
   if(!currentIsManager) return;
   const year=parseInt(document.getElementById('sel-year').value);
   const month=parseInt(document.getElementById('sel-month').value);
-  const goal=MONTHLY_GOALS[month]||1890;
   const today=new Date();
   const isCurrent=today.getFullYear()===year&&today.getMonth()===month;
   const lastDay=isCurrent?today.getDate():new Date(year,month+1,0).getDate();
@@ -1953,8 +1937,13 @@ function myCellChanged(year, month, ai, day, val) {
 function buildAgentSelectors(){
   const yy = document.getElementById('ag-sel-year');
   const aa = document.getElementById('ag-sel-agent');
+  const csvAg = document.getElementById('csv-sel-agent');
+  const csvMo = document.getElementById('csv-sel-month');
   if(!yy || !aa) return;
   yy.innerHTML=''; aa.innerHTML='';
+  if(csvAg) csvAg.innerHTML='';
+  if(csvMo){ csvMo.innerHTML='<option value="-1">All Months</option>'; }
+
   const now = new Date();
   for(let y=2024; y<=now.getFullYear(); y++){
     const o=document.createElement('option');
@@ -1967,7 +1956,90 @@ function buildAgentSelectors(){
     o.value=i;
     o.textContent=a.name.split(',')[1]?.trim()||a.name;
     aa.appendChild(o);
+    if(csvAg){
+      const o2=document.createElement('option');
+      o2.value=i; o2.textContent=a.name.split(',')[1]?.trim()||a.name;
+      csvAg.appendChild(o2);
+    }
   });
+  if(csvMo){
+    MONTHS.forEach((m,i)=>{
+      const o=document.createElement('option');
+      o.value=i; o.textContent=m;
+      csvMo.appendChild(o);
+    });
+  }
+}
+
+function downloadCSV(){
+  const yyEl = document.getElementById('ag-sel-year');
+  const csvAgEl = document.getElementById('csv-sel-agent');
+  const csvMoEl = document.getElementById('csv-sel-month');
+  if(!yyEl||!csvAgEl) return;
+
+  const year    = parseInt(yyEl.value);
+  const ai      = parseInt(csvAgEl.value);
+  const monthFilter = csvMoEl ? parseInt(csvMoEl.value) : -1;
+  const agent   = AGENTS[ai];
+  if(!agent) return;
+
+  const agentName = agent.name.replace(/,/g,' ').trim();
+  const monthsToExport = monthFilter === -1 ? MONTHS.map((_,i)=>i) : [monthFilter];
+  const now = new Date();
+
+  let csv = 'Agent,Email,Year,Month,Date,Day,Cases,ACPD,KPI Score\n';
+
+  monthsToExport.forEach(month => {
+    if(year === now.getFullYear() && month > now.getMonth()) return;
+    const dim = new Date(year, month+1, 0).getDate();
+    const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+    // Calc ACPD for month
+    let mTotal=0, mDays=0;
+    for(let d=1;d<=dim;d++){
+      if(!isWeekend(year,month,d)){
+        const v=getDayValue(year,month,ai,d);
+        if(v!==''&&!isNaN(v)){mTotal+=Number(v);mDays++;}
+      }
+    }
+    const mAcpd = mDays>0?(mTotal/mDays).toFixed(1):'0';
+    const mKpi  = getKPIScore(parseFloat(mAcpd), ai);
+
+    for(let d=1;d<=dim;d++){
+      const dow = new Date(year,month,d).getDay();
+      const weekend = dow===0||dow===6;
+      const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      if(weekend){
+        csv += `"${agentName}","${agent.email}",${year},"${MONTHS[month]}","${dateStr}","${DOW[dow]}","REST","",""
+`;
+        continue;
+      }
+      const val = getDayValue(year,month,ai,d);
+      const cases = val!==''&&!isNaN(val)?Number(val):'';
+      csv += `"${agentName}","${agent.email}",${year},"${MONTHS[month]}","${dateStr}","${DOW[dow]}",${cases},"${mAcpd}",${mKpi}
+`;
+    }
+
+    // Monthly summary row
+    const rates = getKPIRates(ai);
+    csv += `"${agentName}","${agent.email}",${year},"${MONTHS[month]} TOTAL","","",${mTotal},"${mAcpd}",${mKpi}
+`;
+    csv += `"${agentName}","${agent.email}",${year},"${MONTHS[month]} GOAL","","","${rates.score4}+/day (Score 4)","",""
+`;
+    csv += `
+`;
+  });
+
+  // Download
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const monthLabel = monthFilter===-1?'YTD':MONTHS[monthFilter];
+  a.href = url;
+  a.download = `${agentName.replace(/\s+/g,'_')}_${year}_${monthLabel}_Productivity.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`✅ Downloaded CSV for ${agentName} — ${monthLabel} ${year}`, 'success');
 }
 
 function loadAgentView(){
