@@ -515,9 +515,8 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
     <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline"
       data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left" data-width="350"></div>
 
-    <div id="login-error">
-      <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-      Access denied. Use your @allianceglobalsolutions.com account only.
+    <div id="login-error" style="display:none;align-items:center;gap:8px;background:var(--danger-light);border:1px solid #FECACA;color:var(--danger);border-radius:var(--r);padding:12px 14px;font-size:13px;margin-top:1rem;text-align:left">
+      ⚠️ Access denied. Use your @allianceglobalsolutions.com account only.
     </div>
 
     <div class="login-divider"><span>secure access</span></div>
@@ -979,38 +978,108 @@ let currentUser=null, currentAgentIdx=-1, currentIsManager=false, data={}, selec
 // AUTH
 // ══════════════════════════════════════════════
 function handleCredentialResponse(response){
-  const p=parseJwt(response.credential);
-  const email=p.email||'';
-  if((email.split('@')[1]||'')!==ALLOWED_DOMAIN){
-    document.getElementById('login-error').style.display='flex'; return;
+  try {
+    if(!response || !response.credential){
+      showLoginError('Sign-in failed: no credential received. Please try again.');
+      return;
+    }
+
+    let p;
+    try {
+      p = parseJwt(response.credential);
+    } catch(jwtErr) {
+      showLoginError('Sign-in failed: could not read token. Please try again.');
+      console.error('JWT parse error:', jwtErr);
+      return;
+    }
+
+    const email = (p.email || '').toLowerCase().trim();
+    const domain = email.split('@')[1] || '';
+
+    if(domain !== ALLOWED_DOMAIN){
+      showLoginError('Access denied: ' + email + ' is not an @' + ALLOWED_DOMAIN + ' account.');
+      return;
+    }
+
+    currentUser = { email, name: p.name || email, picture: p.picture || '' };
+    currentAgentIdx = AGENTS.findIndex(a => a.email.toLowerCase() === email);
+    currentIsManager = isManager(email);
+
+    // Use localStorage so session survives page refresh/reload
+    try {
+      localStorage.setItem('tmb_user', JSON.stringify(currentUser));
+      localStorage.setItem('tmb_agentIdx', currentAgentIdx);
+      localStorage.setItem('tmb_isManager', currentIsManager);
+    } catch(storErr) {
+      console.warn('Could not save session to localStorage:', storErr);
+    }
+
+    startApp();
+
+  } catch(err) {
+    console.error('handleCredentialResponse error:', err);
+    showLoginError('Sign-in error: ' + err.message + '. Please refresh and try again.');
   }
-  currentUser={email,name:p.name,picture:p.picture};
-  currentAgentIdx=AGENTS.findIndex(a=>a.email.toLowerCase()===email.toLowerCase());
-  currentIsManager=isManager(email);
-  sessionStorage.setItem('user',JSON.stringify(currentUser));
-  sessionStorage.setItem('agentIdx',currentAgentIdx);
-  sessionStorage.setItem('isManager',currentIsManager);
-  startApp();
+}
+
+function showLoginError(msg){
+  const el = document.getElementById('login-error');
+  if(el){
+    el.style.display = 'flex';
+    el.textContent = msg;
+  }
+  console.error('Login error:', msg);
 }
 
 function parseJwt(token){
-  return JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+  try {
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    // Pad base64 if needed
+    const padded = base64 + '=='.slice(0, (4 - base64.length % 4) % 4);
+    const binary = atob(padded);
+    // Handle Unicode safely
+    const bytes = new Uint8Array(binary.length);
+    for(let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const json = new TextDecoder().decode(bytes);
+    return JSON.parse(json);
+  } catch(e) {
+    // Fallback: simple atob
+    const base64 = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+    return JSON.parse(atob(base64));
+  }
 }
 
 function signOut(){
-  sessionStorage.clear(); currentUser=null; currentAgentIdx=-1; currentIsManager=false;
-  document.getElementById('app-screen').style.display='none';
-  document.getElementById('login-screen').style.display='flex';
-  google.accounts.id.disableAutoSelect();
+  localStorage.removeItem('tmb_user');
+  localStorage.removeItem('tmb_agentIdx');
+  localStorage.removeItem('tmb_isManager');
+  currentUser = null; currentAgentIdx = -1; currentIsManager = false;
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  // Hide any login errors from previous session
+  const errEl = document.getElementById('login-error');
+  if(errEl) errEl.style.display = 'none';
+  try { google.accounts.id.disableAutoSelect(); } catch(e){}
 }
 
 function checkSession(){
-  const s=sessionStorage.getItem('user');
-  if(s){
-    currentUser=JSON.parse(s);
-    currentAgentIdx=parseInt(sessionStorage.getItem('agentIdx')||'-1');
-    currentIsManager=sessionStorage.getItem('isManager')==='true';
-    startApp(); return true;
+  try {
+    const s = localStorage.getItem('tmb_user');
+    if(s){
+      const parsed = JSON.parse(s);
+      // Validate the stored session has required fields
+      if(!parsed || !parsed.email) return false;
+      currentUser = parsed;
+      currentAgentIdx = parseInt(localStorage.getItem('tmb_agentIdx') || '-1');
+      currentIsManager = localStorage.getItem('tmb_isManager') === 'true';
+      startApp();
+      return true;
+    }
+  } catch(e) {
+    console.warn('Session restore failed:', e);
+    localStorage.removeItem('tmb_user');
+    localStorage.removeItem('tmb_agentIdx');
+    localStorage.removeItem('tmb_isManager');
   }
   return false;
 }
@@ -2474,6 +2543,10 @@ function buildTodayCards(){
 // BOOT
 // ══════════════════════════════════════════════
 window.addEventListener('load',()=>{
+  // Always hide app first to prevent flash
+  document.getElementById('app-screen').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  // Then try to restore session
   if(!checkSession()){
     document.getElementById('login-screen').style.display='flex';
     document.getElementById('app-screen').style.display='none';
