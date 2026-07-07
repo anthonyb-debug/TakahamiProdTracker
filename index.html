@@ -459,6 +459,7 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
   .topbar{padding:0 1rem}
 }
 @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.kpi-pip{flex:1;height:6px;border-radius:3px;background:var(--border);transition:background .3s}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes countUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .animate-in{animation:fadeUp .3s ease forwards}
@@ -681,6 +682,19 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
           <div class="stat-value" id="mtd-acpd">—</div>
           <div class="stat-sub">Avg cases per work day</div>
         </div>
+        <div class="stat-card" id="kpi-card" style="border-top:3px solid #6366F1">
+          <div class="stat-icon" style="background:#EEF2FF;color:#4F46E5"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></div>
+          <div class="stat-label">KPI Score</div>
+          <div class="stat-value" id="mtd-kpi" style="font-size:36px">—</div>
+          <div class="stat-sub" id="mtd-kpi-sub">out of 5</div>
+          <div id="mtd-kpi-bar" style="margin-top:10px;display:flex;gap:4px">
+            <div class="kpi-pip" id="kpi-pip-1"></div>
+            <div class="kpi-pip" id="kpi-pip-2"></div>
+            <div class="kpi-pip" id="kpi-pip-3"></div>
+            <div class="kpi-pip" id="kpi-pip-4"></div>
+            <div class="kpi-pip" id="kpi-pip-5"></div>
+          </div>
+        </div>
       </div>
 
       <!-- Target strip -->
@@ -786,10 +800,23 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
             <div class="stat-sub">Productivity to goal</div>
           </div>
           <div class="stat-card s-acpd">
-            <div class="stat-icon"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg></div>
+            <div class="stat-icon"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg></div>
             <div class="stat-label">ACPD</div>
             <div class="stat-value" id="my-acpd">—</div>
             <div class="stat-sub">Avg cases per work day</div>
+          </div>
+          <div class="stat-card" id="my-kpi-card" style="border-top:3px solid #6366F1">
+            <div class="stat-icon" style="background:#EEF2FF;color:#4F46E5"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></div>
+            <div class="stat-label">KPI Score</div>
+            <div class="stat-value" id="my-kpi" style="font-size:36px">—</div>
+            <div class="stat-sub" id="my-kpi-sub">out of 5</div>
+            <div id="my-kpi-bar" style="margin-top:10px;display:flex;gap:4px">
+              <div class="kpi-pip" id="my-kpi-pip-1"></div>
+              <div class="kpi-pip" id="my-kpi-pip-2"></div>
+              <div class="kpi-pip" id="my-kpi-pip-3"></div>
+              <div class="kpi-pip" id="my-kpi-pip-4"></div>
+              <div class="kpi-pip" id="my-kpi-pip-5"></div>
+            </div>
           </div>
           <div class="stat-card" style="border-top:3px solid #7C3AED">
             <div class="stat-icon" style="background:#F5F3FF;color:#7C3AED"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"/></svg></div>
@@ -932,7 +959,66 @@ const MANAGERS = [
   { name:'Zaldy',      email:'zaldy@allianceglobalsolutions.com',      initials:'ZL' },
 ];
 
-const MONTHLY_GOALS = {0:1890,1:1800,2:1980,3:1890,4:1710,5:1890,6:180,7:1890,8:1890,9:1890,10:1890,11:1890};
+// ── KPI Daily Rate Thresholds ──────────────────────────────────
+// Each agent has { score4: daily min for KPI 4, score5: daily min for KPI 5 }
+// Goal is derived dynamically: score4 threshold × work days in period
+const KPI_RATES = {
+  default: { score4: 60, score5: 80 },   // all agents
+  2:       { score4: 43, score5: 59 },   // Christia Mapa (index 2)
+};
+
+// Get KPI thresholds for a given agent index
+function getKPIRates(agentIdx){
+  return KPI_RATES[agentIdx] || KPI_RATES.default;
+}
+
+// Get KPI score based on ACPD
+function getKPIScore(acpd, agentIdx){
+  const r = getKPIRates(agentIdx);
+  if(acpd >= r.score5) return 5;
+  if(acpd >= r.score4) return 4;
+  if(acpd >= r.score4 * 0.75) return 3;
+  if(acpd >= r.score4 * 0.5)  return 2;
+  return 1;
+}
+
+// Get KPI score color
+function getKPIColor(score){
+  if(score === 5) return { bg:'#F0FDF4', text:'#15803D', border:'#86EFAC' };
+  if(score === 4) return { bg:'#EFF6FF', text:'#1D4ED8', border:'#93C5FD' };
+  if(score === 3) return { bg:'#FFFBEB', text:'#B45309', border:'#FCD34D' };
+  if(score === 2) return { bg:'#FEF3C7', text:'#92400E', border:'#FDE68A' };
+  return                 { bg:'#FEF2F2', text:'#B91C1C', border:'#FCA5A5' };
+}
+
+// Dynamic monthly goal = score4 threshold × work days in month
+function getMonthlyGoal(agentIdx, year, month){
+  const r = getKPIRates(agentIdx);
+  const dim = new Date(year, month+1, 0).getDate();
+  let workDays = 0;
+  for(let d=1; d<=dim; d++){
+    const dow = new Date(year,month,d).getDay();
+    if(dow!==0 && dow!==6) workDays++;
+  }
+  return r.score4 * workDays;
+}
+
+// Legacy compatibility — returns score4-based goal for given month/year
+// Uses default rates (non-agent-specific) for team-level display
+function getTeamMonthlyGoal(year, month){
+  const dim = new Date(year, month+1, 0).getDate();
+  let workDays = 0;
+  for(let d=1; d<=dim; d++){
+    const dow = new Date(year,month,d).getDay();
+    if(dow!==0 && dow!==6) workDays++;
+  }
+  return KPI_RATES.default.score4 * workDays;
+}
+
+// Keep MONTHLY_GOALS as a computed proxy for backwards compat
+const MONTHLY_GOALS = new Proxy({}, {
+  get(_, month){ return getTeamMonthlyGoal(new Date().getFullYear(), parseInt(month)); }
+});
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 function isManager(email){ return MANAGERS.some(m=>m.email.toLowerCase()===(email||'').toLowerCase()); }
@@ -1233,8 +1319,13 @@ function buildTable(year,month,dim){
     </td>`;
   });
   bb+=`</tr>`;
-  bb+=`<tr class="goal-row"><td>Goal</td>`;
-  AGENTS.forEach(()=>{bb+=`<td>${goal}</td>`;});
+  const year_g=parseInt(document.getElementById('sel-year').value);
+  const month_g=parseInt(document.getElementById('sel-month').value);
+  bb+=`<tr class="goal-row"><td>Goal (Score 4)</td>`;
+  AGENTS.forEach((_,i)=>{
+    const r=getKPIRates(i);
+    bb+=`<td title="Score 4: ${r.score4}+/day · Score 5: ${r.score5}+/day">${r.score4}/day</td>`;
+  });
   bb+=`</tr>`;
   bb+=`<tr class="deficit-row"><td>Deficit</td>`;
   AGENTS.forEach((_,i)=>{bb+=`<td id="deficit-${i}">—</td>`;});
@@ -1273,11 +1364,12 @@ function updateTotals(year,month,dim){
     const del=document.getElementById(`deficit-${i}`);
     if(del){del.textContent=deficit<=0?`+${Math.abs(deficit)}`:deficit;del.className=deficit<=0?'on-target':'';}
     // Mini progress bar
-    const pct=Math.min(100,(total/goal)*100);
+    const agentGoal2 = getMonthlyGoal(i, year, month);
+    const pct=Math.min(100,(total/agentGoal2)*100);
     const mb=document.getElementById(`mini-bar-${i}`);
     if(mb){
       mb.style.width=pct+'%';
-      mb.style.background=pct>=100?'linear-gradient(90deg,#34d399,#10b981)':pct>=75?'linear-gradient(90deg,#60a5fa,#a78bfa)':'linear-gradient(90deg,#f87171,#fb923c)';
+      mb.style.background=kpiScore>=5?'linear-gradient(90deg,#22c55e,#16a34a)':kpiScore>=4?'linear-gradient(90deg,#2563eb,#7c3aed)':kpiScore>=3?'linear-gradient(90deg,#f59e0b,#d97706)':'linear-gradient(90deg,#ef4444,#f97316)';
     }
     // At-risk flag
     // AT RISK indicator in column header
@@ -1320,7 +1412,8 @@ function updateTargetBar(){
   let remainingWorkDays=0;
   for(let d=lastDay;d<=dim;d++){if(!isWeekend(year,month,d))remainingWorkDays++;}
 
-  const dailyTarget=totalWorkDays>0?Math.ceil(goal/totalWorkDays):0;
+  const r = getKPIRates(agentIdx);
+  const dailyTarget = r.score4; // Score 4 threshold is the daily target
 
   // Agent total so far
   let total=0;
@@ -1331,7 +1424,8 @@ function updateTargetBar(){
     }
   }
 
-  const remaining=Math.max(0,goal-total);
+  const agentMonthlyGoal = getMonthlyGoal(agentIdx, year, month);
+  const remaining=Math.max(0,agentMonthlyGoal-total);
   const paceNeeded=remainingWorkDays>0?Math.ceil(remaining/remainingWorkDays):0;
 
   const dtBadge=document.getElementById('daily-target-badge');
@@ -1400,7 +1494,13 @@ function updateMTD(){
   let totalWorkDays=0;
   for(let d=1;d<=dim;d++){if(!isWeekend(year,month,d))totalWorkDays++;}
 
-  const goalBase=showAll?goal*AGENTS.length:goal;
+  // Per-agent or team goal based on KPI score4 threshold × work days
+  let goalBase;
+  if(showAll){
+    goalBase = AGENTS.reduce((sum,_,i) => sum + getMonthlyGoal(i, year, month), 0);
+  } else {
+    goalBase = getMonthlyGoal(agentIdx, year, month);
+  }
   const mtdGoal=Math.round((goalBase/totalWorkDays)*workDays);
   const deficit=total-mtdGoal;
   const ptg=mtdGoal>0?((total/mtdGoal)*100).toFixed(1):'0.0';
@@ -1414,6 +1514,39 @@ function updateMTD(){
   document.getElementById('mtd-ptg').textContent=`${ptg}%`;
   document.getElementById('mtd-ptg').style.color=parseFloat(ptg)>=95?'var(--success)':parseFloat(ptg)>=75?'var(--warning)':'var(--danger)';
   document.getElementById('mtd-acpd').textContent=acpd;
+
+  // ── KPI Score ──
+  const acpdNum = parseFloat(acpd);
+  const kpiAgentIdx = showAll ? -1 : agentIdx;
+  const kpiScore = kpiAgentIdx >= 0 ? getKPIScore(acpdNum, kpiAgentIdx) : null;
+
+  const kpiEl    = document.getElementById('mtd-kpi');
+  const kpiSub   = document.getElementById('mtd-kpi-sub');
+  const kpiCard  = document.getElementById('kpi-card');
+
+  if(kpiEl && kpiScore !== null){
+    const col = getKPIColor(kpiScore);
+    kpiEl.textContent = kpiScore;
+    kpiEl.style.color = col.text;
+    if(kpiCard){
+      kpiCard.style.borderTopColor = col.border;
+      kpiCard.querySelector('.stat-icon').style.background = col.bg;
+      kpiCard.querySelector('.stat-icon').style.color = col.text;
+    }
+    const r = getKPIRates(kpiAgentIdx);
+    if(kpiSub) kpiSub.textContent = `Score ${kpiScore}/5 · Need ${r.score4}+/day for 4, ${r.score5}+/day for 5`;
+    // Pips
+    for(let p=1;p<=5;p++){
+      const pip = document.getElementById(`kpi-pip-${p}`);
+      if(pip){
+        const col2 = getKPIColor(p);
+        pip.style.background = p <= kpiScore ? col2.text : 'var(--border)';
+      }
+    }
+  } else if(kpiEl){
+    kpiEl.textContent = '—';
+    if(kpiSub) kpiSub.textContent = 'Select an agent to see KPI score';
+  }
   const bar=document.getElementById('mtd-progress-bar');
   bar.style.width=pct+'%';
   bar.style.background=pct>=100?'linear-gradient(90deg,#059669,#10b981)':pct>=75?'linear-gradient(90deg,#2563eb,#7c3aed)':'linear-gradient(90deg,#d97706,#f59e0b)';
@@ -1439,18 +1572,23 @@ function updateLeaderboard(){
 
   // Calc totals per agent
   const scores=AGENTS.map((a,i)=>{
-    let total=0;
-    for(let d=1;d<=lastDay;d++){
+    let total=0, elapsed=0;
+    for(let d=1;d<=dim;d++){
       if(!isWeekend(year,month,d)){
-        const v=getDayValue(year,month,i,d);
-        if(v!==''&&!isNaN(v))total+=Number(v);
+        if(d<=lastDay){
+          elapsed++;
+          const v=getDayValue(year,month,i,d);
+          if(v!==''&&!isNaN(v))total+=Number(v);
+        }
       }
     }
-    let totalWorkDays=0,elapsed=0;
-    for(let d=1;d<=dim;d++){if(!isWeekend(year,month,d)){totalWorkDays++;if(d<=lastDay)elapsed++;}}
-    const mtdGoal=Math.round((goal/totalWorkDays)*elapsed);
+    let totalWorkDays=0;
+    for(let d=1;d<=dim;d++){if(!isWeekend(year,month,d))totalWorkDays++;}
+    const agentGoal = getMonthlyGoal(i, year, month);
+    const mtdGoal = totalWorkDays>0?Math.round((agentGoal/totalWorkDays)*elapsed):agentGoal;
     const ptg=mtdGoal>0?(total/mtdGoal*100):0;
-    return {name:a.name.split(',')[1]?.trim()||a.name,total,mtdGoal,ptg,initials:a.initials};
+    const acpd = elapsed>0?total/elapsed:0;
+    return {name:a.name.split(',')[1]?.trim()||a.name,total,mtdGoal,ptg,acpd,elapsed,initials:a.initials,agentIdx:i};
   }).sort((a,b)=>b.total-a.total);
 
   const maxTotal=scores[0]?.total||1;
@@ -1617,7 +1755,7 @@ function loadMyView() {
   if (!msEl || !ysEl) return;
   const month = parseInt(msEl.value);
   const year  = parseInt(ysEl.value);
-  const goal  = MONTHLY_GOALS[month] || 1890;
+  const goal  = getMonthlyGoal(ai, year, month);
   const dim   = new Date(year, month + 1, 0).getDate();
   const now   = new Date();
   const isCurrent = now.getFullYear() === year && now.getMonth() === month;
@@ -1635,7 +1773,8 @@ function loadMyView() {
   if (tb) tb.textContent = MONTHS[month] + ' ' + year;
 
   const goalBadge = document.getElementById('my-goal-badge');
-  if (goalBadge) goalBadge.textContent = goal.toLocaleString() + ' cases';
+  const myRatesDisplay = getKPIRates(ai);
+  if (goalBadge) goalBadge.textContent = `${myRatesDisplay.score4}+/day (Score 4) · ${myRatesDisplay.score5}+/day (Score 5)`;
 
   // Build table
   const thead = document.getElementById('my-table-head');
@@ -1650,7 +1789,8 @@ function loadMyView() {
 
   let bb = '';
   let streak = 0, streakActive = true;
-  const dailyTarget = totalWorkDays > 0 ? Math.ceil(goal / totalWorkDays) : 0;
+  const myKPIRates = getKPIRates(ai);
+  const dailyTarget = myKPIRates.score4; // Score 4 threshold
 
   for (let d = 1; d <= dim; d++) {
     const dow = new Date(year, month, d).getDay();
@@ -1737,6 +1877,29 @@ function loadMyView() {
     myPtg.style.color = parseFloat(ptg) >= 95 ? 'var(--success-dark)' : parseFloat(ptg) >= 75 ? 'var(--warning-dark)' : 'var(--danger)';
   }
   if (myAcpd) myAcpd.textContent = acpd;
+
+  // ── My KPI Score ──
+  const myKpiEl   = document.getElementById('my-kpi');
+  const myKpiSub  = document.getElementById('my-kpi-sub');
+  const myKpiCard = document.getElementById('my-kpi-card');
+  const myAcpdNum = elapsedWorkDays > 0 ? totalCases / elapsedWorkDays : 0;
+  const myKpiScore = getKPIScore(myAcpdNum, ai);
+  const myCol = getKPIColor(myKpiScore);
+  if(myKpiEl){
+    myKpiEl.textContent = myKpiScore;
+    myKpiEl.style.color = myCol.text;
+  }
+  if(myKpiCard){
+    myKpiCard.style.borderTopColor = myCol.border;
+    const icon = myKpiCard.querySelector('.stat-icon');
+    if(icon){ icon.style.background = myCol.bg; icon.style.color = myCol.text; }
+  }
+  const myRates = getKPIRates(ai);
+  if(myKpiSub) myKpiSub.textContent = `Score ${myKpiScore}/5 · Target: ${myRates.score4}+/day for 4, ${myRates.score5}+/day for 5`;
+  for(let p=1;p<=5;p++){
+    const pip = document.getElementById(`my-kpi-pip-${p}`);
+    if(pip) pip.style.background = p <= myKpiScore ? myCol.text : 'var(--border)';
+  }
   if (myStreak) myStreak.textContent = streak + ' day' + (streak !== 1 ? 's' : '');
   if (myBar) {
     const pct = Math.min(100, mtdGoal > 0 ? (totalCases / mtdGoal * 100) : 0);
@@ -1846,7 +2009,8 @@ function loadAgentView(){
   let hh = '<tr><th style="text-align:left;min-width:50px;position:sticky;left:0;background:var(--bg);z-index:2">Day</th>';
   MONTHS.forEach((m,mi) => {
     const future = year===now.getFullYear() && mi > lastMonth;
-    hh += `<th style="min-width:80px;${future?'opacity:.35':''}"><div style="font-size:11px;font-weight:700">${m.slice(0,3)}</div><div style="font-size:10px;color:var(--text-muted);font-weight:500">${MONTHLY_GOALS[mi]||1890}</div></th>`;
+    const agRates = getKPIRates(ai);
+    hh += `<th style="min-width:80px;${future?'opacity:.35':''}"><div style="font-size:11px;font-weight:700">${m.slice(0,3)}</div><div style="font-size:10px;color:var(--text-muted);font-weight:500">${agRates.score4}+/day</div></th>`;
   });
   hh += '</tr>';
   thead.innerHTML = hh;
@@ -1955,10 +2119,11 @@ function loadAgentView(){
       const defColor = deficit<=0?'var(--success-dark)':'var(--danger)';
       const defVal = deficit<=0?`+${Math.abs(deficit)}`:deficit;
       fprod += `<td style="font-weight:700;font-size:13px;color:var(--text)">${total||''}</td>`;
-      fgoal += `<td style="font-size:12px;color:var(--text-secondary)">${goal}</td>`;
+      const agGoalDisplay = getKPIRates(ai);
+    fgoal += `<td style="font-size:12px;color:var(--text-secondary)">${getMonthlyGoal(ai, year, mi)}</td>`;
       fdef  += `<td style="font-weight:700;font-size:13px;color:${defColor}">${total?defVal:''}</td>`;
       ytdTotal += total;
-      ytdGoal  += goal;
+      ytdGoal  += getMonthlyGoal(ai, year, mi);
       if(total>bestMonthVal){bestMonthVal=total;bestMonthName=MONTHS[mi];}
     }
   });
