@@ -1997,189 +1997,237 @@ function agCellChanged(year, month, ai, day, input){
 
 
 // ══════════════════════════════════════════════
-// SMART PASTE — Excel/Sheets multi-row support
+// SMART PASTE — Safe batch write from Excel/Sheets
 // ══════════════════════════════════════════════
-// Handles:
-//   • Single column paste (most common — agents copy their daily numbers)
-//   • Multi-column paste (managers paste full team data)
-//   • Tab-separated (Excel/Sheets default copy format)
-//   • Newline-separated (single column copy)
-//   • Skips weekends automatically
-//   • Works in main table (inp-{day}-{agentIdx})
-//   • Works in My Productivity table (my-inp-{day})
-//   • Works in Agent calendar table (ag-inp-{day}-{month})
+// KEY SAFETY PRINCIPLE:
+//   All values are parsed and validated FIRST into a batch map.
+//   Data is written to storage in ONE operation.
+//   UI is refreshed ONCE at the end.
+//   No UI rebuilds happen mid-paste (prevents data corruption).
 
 function setupPaste(){
   document.addEventListener('paste', e => {
     const target = e.target;
     if(!target || target.tagName !== 'INPUT') return;
     const id = target.id || '';
+    if(!id.startsWith('inp-') && !id.startsWith('my-inp-') && !id.startsWith('ag-inp-')) return;
 
-    // Get clipboard text
+    e.preventDefault();
+
+    // ── Step 1: Read clipboard ──
     const raw = (e.clipboardData || window.clipboardData).getData('text');
-    if(!raw) return;
+    if(!raw || !raw.trim()) return;
 
-    // Parse clipboard into 2D grid
-    // Excel copies as rows separated by \n, cells by \t
-    const rows = raw.trim().split(/\r?\n/).map(r => r.split('\t').map(v => v.trim()));
-    const isSingleCol = rows.every(r => r.length === 1);
+    // ── Step 2: Parse into 2D grid (Excel = tab-separated rows) ──
+    const grid = raw.trim()
+      .split(/
+?
+/)
+      .map(row => row.split('	').map(cell => cell.trim().replace(/,/g, '')));
 
-    // ── MAIN TABLE: inp-{day}-{agentIdx} ──
-    if(id.startsWith('inp-')){
-      e.preventDefault();
-      const parts = id.split('-');
-      const startDay = parseInt(parts[1]);
-      const agentIdx = parseInt(parts[2]);
-      const year  = parseInt(document.getElementById('sel-year').value);
-      const month = parseInt(document.getElementById('sel-month').value);
-      const dim   = new Date(year, month+1, 0).getDate();
+    const isSingleCol = grid.every(r => r.length === 1);
 
-      if(isSingleCol){
-        // Single column: paste down the same agent column, skipping weekends
-        let rowIdx = 0;
-        for(let d = startDay; d <= dim && rowIdx < rows.length; d++){
-          if(isWeekend(year, month, d)) continue;
-          const val = parseInt(rows[rowIdx][0]);
-          rowIdx++;
-          if(isNaN(val)) continue;
-          const inp = document.getElementById(`inp-${d}-${agentIdx}`);
-          if(!inp || inp.readOnly) continue;
-          inp.value = val;
-          cellChanged(year, month, agentIdx, d, val);
-          highlightInput(inp);
+    // ── Step 3: Validate all values before writing ANYTHING ──
+    // Only accept integers >= 0. Reject the entire paste if any cell is clearly wrong.
+    const MAX_REASONABLE = 9999; // sanity cap per cell
+    let validationErrors = [];
+    grid.forEach((row, ri) => {
+      row.forEach((cell, ci) => {
+        if(cell === '' || cell === '-' || cell === '—') return; // blanks OK
+        const n = parseInt(cell);
+        if(isNaN(n)){
+          validationErrors.push(`Row ${ri+1} col ${ci+1}: "${cell}" is not a number`);
+        } else if(n < 0){
+          validationErrors.push(`Row ${ri+1} col ${ci+1}: negative value (${n})`);
+        } else if(n > MAX_REASONABLE){
+          validationErrors.push(`Row ${ri+1} col ${ci+1}: value ${n} seems too large`);
         }
-        showToast(`✅ Pasted ${rowIdx} value${rowIdx!==1?'s':''} into ${AGENTS[agentIdx]?.name.split(',')[1]?.trim()||'column'}`, 'success');
-      } else {
-        // Multi-column paste: each row = one day, each col = one agent
-        // Only managers can paste multi-column
-        if(!currentIsManager){
-          showToast('⚠️ Multi-column paste is for managers only', 'error');
-          return;
-        }
-        let dayIdx = 0, pastedCount = 0;
-        for(let d = startDay; d <= dim && dayIdx < rows.length; d++){
-          if(isWeekend(year, month, d)){ continue; }
-          const rowData = rows[dayIdx];
-          dayIdx++;
-          rowData.forEach((val, colOffset) => {
-            const targetAgent = agentIdx + colOffset;
-            if(targetAgent >= AGENTS.length) return;
-            const num = parseInt(val);
-            if(isNaN(num)) return;
-            const inp = document.getElementById(`inp-${d}-${targetAgent}`);
-            if(!inp) return;
-            inp.value = num;
-            cellChanged(year, month, targetAgent, d, num);
-            highlightInput(inp);
-            pastedCount++;
-          });
-        }
-        showToast(`✅ Pasted ${pastedCount} values across ${rows[0].length} agent${rows[0].length!==1?'s':''}`, 'success');
-      }
+      });
+    });
 
-      // Refresh totals
-      updateTotals(year, month, dim);
-      updateMTD();
-      updateTargetBar();
-      updateLeaderboard();
+    if(validationErrors.length){
+      showToast('❌ Paste blocked — invalid data: ' + validationErrors[0], 'error');
+      console.warn('Paste validation failed:', validationErrors);
       return;
     }
 
-    // ── MY PRODUCTIVITY TABLE: my-inp-{day} ──
-    if(id.startsWith('my-inp-')){
-      e.preventDefault();
-      const startDay = parseInt(id.replace('my-inp-',''));
-      const msEl = document.getElementById('my-sel-month');
-      const ysEl = document.getElementById('my-sel-year');
-      const myAgSel = document.getElementById('my-sel-agent');
-      if(!msEl||!ysEl) return;
+    // ── Step 4: Build a batch map of {year,month,agentIdx,day} → value ──
+    // Nothing is written to storage yet.
+    const batch = []; // [{year,month,ai,day,val}]
+
+    // ── MAIN TABLE ──
+    if(id.startsWith('inp-')){
+      const parts    = id.split('-');
+      const startDay = parseInt(parts[1]);
+      const agentIdx = parseInt(parts[2]);
+      const year     = parseInt(document.getElementById('sel-year').value);
+      const month    = parseInt(document.getElementById('sel-month').value);
+      const dim      = new Date(year, month+1, 0).getDate();
+
+      if(isSingleCol){
+        // Agent pasting their own column — most common case
+        if(!currentIsManager && agentIdx !== currentAgentIdx){
+          showToast('❌ You can only paste into your own column', 'error'); return;
+        }
+        let rowIdx = 0;
+        for(let d = startDay; d <= dim && rowIdx < grid.length; d++){
+          if(isWeekend(year, month, d)) continue;
+          const cell = grid[rowIdx][0]; rowIdx++;
+          if(cell === '' || cell === '-' || cell === '—') continue;
+          const val = parseInt(cell);
+          if(!isNaN(val) && val >= 0) batch.push({year, month, ai: agentIdx, day: d, val});
+        }
+      } else {
+        // Multi-column — managers only
+        if(!currentIsManager){
+          showToast('❌ Multi-column paste is for managers only', 'error'); return;
+        }
+        let dayIdx = 0;
+        for(let d = startDay; d <= dim && dayIdx < grid.length; d++){
+          if(isWeekend(year, month, d)) continue;
+          const row = grid[dayIdx++];
+          row.forEach((cell, colOffset) => {
+            const targetAi = agentIdx + colOffset;
+            if(targetAi >= AGENTS.length) return;
+            if(cell === '' || cell === '-' || cell === '—') return;
+            const val = parseInt(cell);
+            if(!isNaN(val) && val >= 0) batch.push({year, month, ai: targetAi, day: d, val});
+          });
+        }
+      }
+    }
+
+    // ── MY PRODUCTIVITY TABLE ──
+    else if(id.startsWith('my-inp-')){
+      const startDay = parseInt(id.replace('my-inp-', ''));
+      const msEl     = document.getElementById('my-sel-month');
+      const ysEl     = document.getElementById('my-sel-year');
+      const myAgSel  = document.getElementById('my-sel-agent');
+      if(!msEl || !ysEl) return;
       const year  = parseInt(ysEl.value);
       const month = parseInt(msEl.value);
       const ai    = currentIsManager ? (myAgSel ? parseInt(myAgSel.value) : 0) : currentAgentIdx;
       const dim   = new Date(year, month+1, 0).getDate();
-
-      // Flatten to single column
-      const vals = rows.map(r => r[0]);
       let rowIdx = 0;
-      for(let d = startDay; d <= dim && rowIdx < vals.length; d++){
+      for(let d = startDay; d <= dim && rowIdx < grid.length; d++){
         if(isWeekend(year, month, d)) continue;
-        const num = parseInt(vals[rowIdx++]);
-        if(isNaN(num)) continue;
-        const inp = document.getElementById(`my-inp-${d}`);
-        if(!inp || inp.readOnly) continue;
-        inp.value = num;
-        myCellChanged(year, month, ai, d, num);
-        highlightInput(inp);
+        const cell = grid[rowIdx][0]; rowIdx++;
+        if(cell === '' || cell === '-' || cell === '—') continue;
+        const val = parseInt(cell);
+        if(!isNaN(val) && val >= 0) batch.push({year, month, ai, day: d, val});
       }
-      showToast(`✅ Pasted ${rowIdx} value${rowIdx!==1?'s':''}`,'success');
-      return;
     }
 
-    // ── AGENT CALENDAR: ag-inp-{day}-{month} (if editable inputs exist) ──
-    if(id.startsWith('ag-inp-')){
-      e.preventDefault();
-      const parts   = id.split('-');
+    // ── AGENT CALENDAR ──
+    else if(id.startsWith('ag-inp-')){
+      const parts    = id.split('-');
       const startDay = parseInt(parts[2]);
       const startMon = parseInt(parts[3]);
-      const yyEl    = document.getElementById('ag-sel-year');
-      const aaEl    = document.getElementById('ag-sel-agent');
-      if(!yyEl||!aaEl) return;
+      const yyEl     = document.getElementById('ag-sel-year');
+      const aaEl     = document.getElementById('ag-sel-agent');
+      if(!yyEl || !aaEl) return;
       const year = parseInt(yyEl.value);
       const ai   = parseInt(aaEl.value);
 
       if(isSingleCol){
-        // Paste down same month column
         const dim = new Date(year, startMon+1, 0).getDate();
         let rowIdx = 0;
-        for(let d = startDay; d <= dim && rowIdx < rows.length; d++){
+        for(let d = startDay; d <= dim && rowIdx < grid.length; d++){
           const dow = new Date(year, startMon, d).getDay();
-          if(dow===0||dow===6) continue;
-          const num = parseInt(rows[rowIdx++][0]);
-          if(isNaN(num)) continue;
-          const inp = document.getElementById(`ag-inp-${d}-${startMon}`);
-          if(!inp) continue;
-          inp.value = num;
-          agCellChanged(year, startMon, ai, d, inp);
-          highlightInput(inp);
+          if(dow === 0 || dow === 6) continue;
+          const cell = grid[rowIdx][0]; rowIdx++;
+          if(cell === '' || cell === '-' || cell === '—') continue;
+          const val = parseInt(cell);
+          if(!isNaN(val) && val >= 0) batch.push({year, month: startMon, ai, day: d, val});
         }
-        showToast(`✅ Pasted ${rowIdx} values`,'success');
       } else {
-        // Multi-col: each col = a month, each row = a day
-        let pastedCount = 0;
-        rows.forEach((row, rIdx) => {
+        grid.forEach((row, rIdx) => {
           const d = startDay + rIdx;
-          row.forEach((val, cIdx) => {
+          if(d > 31) return;
+          row.forEach((cell, cIdx) => {
             const mon = startMon + cIdx;
             if(mon > 11) return;
-            const num = parseInt(val);
-            if(isNaN(num)) return;
             const dow = new Date(year, mon, d).getDay();
-            if(dow===0||dow===6) return;
-            const inp = document.getElementById(`ag-inp-${d}-${mon}`);
-            if(!inp) return;
-            inp.value = num;
-            agCellChanged(year, mon, ai, d, inp);
-            highlightInput(inp);
-            pastedCount++;
+            if(dow === 0 || dow === 6) return;
+            if(cell === '' || cell === '-' || cell === '—') return;
+            const val = parseInt(cell);
+            if(!isNaN(val) && val >= 0) batch.push({year, month: mon, ai, day: d, val});
           });
         });
-        showToast(`✅ Pasted ${pastedCount} values`,'success');
       }
-      return;
     }
+
+    if(batch.length === 0){
+      showToast('⚠️ Nothing to paste — no valid numbers found', 'error'); return;
+    }
+
+    // ── Step 5: Show confirmation for large pastes ──
+    if(batch.length > 25 && !currentIsManager){
+      // Extra safety: confirm before overwriting lots of data
+      if(!confirm(`You are about to paste ${batch.length} values. Continue?`)) return;
+    }
+
+    // ── Step 6: Write ALL values to data store in one pass ──
+    // Uses raw data write — NO UI updates triggered per cell
+    batch.forEach(({year, month, ai, day, val}) => {
+      ensurePath(year, month);
+      data[year][month][ai][day] = val; // direct write, no triggers
+    });
+
+    // ── Step 7: Save to localStorage ONCE ──
+    saveToStorage();
+
+    // ── Step 8: Update all input elements to reflect new values ──
+    batch.forEach(({year, month, ai, day, val}) => {
+      // Main table
+      const mainInp = document.getElementById(`inp-${day}-${ai}`);
+      if(mainInp){ mainInp.value = val; highlightInput(mainInp); }
+      // My productivity table
+      const myInp = document.getElementById(`my-inp-${day}`);
+      if(myInp){ myInp.value = val; highlightInput(myInp); }
+      // Agent calendar
+      const agInp = document.getElementById(`ag-inp-${day}-${month}`);
+      if(agInp){ agInp.value = val; highlightInput(agInp); }
+    });
+
+    // ── Step 9: Refresh UI ONCE ──
+    if(id.startsWith('inp-')){
+      const year  = parseInt(document.getElementById('sel-year').value);
+      const month = parseInt(document.getElementById('sel-month').value);
+      const dim   = new Date(year, month+1, 0).getDate();
+      updateTotals(year, month, dim);
+      updateMTD();
+      updateTargetBar();
+      updateLeaderboard();
+    } else if(id.startsWith('my-inp-')){
+      // Rebuild my view once — safe now that all data is committed
+      loadMyView();
+    } else if(id.startsWith('ag-inp-')){
+      loadAgentView();
+    }
+
+    // ── Step 10: Confirm to user ──
+    const agentName = batch[0] && AGENTS[batch[0].ai]
+      ? AGENTS[batch[0].ai].name.split(',')[1]?.trim() || AGENTS[batch[0].ai].name
+      : '';
+    showToast(
+      `✅ Pasted ${batch.length} value${batch.length!==1?'s':''}${agentName?' for '+agentName:''}`,
+      'success'
+    );
+    console.log('Paste complete:', batch.length, 'values written:', batch);
   });
 }
 
 function highlightInput(inp){
-  inp.style.background = 'var(--primary-light)';
-  inp.style.borderColor = 'var(--primary-muted)';
-  inp.style.color = 'var(--primary-dark)';
-  inp.style.fontWeight = '700';
+  if(!inp) return;
   inp.classList.add('has-value');
-  // Flash animation
-  inp.style.transition = 'box-shadow .2s';
-  inp.style.boxShadow = '0 0 0 3px rgba(37,99,235,.2)';
-  setTimeout(()=>{ inp.style.boxShadow = ''; }, 600);
+  inp.style.background    = 'var(--primary-light)';
+  inp.style.borderColor   = 'var(--primary-muted)';
+  inp.style.color         = 'var(--primary-dark)';
+  inp.style.fontWeight    = '700';
+  inp.style.transition    = 'box-shadow .25s';
+  inp.style.boxShadow     = '0 0 0 3px rgba(37,99,235,.25)';
+  setTimeout(() => { inp.style.boxShadow = ''; }, 700);
 }
 
 // ══════════════════════════════════════════════
