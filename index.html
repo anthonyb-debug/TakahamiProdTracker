@@ -1202,6 +1202,7 @@ function setDayValue(y,m,ai,d,val){
   if(val===''||val===null||isNaN(val)) delete data[y][m][ai][d];
   else data[y][m][ai][d]=Number(val);
   saveToStorage(); updateMTD(); updateLeaderboard(); if(currentView==='dashboard') buildTodayCards();
+  scheduleAutoSync();
 }
 
 // ══════════════════════════════════════════════
@@ -1583,14 +1584,16 @@ function updateLeaderboard(){
 // ══════════════════════════════════════════════
 // SYNC
 // ══════════════════════════════════════════════
-async function syncToSheets(){
+async function syncToSheets(silent=false){
   const year=parseInt(document.getElementById('sel-year').value);
   const month=parseInt(document.getElementById('sel-month').value);
   const dim=new Date(year,month+1,0).getDate();
   const btn=document.getElementById('sync-btn');
   const statusEl=document.getElementById('sync-status');
-  btn.disabled=true;
-  btn.innerHTML=`<svg viewBox="0 0 20 20" style="width:14px;height:14px;fill:white;animation:spin 1s linear infinite"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Syncing…`;
+  if(!silent){
+    btn.disabled=true;
+    btn.innerHTML='<svg viewBox="0 0 20 20" style="width:14px;height:14px;fill:white;animation:spin 1s linear infinite"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Syncing…';
+  }
 
   const rows=[];
   for(let d=1;d<=dim;d++){
@@ -1620,20 +1623,40 @@ async function syncToSheets(){
     }
     document.body.appendChild(form); form.submit(); document.body.removeChild(form);
     await new Promise(r=>setTimeout(r,2000));
-    showToast('✅ Synced to Google Sheets!','success');
-    statusEl.textContent=`Synced ${new Date().toLocaleTimeString()}`; statusEl.className='sync-status ok';
+    if(!silent) showToast('✅ Synced to Google Sheets!','success');
+    statusEl.textContent='Synced '+new Date().toLocaleTimeString(); statusEl.className='sync-status ok';
   }catch(e){
-    showToast(`❌ Sync failed: ${e.message}`,'error');
+    if(!silent) showToast('❌ Sync failed: '+e.message,'error');
     statusEl.textContent='Sync failed'; statusEl.className='sync-status err';
   }
-  btn.disabled=false;
-  btn.innerHTML=`<svg viewBox="0 0 20 20" style="width:14px;height:14px;fill:white"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Sync to Sheets`;
+  if(!silent){
+    btn.disabled=false;
+    btn.innerHTML='<svg viewBox="0 0 20 20" style="width:14px;height:14px;fill:white"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Sync to Sheets';
+  }
 }
 
 // ══════════════════════════════════════════════
 // TOAST
 // ══════════════════════════════════════════════
 let toastTimer;
+let autoSyncTimer = null;
+let autoSyncPending = false;
+
+// Auto-sync: fires 4 seconds after the last cell change
+// Debounced so rapid edits only trigger one sync
+function scheduleAutoSync(){
+  autoSyncPending = true;
+  clearTimeout(autoSyncTimer);
+  // Update sync status to show pending
+  const statusEl = document.getElementById('sync-status');
+  if(statusEl){ statusEl.textContent = 'Unsaved changes...'; statusEl.className = 'sync-status'; }
+  autoSyncTimer = setTimeout(async function(){
+    if(!autoSyncPending) return;
+    autoSyncPending = false;
+    await syncToSheets(true);
+  }, 4000);
+}
+
 function showToast(msg,type=''){
   const t=document.getElementById('toast');
   t.textContent=msg; t.className=`show ${type}`;
