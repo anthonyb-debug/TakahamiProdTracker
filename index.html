@@ -367,11 +367,10 @@ thead th{
   text-transform:uppercase;letter-spacing:.7px;padding:10px 14px;text-align:center;
   border-bottom:1px solid var(--border);white-space:nowrap;
   position:sticky;top:var(--topbar-h);
+  line-height:1.4;
 }
 thead th:first-child{text-align:left;min-width:90px}
-.col-head{display:flex;flex-direction:column;align-items:center;gap:3px}
-.col-risk{display:none;align-items:center;gap:3px;font-size:10px;color:var(--danger);font-weight:700;white-space:nowrap}
-.col-risk svg{width:9px;height:9px;fill:var(--danger)}
+.col-risk{display:none;font-size:9px;color:var(--danger);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
 tbody tr{border-bottom:1px solid var(--border-light);transition:background var(--transition)}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover:not(.summary-row):not(.goal-row):not(.deficit-row):not(.wknd-row){background:#FAFBFF}
@@ -409,13 +408,13 @@ td input[type="number"].readonly-cell{background:var(--bg);border-color:var(--bo
 td input[type="number"].other-value{background:var(--bg);border-color:var(--border);color:var(--text-secondary);pointer-events:none}
 
 /* Summary rows */
-tr.summary-row td{background:#111827;color:white;font-weight:700;font-size:12px;padding:10px 14px;letter-spacing:.1px}
-tr.summary-row td:first-child{color:#9CA3AF}
-tr.goal-row td{background:var(--primary);color:white;font-weight:700;font-size:12px;padding:10px 14px}
-tr.goal-row td:first-child{color:#BFDBFE}
-tr.deficit-row td{background:#7F1D1D;color:#FCA5A5;font-weight:700;font-size:12px;padding:10px 14px}
-tr.deficit-row td:first-child{color:#F87171}
-tr.deficit-row td.on-target{background:#064E3B;color:#6EE7B7}
+tr.summary-row td{background:var(--bg);color:var(--text);font-weight:700;font-size:12px;padding:10px 14px;border-top:2px solid var(--border)}
+tr.summary-row td:first-child{color:var(--text-secondary)}
+tr.goal-row td{background:var(--bg);color:var(--text-secondary);font-weight:600;font-size:12px;padding:8px 14px;border-top:1px solid var(--border)}
+tr.goal-row td:first-child{color:var(--text-muted)}
+tr.deficit-row td{background:var(--bg);font-weight:700;font-size:12px;padding:8px 14px 12px;color:var(--danger);border-bottom:2px solid var(--border)}
+tr.deficit-row td:first-child{color:var(--text-muted);font-weight:600}
+tr.deficit-row td.on-target{color:var(--success-dark)}
 
 /* Mini bar */
 .mini-bar-wrap{height:3px;background:rgba(255,255,255,.15);border-radius:var(--r-full);overflow:hidden;width:70px;margin:4px auto 0}
@@ -646,10 +645,13 @@ tr.deficit-row td.on-target{background:#064E3B;color:#6EE7B7}
         </div>
         <div class="section-actions">
           <!-- Filter toolbar inline -->
-          <div class="filter-toolbar" style="margin:0;padding:8px 12px">
-            <span class="filter-label">Period</span>
+          <div class="filter-toolbar" style="margin:0;padding:8px 12px;gap:8px">
+            <span class="filter-label">Month</span>
             <select id="sel-month" class="filter-select" onchange="loadView()"></select>
             <select id="sel-year" class="filter-select" onchange="loadView()"></select>
+            <div style="width:1px;height:20px;background:var(--border);flex-shrink:0"></div>
+            <span class="filter-label">Agent</span>
+            <select id="sel-agent" class="filter-select" onchange="onAgentChange()"></select>
           </div>
         </div>
       </div>
@@ -773,7 +775,7 @@ function isManager(email){ return MANAGERS.some(m=>m.email.toLowerCase()===(emai
 // ══════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════
-let currentUser=null, currentAgentIdx=-1, currentIsManager=false, data={};
+let currentUser=null, currentAgentIdx=-1, currentIsManager=false, data={}, selectedAgentIdx=-1;
 
 // ══════════════════════════════════════════════
 // AUTH
@@ -885,7 +887,8 @@ function buildSelectors(){
   const now=new Date();
   const ys=document.getElementById('sel-year');
   const ms=document.getElementById('sel-month');
-  ys.innerHTML=''; ms.innerHTML='';
+  const as=document.getElementById('sel-agent');
+  ys.innerHTML=''; ms.innerHTML=''; if(as) as.innerHTML='';
   for(let y=2024;y<=now.getFullYear()+1;y++){
     const o=document.createElement('option');
     o.value=y; o.textContent=y; if(y===now.getFullYear())o.selected=true; ys.appendChild(o);
@@ -894,6 +897,21 @@ function buildSelectors(){
     const o=document.createElement('option');
     o.value=i; o.textContent=m; if(i===now.getMonth())o.selected=true; ms.appendChild(o);
   });
+  if(as){
+    // "All Agents" option for managers
+    if(currentIsManager){
+      const all=document.createElement('option'); all.value=-1; all.textContent='All Agents'; as.appendChild(all);
+    }
+    AGENTS.forEach((a,i)=>{
+      const o=document.createElement('option');
+      o.value=i;
+      o.textContent=a.name.split(',')[1]?.trim()||a.name;
+      // Pre-select current agent
+      if(i===currentAgentIdx) o.selected=true;
+      as.appendChild(o);
+    });
+    selectedAgentIdx=parseInt(as.value);
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -996,14 +1014,11 @@ function buildTable(year,month,dim){
   const tbody=document.getElementById('table-body');
   const goal=MONTHLY_GOALS[month]||1890;
 
-  // Header with at-risk flags
+  // Clean header — at-risk shown as subtle dot, no emoji/svg
   let hh=`<tr><th>Day</th>`;
   AGENTS.forEach((a,i)=>{
     const fn=a.name.split(',')[1]?.trim()||a.name.split(' ')[0];
-    hh+=`<th><div class="col-head">
-      <span>${fn}</span>
-      <span class="col-risk" id="col-risk-${i}">⚠ AT RISK</span>
-    </div></th>`;
+    hh+=`<th><span>${fn}</span><br><span class="col-risk" id="col-risk-${i}">at risk</span></th>`;
   });
   hh+=`</tr>`;
   thead.innerHTML=hh;
@@ -1098,7 +1113,7 @@ function updateTotals(year,month,dim){
     const riskEl=document.getElementById(`col-risk-${i}`);
     if(riskEl){
       const ptg=goal>0?(total/goal)*100:0;
-      riskEl.style.display=ptg<75&&total>0?'flex':'none';
+      riskEl.style.display=ptg<75&&total>0?'inline':'none';
     }
   });
 }
@@ -1112,7 +1127,7 @@ function updateTargetBar(){
   const goal=MONTHLY_GOALS[month]||1890;
   const today=new Date();
   const isCurrentMonth=today.getFullYear()===year&&today.getMonth()===month;
-  const agentIdx=currentAgentIdx>=0?currentAgentIdx:0;
+  const agentIdx=selectedAgentIdx>=0?selectedAgentIdx:(currentAgentIdx>=0?currentAgentIdx:0);
   const dim=new Date(year,month+1,0).getDate();
 
   // Total work days in month
@@ -1190,13 +1205,15 @@ function updateMTD(){
   const today=new Date();
   const isCurrent=today.getFullYear()===year&&today.getMonth()===month;
   const lastDay=isCurrent?today.getDate():dim;
-  const agentIdx=currentAgentIdx>=0?currentAgentIdx:0;
+  // If a specific agent is selected use them, else fall back
+  const agentIdx = selectedAgentIdx >= 0 ? selectedAgentIdx : (currentAgentIdx >= 0 ? currentAgentIdx : 0);
+  const showAll = currentIsManager && selectedAgentIdx < 0;
 
   let total=0,workDays=0;
   for(let d=1;d<=lastDay;d++){
     if(!isWeekend(year,month,d)){
       workDays++;
-      if(currentIsManager){
+      if(showAll){
         AGENTS.forEach((_,ai)=>{const v=getDayValue(year,month,ai,d);if(v!==''&&!isNaN(v))total+=Number(v);});
       } else {
         const v=getDayValue(year,month,agentIdx,d);if(v!==''&&!isNaN(v))total+=Number(v);
@@ -1207,7 +1224,7 @@ function updateMTD(){
   let totalWorkDays=0;
   for(let d=1;d<=dim;d++){if(!isWeekend(year,month,d))totalWorkDays++;}
 
-  const goalBase=currentIsManager?goal*AGENTS.length:goal;
+  const goalBase=showAll?goal*AGENTS.length:goal;
   const mtdGoal=Math.round((goalBase/totalWorkDays)*workDays);
   const deficit=total-mtdGoal;
   const ptg=mtdGoal>0?((total/mtdGoal)*100).toFixed(1):'0.0';
@@ -1224,8 +1241,10 @@ function updateMTD(){
   const bar=document.getElementById('mtd-progress-bar');
   bar.style.width=pct+'%';
   bar.style.background=pct>=100?'linear-gradient(90deg,#059669,#10b981)':pct>=75?'linear-gradient(90deg,#2563eb,#7c3aed)':'linear-gradient(90deg,#d97706,#f59e0b)';
-  if(currentIsManager){
-    document.getElementById('mtd-prod-sub').textContent='Team total this month';
+  const prodSub = document.getElementById('mtd-prod-sub');
+  if(prodSub){
+    if(showAll) prodSub.textContent='All agents combined';
+    else prodSub.textContent=AGENTS[agentIdx]?.name.split(',')[1]?.trim()||'Agent';
   }
 }
 
@@ -1372,16 +1391,20 @@ function switchView(view) {
 // ══════════════════════════════════════════════
 // MY PRODUCTIVITY VIEW
 // ══════════════════════════════════════════════
+function onAgentChange(){
+  const as=document.getElementById('sel-agent');
+  selectedAgentIdx=as?parseInt(as.value):-1;
+  loadView();
+}
+
 function buildMySelectors() {
   const now = new Date();
-  ['my-sel-month','my-sel-year'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.innerHTML = '';
-  });
   const ym = document.getElementById('my-sel-month');
   const yy = document.getElementById('my-sel-year');
+  const ya = document.getElementById('my-sel-agent');
+  const wrap = document.getElementById('my-agent-filter-wrap');
   if (!ym || !yy) return;
+  ym.innerHTML=''; yy.innerHTML=''; if(ya) ya.innerHTML='';
 
   MONTHS.forEach((m, i) => {
     const o = document.createElement('option');
@@ -1395,11 +1418,24 @@ function buildMySelectors() {
     if (y === now.getFullYear()) o.selected = true;
     yy.appendChild(o);
   }
+  // Agent picker — only visible for managers in My view
+  if (currentIsManager && ya && wrap) {
+    wrap.style.display = 'flex';
+    AGENTS.forEach((a, i) => {
+      const o = document.createElement('option');
+      o.value = i;
+      o.textContent = a.name.split(',')[1]?.trim() || a.name;
+      ya.appendChild(o);
+    });
+  }
 }
 
 function loadMyView() {
   if (currentAgentIdx < 0 && !currentIsManager) return;
-  const ai  = currentIsManager ? 0 : currentAgentIdx;
+  const myAgentSel = document.getElementById('my-sel-agent');
+  const ai = currentIsManager
+    ? (myAgentSel ? parseInt(myAgentSel.value) : 0)
+    : currentAgentIdx;
   const msEl = document.getElementById('my-sel-month');
   const ysEl = document.getElementById('my-sel-year');
   if (!msEl || !ysEl) return;
@@ -1502,7 +1538,7 @@ function loadMyView() {
   const acpd = elapsedWorkDays > 0 ? (totalCases / elapsedWorkDays).toFixed(1) : '0.0';
 
   bb += `<tr class="summary-row"><td>My Total</td><td>${totalCases}</td><td></td></tr>`;
-  bb += `<tr class="goal-row"><td>Goal</td><td>${goal}</td><td></td></tr>`;
+  bb += `<tr class="goal-row"><td>Monthly Goal</td><td>${goal}</td><td></td></tr>`;
   bb += `<tr class="deficit-row"><td>Deficit</td><td class="${deficit >= 0 ? 'on-target' : ''}">${deficit >= 0 ? '+' + deficit : deficit}</td><td></td></tr>`;
 
   tbody.innerHTML = bb;
