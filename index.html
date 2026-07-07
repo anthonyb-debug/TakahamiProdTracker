@@ -1664,8 +1664,9 @@ async function syncMyData(){
   for(let d=1; d<=dim; d++){
     if(isWeekend(year,month,d)) continue;
     const val = getDayValue(year,month,ai,d);
-    if(val===''||isNaN(val)) continue;
-    _sendToSheet(year, month, d, ai, Number(val));
+    // Send actual value, or -1 to signal "clear this cell"
+    var numVal = (val===''||isNaN(val)) ? -1 : Number(val);
+    _sendToSheet(year, month, d, ai, numVal);
     count++;
     await new Promise(r=>setTimeout(r,250));
   }
@@ -1700,8 +1701,9 @@ async function syncAgentData(){
     for(let d=1;d<=dim;d++){
       if(isWeekend(year,mo,d)) continue;
       const val = getDayValue(year,mo,ai,d);
-      if(val===''||isNaN(val)) continue;
-      _sendToSheet(year, mo, d, ai, Number(val));
+      // Send actual value, or -1 to signal "clear this cell"
+      var numVal2 = (val===''||isNaN(val)) ? -1 : Number(val);
+      _sendToSheet(year, mo, d, ai, numVal2);
       count++;
       await new Promise(r=>setTimeout(r,200));
     }
