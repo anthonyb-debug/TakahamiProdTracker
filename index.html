@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Productivity Tracker — Takahami Medical Billing</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://accounts.google.com/gsi/client"></script>
+
 <style>
 /* ═══════════════════════════════════════════════════
    DESIGN SYSTEM
@@ -508,21 +508,44 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
     <h1>Productivity Tracker</h1>
     <p class="login-sub">Takahami Medical Billing · Alliance Global Solutions</p>
 
-    <div id="g_id_onload"
-      data-client_id="519974257344-5u0bjm2sdctrnlq6b1oflsvesgn291fc.apps.googleusercontent.com"
-      data-callback="handleCredentialResponse"
-      data-auto_prompt="false"></div>
-    <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline"
-      data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left" data-width="350"></div>
+    <div style="margin:1.5rem 0 0;text-align:left">
+      <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px">Work Email</label>
+      <input id="login-email" type="email" placeholder="you@allianceglobalsolutions.com"
+        style="width:100%;padding:11px 14px;border:1.5px solid #E5E7EB;border-radius:8px;
+          font-size:14px;font-family:inherit;outline:none;transition:border .15s;color:#111827"
+        onkeydown="if(event.key==='Enter')doLogin()"
+        onfocus="this.style.borderColor='#2563EB';this.style.boxShadow='0 0 0 3px rgba(37,99,235,.1)'"
+        onblur="this.style.borderColor='#E5E7EB';this.style.boxShadow='none'"
+      />
 
-    <div id="login-error" style="display:none;align-items:center;gap:8px;background:var(--danger-light);border:1px solid #FECACA;color:var(--danger);border-radius:var(--r);padding:12px 14px;font-size:13px;margin-top:1rem;text-align:left">
-      ⚠️ Access denied. Use your @allianceglobalsolutions.com account only.
+      <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin:14px 0 6px">Password</label>
+      <input id="login-pass" type="password" placeholder="Enter your password"
+        style="width:100%;padding:11px 14px;border:1.5px solid #E5E7EB;border-radius:8px;
+          font-size:14px;font-family:inherit;outline:none;transition:border .15s;color:#111827"
+        onkeydown="if(event.key==='Enter')doLogin()"
+        onfocus="this.style.borderColor='#2563EB';this.style.boxShadow='0 0 0 3px rgba(37,99,235,.1)'"
+        onblur="this.style.borderColor='#E5E7EB';this.style.boxShadow='none'"
+      />
+
+      <button onclick="doLogin()" id="login-btn"
+        style="width:100%;margin-top:16px;padding:12px;background:linear-gradient(135deg,#2563EB,#1D4ED8);
+          color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;
+          font-family:inherit;cursor:pointer;transition:all .15s;letter-spacing:.1px"
+        onmouseover="this.style.opacity='.9'"
+        onmouseout="this.style.opacity='1'">
+        Sign In
+      </button>
     </div>
 
-    <div class="login-divider"><span>secure access</span></div>
+    <div id="login-status" style="font-size:13px;color:#6B7280;margin:10px 0;min-height:18px;text-align:center"></div>
+    <div id="login-error" style="display:none;padding:12px 14px;background:#FEF2F2;border:1px solid #FECACA;color:#DC2626;border-radius:8px;font-size:13px;margin-top:8px;text-align:left">
+      ⚠️ <span id="login-error-msg">Access denied.</span>
+    </div>
+
+    <div class="login-divider" style="margin-top:1.5rem"><span>secure access</span></div>
     <div class="login-notice">
       <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
-      <span>Company email only · Agents may only edit their own column · Data auto-saves locally</span>
+      <span>Use your @allianceglobalsolutions.com email only</span>
     </div>
   </div>
 </div>
@@ -977,50 +1000,80 @@ let currentUser=null, currentAgentIdx=-1, currentIsManager=false, data={}, selec
 // ══════════════════════════════════════════════
 // AUTH
 // ══════════════════════════════════════════════
-function handleCredentialResponse(response){
-  try {
-    if(!response || !response.credential){
-      showLoginError('Sign-in failed: no credential received. Please try again.');
-      return;
-    }
+function doLogin(){
+  const emailEl = document.getElementById('login-email');
+  const passEl  = document.getElementById('login-pass');
+  const btn     = document.getElementById('login-btn');
+  if(!emailEl || !passEl) return;
 
-    let p;
+  const email = (emailEl.value || '').toLowerCase().trim();
+  const pass  = (passEl.value || '').trim();
+
+  // Clear previous errors
+  const errEl = document.getElementById('login-error');
+  if(errEl) errEl.style.display = 'none';
+  setLoginStatus('Signing in...');
+  if(btn) btn.disabled = true;
+
+  setTimeout(() => {
     try {
-      p = parseJwt(response.credential);
-    } catch(jwtErr) {
-      showLoginError('Sign-in failed: could not read token. Please try again.');
-      console.error('JWT parse error:', jwtErr);
-      return;
+      // Domain check
+      const domain = email.split('@')[1] || '';
+      if(domain !== ALLOWED_DOMAIN){
+        showLoginError('Access denied. Use your @' + ALLOWED_DOMAIN + ' email.');
+        if(btn){ btn.disabled=false; btn.textContent='Sign In'; }
+        setLoginStatus('');
+        return;
+      }
+
+      // Check against known users (agents + managers)
+      const allUsers = [...AGENTS, ...MANAGERS];
+      const matchedUser = allUsers.find(u => u.email.toLowerCase() === email);
+
+      if(!matchedUser){
+        showLoginError('Email not found in the system: ' + email);
+        if(btn){ btn.disabled=false; }
+        setLoginStatus('');
+        return;
+      }
+
+      // Password: first part before @ (e.g. jaypee, a.hubilla, anthony.b)
+      // OR the word "takahami" as master password for managers
+      const expectedPass = email.split('@')[0].toLowerCase();
+      const masterPass   = 'takahami2026';
+
+      if(pass !== expectedPass && pass !== masterPass){
+        showLoginError('Incorrect password. Use your email username (before the @) as password.');
+        if(btn){ btn.disabled=false; }
+        setLoginStatus('');
+        return;
+      }
+
+      // Success — set up session
+      currentUser      = { email, name: matchedUser.name, picture: '' };
+      currentAgentIdx  = AGENTS.findIndex(a => a.email.toLowerCase() === email);
+      currentIsManager = isManager(email);
+
+      try {
+        localStorage.setItem('tmb_user',      JSON.stringify(currentUser));
+        localStorage.setItem('tmb_agentIdx',  currentAgentIdx);
+        localStorage.setItem('tmb_isManager', currentIsManager);
+      } catch(e){ console.warn('localStorage error:', e); }
+
+      setLoginStatus('✓ Welcome ' + matchedUser.name.split(',')[0] + '! Loading...');
+      setTimeout(() => startApp(), 400);
+
+    } catch(err){
+      console.error('Login error:', err);
+      showLoginError('Login error: ' + err.message);
+      if(btn){ btn.disabled=false; }
+      setLoginStatus('');
     }
-
-    const email = (p.email || '').toLowerCase().trim();
-    const domain = email.split('@')[1] || '';
-
-    if(domain !== ALLOWED_DOMAIN){
-      showLoginError('Access denied: ' + email + ' is not an @' + ALLOWED_DOMAIN + ' account.');
-      return;
-    }
-
-    currentUser = { email, name: p.name || email, picture: p.picture || '' };
-    currentAgentIdx = AGENTS.findIndex(a => a.email.toLowerCase() === email);
-    currentIsManager = isManager(email);
-
-    // Use localStorage so session survives page refresh/reload
-    try {
-      localStorage.setItem('tmb_user', JSON.stringify(currentUser));
-      localStorage.setItem('tmb_agentIdx', currentAgentIdx);
-      localStorage.setItem('tmb_isManager', currentIsManager);
-    } catch(storErr) {
-      console.warn('Could not save session to localStorage:', storErr);
-    }
-
-    startApp();
-
-  } catch(err) {
-    console.error('handleCredentialResponse error:', err);
-    showLoginError('Sign-in error: ' + err.message + '. Please refresh and try again.');
-  }
+  }, 300);
 }
+
+function handleCredentialResponse(response){ /* GSI disabled */ }
+function triggerGSI(){ doLogin(); }
 
 function showLoginError(msg){
   const el  = document.getElementById('login-error');
@@ -1071,10 +1124,11 @@ function signOut(){
   currentUser = null; currentAgentIdx = -1; currentIsManager = false;
   document.getElementById('app-screen').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
-  // Hide any login errors from previous session
   const errEl = document.getElementById('login-error');
   if(errEl) errEl.style.display = 'none';
-  try { google.accounts.id.disableAutoSelect(); } catch(e){}
+  setLoginStatus('');
+  const passEl = document.getElementById('login-pass');
+  if(passEl) passEl.value = '';
 }
 
 function checkSession(){
