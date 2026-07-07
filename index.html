@@ -364,13 +364,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 table{width:100%;border-collapse:collapse;font-size:13px}
 thead th{
   background:var(--bg);color:var(--text-muted);font-weight:600;font-size:11px;
-  text-transform:uppercase;letter-spacing:.7px;padding:10px 14px;text-align:center;
+  text-transform:uppercase;letter-spacing:.7px;padding:8px 10px;text-align:center;
   border-bottom:1px solid var(--border);white-space:nowrap;
-  position:sticky;top:var(--topbar-h);
-  line-height:1.4;
+  position:sticky;top:var(--topbar-h);vertical-align:bottom;line-height:1.6;
 }
 thead th:first-child{text-align:left;min-width:90px}
-.col-risk{display:none;font-size:9px;color:var(--danger);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.col-risk{display:none;font-size:9px;color:var(--danger);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:1px;line-height:1}
 tbody tr{border-bottom:1px solid var(--border-light);transition:background var(--transition)}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover:not(.summary-row):not(.goal-row):not(.deficit-row):not(.wknd-row){background:#FAFBFF}
@@ -549,7 +548,7 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
       </div>
       <div class="nav-section">
         <div class="nav-label">Team</div>
-        <a class="nav-item" href="#" onclick="return false" style="opacity:.5;cursor:default">
+        <a class="nav-item" id="nav-agents" href="#" onclick="switchView('agents');return false">
           <svg viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/></svg>
           <span class="nav-item-text">Agents</span>
           <span class="nav-tooltip">Agents</span>
@@ -736,6 +735,179 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
         </div>
       </div>
 
+      </div><!-- /view-dashboard -->
+
+      <!-- VIEW: MY PRODUCTIVITY -->
+      <div id="view-my" style="display:none">
+        <div class="breadcrumb">
+          <span class="breadcrumb-item">Takahami Medical Billing</span>
+          <span class="breadcrumb-sep">›</span>
+          <span class="breadcrumb-item active">My Productivity</span>
+        </div>
+        <div class="banner banner-info" id="my-banner">
+          <svg viewBox="0 0 20 20" style="width:15px;height:15px;fill:currentColor;flex-shrink:0"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+          <span>Personal view — only your entries are shown and editable.</span>
+        </div>
+        <div class="section-header">
+          <div>
+            <div class="section-title" id="my-page-title">My Productivity</div>
+            <div class="section-sub" id="my-page-sub">Personal monthly log</div>
+          </div>
+          <div class="section-actions">
+            <div class="filter-toolbar" style="margin:0;padding:8px 12px;gap:8px">
+              <span class="filter-label">Month</span>
+              <select id="my-sel-month" class="filter-select" onchange="loadMyView()"></select>
+              <select id="my-sel-year" class="filter-select" onchange="loadMyView()"></select>
+              <div id="my-agent-filter-wrap" style="display:none;align-items:center;gap:8px">
+                <div style="width:1px;height:20px;background:var(--border);flex-shrink:0"></div>
+                <span class="filter-label">Agent</span>
+                <select id="my-sel-agent" class="filter-select" onchange="loadMyView()"></select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+          <div class="stat-card s-prod">
+            <div class="stat-icon"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 00-2 0v2a1 1 0 102 0V9z" clip-rule="evenodd"/></svg></div>
+            <div class="stat-label">My Total</div>
+            <div class="stat-value" id="my-total">—</div>
+            <div class="stat-sub">Cases this month</div>
+            <div class="stat-bar"><div class="stat-bar-fill" id="my-progress-bar" style="width:0%"></div></div>
+          </div>
+          <div class="stat-card s-deficit">
+            <div class="stat-icon"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/></svg></div>
+            <div class="stat-label">Deficit</div>
+            <div class="stat-value" id="my-deficit">—</div>
+            <div class="stat-sub">vs. monthly goal</div>
+          </div>
+          <div class="stat-card s-ptg">
+            <div class="stat-icon"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></div>
+            <div class="stat-label">PTG %</div>
+            <div class="stat-value" id="my-ptg">—</div>
+            <div class="stat-sub">Productivity to goal</div>
+          </div>
+          <div class="stat-card s-acpd">
+            <div class="stat-icon"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg></div>
+            <div class="stat-label">ACPD</div>
+            <div class="stat-value" id="my-acpd">—</div>
+            <div class="stat-sub">Avg cases per work day</div>
+          </div>
+          <div class="stat-card" style="border-top:3px solid #7C3AED">
+            <div class="stat-icon" style="background:#F5F3FF;color:#7C3AED"><svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"/></svg></div>
+            <div class="stat-label">Streak 🔥</div>
+            <div class="stat-value" id="my-streak">—</div>
+            <div class="stat-sub">Days on target</div>
+          </div>
+        </div>
+        <div class="target-strip" id="my-target-bar">
+          <div class="target-item">
+            <div class="target-item-label">Daily Target</div>
+            <div class="target-item-value"><span class="t-badge t-blue" id="my-daily-target">—</span></div>
+          </div>
+          <div class="target-item">
+            <div class="target-item-label">Pace Needed</div>
+            <div class="target-item-value"><span class="t-badge t-blue" id="my-pace">—</span></div>
+          </div>
+          <div class="target-item">
+            <div class="target-item-label">Remaining</div>
+            <div class="target-item-value"><span class="t-badge t-blue" id="my-remaining">—</span></div>
+          </div>
+          <div class="target-item" style="border-right:none">
+            <div class="target-item-label">Monthly Goal</div>
+            <div class="target-item-value"><span class="t-badge t-blue" id="my-goal-badge">—</span></div>
+          </div>
+        </div>
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div class="table-toolbar-left">
+              <h3 id="my-table-title">My Daily Log</h3>
+              <span class="badge badge-blue" id="my-table-badge">—</span>
+            </div>
+            <div class="table-toolbar-right">
+              <div class="table-hint"><span class="wknd-dot"></span>Weekends locked</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table><thead id="my-table-head"></thead><tbody id="my-table-body"></tbody></table>
+          </div>
+        </div>
+      </div><!-- /view-my -->
+
+      <!-- VIEW: AGENTS -->
+      <div id="view-agents" style="display:none">
+        <div class="breadcrumb">
+          <span class="breadcrumb-item">Takahami Medical Billing</span>
+          <span class="breadcrumb-sep">›</span>
+          <span class="breadcrumb-item active">Agent Profiles</span>
+        </div>
+        <div class="section-header">
+          <div>
+            <div class="section-title">Agent Profiles</div>
+            <div class="section-sub">Year-to-date performance overview</div>
+          </div>
+          <div class="section-actions">
+            <div class="filter-toolbar" style="margin:0;padding:8px 12px;gap:8px">
+              <span class="filter-label">Year</span>
+              <select id="ag-sel-year" class="filter-select" onchange="loadAgentView()"></select>
+              <div style="width:1px;height:20px;background:var(--border);flex-shrink:0"></div>
+              <span class="filter-label">Agent</span>
+              <select id="ag-sel-agent" class="filter-select" onchange="loadAgentView()"></select>
+            </div>
+          </div>
+        </div>
+        <!-- Profile card -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.5rem 2rem;box-shadow:var(--sh-sm);display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;margin-bottom:1.25rem">
+          <div id="ag-avatar" style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#2563EB,#7C3AED);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:white;flex-shrink:0">--</div>
+          <div style="flex:1;min-width:150px">
+            <div id="ag-name" style="font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.3px">—</div>
+            <div id="ag-email" style="font-size:13px;color:var(--text-muted);margin-top:3px">—</div>
+          </div>
+          <div style="display:flex;gap:2.5rem;flex-wrap:wrap">
+            <div style="text-align:center">
+              <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">YTD Total</div>
+              <div id="ag-ytd-total" style="font-size:28px;font-weight:800;color:var(--text);letter-spacing:-.5px">—</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">YTD Goal</div>
+              <div id="ag-ytd-goal" style="font-size:28px;font-weight:800;color:var(--text-secondary);letter-spacing:-.5px">—</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">YTD PTG</div>
+              <div id="ag-ytd-ptg" style="font-size:28px;font-weight:800;letter-spacing:-.5px">—</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">Best Month</div>
+              <div id="ag-best-month" style="font-size:18px;font-weight:700;color:var(--text)">—</div>
+            </div>
+          </div>
+        </div>
+        <!-- Monthly breakdown -->
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div class="table-toolbar-left">
+              <h3>Monthly Breakdown</h3>
+              <span class="badge badge-blue" id="ag-year-badge">—</span>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="text-align:left;min-width:120px">Month</th>
+                  <th>MTD Goal</th>
+                  <th>Actual</th>
+                  <th>Deficit</th>
+                  <th>PTG %</th>
+                  <th>ACPD</th>
+                  <th style="min-width:100px">Progress</th>
+                </tr>
+              </thead>
+              <tbody id="ag-monthly-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /view-agents -->
+
     </div><!-- /content -->
   </div><!-- /main-wrap -->
 </div><!-- /app-screen -->
@@ -875,12 +1047,15 @@ function startApp(){
 
   buildSelectors();
   buildMySelectors();
+  buildAgentSelectors();
   loadFromStorage();
   loadView();
   setupKeyboard();
-  // Hide My Productivity nav for managers
-  const myNav = document.getElementById("nav-my");
-  if (myNav) myNav.style.display = currentIsManager ? "none" : "flex";
+  // Nav visibility
+  const myNav = document.getElementById('nav-my');
+  if (myNav) myNav.style.display = currentIsManager ? 'none' : 'flex';
+  const agNav = document.getElementById('nav-agents');
+  if (agNav) agNav.style.display = currentIsManager ? 'flex' : 'none';
 }
 
 function buildSelectors(){
@@ -1371,21 +1546,21 @@ function switchView(view) {
   document.getElementById('view-dashboard').style.display = view === 'dashboard' ? 'block' : 'none';
   const myView = document.getElementById('view-my');
   if (myView) myView.style.display = view === 'my' ? 'block' : 'none';
+  const agView = document.getElementById('view-agents');
+  if (agView) agView.style.display = view === 'agents' ? 'block' : 'none';
 
   // Update nav active state
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   const activeNav = document.getElementById('nav-' + view);
   if (activeNav) activeNav.classList.add('active');
 
-  // Update topbar title
-  const titles = { dashboard: 'Team Dashboard', my: 'My Productivity' };
+  // Update topbar title + breadcrumb
+  const titles = { dashboard: 'Team Dashboard', my: 'My Productivity', agents: 'Agent Profiles' };
   const tb = document.getElementById('topbar-title');
   if (tb) tb.textContent = titles[view] || 'Dashboard';
 
-  // Hide My Productivity nav for managers (they see team dashboard)
-  if (view === 'my') {
-    loadMyView();
-  }
+  if (view === 'my') loadMyView();
+  if (view === 'agents') loadAgentView();
 }
 
 // ══════════════════════════════════════════════
@@ -1605,6 +1780,147 @@ function myCellChanged(year, month, ai, day, val) {
   }
   // Also refresh dashboard if it was loaded
   loadMyView();
+}
+
+
+// ══════════════════════════════════════════════
+// AGENTS VIEW
+// ══════════════════════════════════════════════
+function buildAgentSelectors(){
+  const yy = document.getElementById('ag-sel-year');
+  const aa = document.getElementById('ag-sel-agent');
+  if(!yy || !aa) return;
+  yy.innerHTML=''; aa.innerHTML='';
+  const now = new Date();
+  for(let y=2024; y<=now.getFullYear(); y++){
+    const o=document.createElement('option');
+    o.value=y; o.textContent=y;
+    if(y===now.getFullYear()) o.selected=true;
+    yy.appendChild(o);
+  }
+  AGENTS.forEach((a,i)=>{
+    const o=document.createElement('option');
+    o.value=i;
+    o.textContent=a.name.split(',')[1]?.trim()||a.name;
+    aa.appendChild(o);
+  });
+}
+
+function loadAgentView(){
+  const yy = document.getElementById('ag-sel-year');
+  const aa = document.getElementById('ag-sel-agent');
+  if(!yy||!aa) return;
+  const year = parseInt(yy.value);
+  const ai   = parseInt(aa.value);
+  const agent = AGENTS[ai];
+  if(!agent) return;
+
+  // Profile card
+  const initials = agent.initials || agent.name.split(' ').map(w=>w[0]).join('').slice(0,2);
+  const avatarEl = document.getElementById('ag-avatar');
+  const nameEl   = document.getElementById('ag-name');
+  const emailEl  = document.getElementById('ag-email');
+  if(avatarEl) avatarEl.textContent = initials;
+  if(nameEl)   nameEl.textContent   = agent.name.split(',').reverse().join(' ').trim();
+  if(emailEl)  emailEl.textContent  = agent.email;
+
+  const badge = document.getElementById('ag-year-badge');
+  if(badge) badge.textContent = year;
+
+  // Compute per-month stats
+  const now = new Date();
+  let ytdTotal=0, ytdGoal=0, bestMonthVal=0, bestMonthName='—';
+  let rows = '';
+
+  MONTHS.forEach((mName, month) => {
+    // Skip future months in current year
+    if(year === now.getFullYear() && month > now.getMonth()) {
+      rows += `<tr style="opacity:.35">
+        <td style="text-align:left;font-weight:600;color:var(--text-muted)">${mName}</td>
+        <td style="color:var(--text-muted)">—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+        <td><div style="height:6px;background:var(--border-light);border-radius:4px"></div></td>
+      </tr>`;
+      return;
+    }
+
+    const goal = MONTHLY_GOALS[month] || 1890;
+    const dim  = new Date(year, month+1, 0).getDate();
+    const isCurrentMonth = year===now.getFullYear() && month===now.getMonth();
+    const lastDay = isCurrentMonth ? now.getDate() : dim;
+
+    let total=0, workDays=0, totalWorkDays=0;
+    for(let d=1;d<=dim;d++){
+      if(!isWeekend(year,month,d)){
+        totalWorkDays++;
+        if(d<=lastDay){
+          workDays++;
+          const v=getDayValue(year,month,ai,d);
+          if(v!==''&&!isNaN(v)) total+=Number(v);
+        }
+      }
+    }
+
+    const mtdGoal = totalWorkDays>0 ? Math.round((goal/totalWorkDays)*workDays) : goal;
+    const deficit = total - mtdGoal;
+    const ptgNum  = mtdGoal>0 ? (total/mtdGoal*100) : 0;
+    const ptgStr  = ptgNum.toFixed(1)+'%';
+    const acpd    = workDays>0 ? (total/workDays).toFixed(1) : '—';
+    const barPct  = Math.min(100, mtdGoal>0?(total/mtdGoal*100):0);
+
+    ytdTotal += total;
+    ytdGoal  += mtdGoal;
+    if(total > bestMonthVal){ bestMonthVal=total; bestMonthName=mName; }
+
+    const defColor = deficit>=0?'var(--success-dark)':'var(--danger)';
+    const defVal   = deficit>=0?'+'+deficit:deficit;
+    const ptgColor = ptgNum>=95?'var(--success-dark)':ptgNum>=75?'var(--warning-dark)':'var(--danger)';
+    const barColor = ptgNum>=95?'#22C55E':ptgNum>=75?'#2563EB':'#EF4444';
+
+    const isActive = isCurrentMonth ? 'style="background:#FFFBEB"' : '';
+
+    rows += `<tr ${isActive}>
+      <td style="text-align:left;font-weight:600;color:var(--text)">${mName}${isCurrentMonth?' <span class="badge badge-amber">Current</span>':''}</td>
+      <td style="color:var(--text-secondary)">${mtdGoal.toLocaleString()}</td>
+      <td style="font-weight:700;color:var(--text)">${total.toLocaleString()}</td>
+      <td style="font-weight:700;color:${defColor}">${total===0&&!isCurrentMonth?'—':defVal}</td>
+      <td style="font-weight:700;color:${ptgColor}">${total===0?'—':ptgStr}</td>
+      <td style="color:var(--text-secondary)">${acpd}</td>
+      <td>
+        <div style="height:6px;background:var(--border-light);border-radius:4px;overflow:hidden;min-width:80px">
+          <div style="height:100%;width:${barPct}%;background:${barColor};border-radius:4px;transition:width .5s ease"></div>
+        </div>
+      </td>
+    </tr>`;
+  });
+
+  // YTD totals row
+  const ytdPtgNum = ytdGoal>0?(ytdTotal/ytdGoal*100):0;
+  const ytdPtgStr = ytdPtgNum.toFixed(1)+'%';
+  const ytdDeficit = ytdTotal-ytdGoal;
+  rows += `<tr style="background:var(--bg);border-top:2px solid var(--border)">
+    <td style="text-align:left;font-weight:800;color:var(--text)">YTD Total</td>
+    <td style="font-weight:700;color:var(--text-secondary)">${ytdGoal.toLocaleString()}</td>
+    <td style="font-weight:800;color:var(--text)">${ytdTotal.toLocaleString()}</td>
+    <td style="font-weight:700;color:${ytdDeficit>=0?'var(--success-dark)':'var(--danger)'}">${ytdDeficit>=0?'+'+ytdDeficit:ytdDeficit}</td>
+    <td style="font-weight:700;color:${ytdPtgNum>=95?'var(--success-dark)':ytdPtgNum>=75?'var(--warning-dark)':'var(--danger)'}">${ytdPtgStr}</td>
+    <td>—</td><td></td>
+  </tr>`;
+
+  const tbody = document.getElementById('ag-monthly-body');
+  if(tbody) tbody.innerHTML = rows;
+
+  // Update profile stats
+  const ytdPtgEl   = document.getElementById('ag-ytd-ptg');
+  const ytdTotalEl = document.getElementById('ag-ytd-total');
+  const ytdGoalEl  = document.getElementById('ag-ytd-goal');
+  const bestEl     = document.getElementById('ag-best-month');
+  if(ytdTotalEl) ytdTotalEl.textContent = ytdTotal.toLocaleString();
+  if(ytdGoalEl)  ytdGoalEl.textContent  = ytdGoal.toLocaleString();
+  if(ytdPtgEl){
+    ytdPtgEl.textContent = ytdPtgStr;
+    ytdPtgEl.style.color = ytdPtgNum>=95?'var(--success-dark)':ytdPtgNum>=75?'var(--warning-dark)':'var(--danger)';
+  }
+  if(bestEl) bestEl.textContent = bestMonthName + (bestMonthVal>0?' ('+bestMonthVal+')':'');
 }
 
 // ══════════════════════════════════════════════
