@@ -365,11 +365,10 @@ table{width:100%;border-collapse:collapse;font-size:13px}
 thead th{
   background:var(--bg);color:var(--text-muted);font-weight:600;font-size:11px;
   text-transform:uppercase;letter-spacing:.7px;padding:8px 10px;text-align:center;
-  border-bottom:1px solid var(--border);white-space:nowrap;
-  position:sticky;top:var(--topbar-h);vertical-align:bottom;line-height:1.6;
+  border-bottom:2px solid var(--border);white-space:nowrap;
+  vertical-align:middle;line-height:1.4;
 }
 thead th:first-child{text-align:left;min-width:90px}
-.col-risk{display:none;font-size:9px;color:var(--danger);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:1px;line-height:1}
 tbody tr{border-bottom:1px solid var(--border-light);transition:background var(--transition)}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover:not(.summary-row):not(.goal-row):not(.deficit-row):not(.wknd-row){background:#FAFBFF}
@@ -1183,11 +1182,12 @@ function buildTable(year,month,dim){
   const tbody=document.getElementById('table-body');
   const goal=MONTHLY_GOALS[month]||1890;
 
-  // Clean header — name only, at-risk as block below
-  let hh=`<tr><th style="text-align:left">Day</th>`;
+  // Header — name only, clean, no inline elements that push height
+  let hh=`<tr>`;
+  hh+=`<th style="text-align:left;padding-left:16px">Day</th>`;
   AGENTS.forEach((a,i)=>{
     const fn=a.name.split(',')[1]?.trim()||a.name.split(' ')[0];
-    hh+=`<th style="min-width:85px">${fn}<span class="col-risk" id="col-risk-${i}" style="display:none;font-size:9px;color:var(--danger);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-left:4px">(at risk)</span></th>`;
+    hh+=`<th id="col-head-${i}" style="min-width:80px">${fn}</th>`;
   });
   hh+=`</tr>`;
   thead.innerHTML=hh;
@@ -1279,10 +1279,16 @@ function updateTotals(year,month,dim){
       mb.style.background=pct>=100?'linear-gradient(90deg,#34d399,#10b981)':pct>=75?'linear-gradient(90deg,#60a5fa,#a78bfa)':'linear-gradient(90deg,#f87171,#fb923c)';
     }
     // At-risk flag
-    const riskEl=document.getElementById(`col-risk-${i}`);
-    if(riskEl){
+    // AT RISK indicator in column header
+    const headEl=document.getElementById(`col-head-${i}`);
+    if(headEl){
       const ptg=goal>0?(total/goal)*100:0;
-      riskEl.style.display=ptg<75&&total>0?'inline':'none';
+      const fn=AGENTS[i].name.split(',')[1]?.trim()||AGENTS[i].name.split(' ')[0];
+      if(ptg<75&&total>0){
+        headEl.innerHTML=fn+'<br><span style="font-size:9px;color:var(--danger);font-weight:700;letter-spacing:.4px;text-transform:uppercase;line-height:1">AT RISK</span>';
+      } else {
+        headEl.textContent=fn;
+      }
     }
   });
 }
