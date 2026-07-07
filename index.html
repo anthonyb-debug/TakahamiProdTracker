@@ -1235,13 +1235,11 @@ function setDayValue(y,m,ai,d,val){
   if(isEmpty) delete data[y][m][ai][d];
   else data[y][m][ai][d]=Number(val);
   saveToStorage(); updateMTD(); updateLeaderboard(); if(currentView==='dashboard') buildTodayCards();
-  // Auto-sync immediately AND track as pending (in case it failed)
-  var sendVal = isEmpty ? -1 : Number(val);
+  // Track this cell as pending sync
   if(!isEmpty){
     var key = y+'-'+m+'-'+d+'-'+ai;
     _pendingCells[key] = {year:y, month:m, day:d, ai:ai, val:Number(val)};
     showPendingBadge();
-    _sendToSheet(y, m, d, ai, sendVal); // fire immediately
   }
 }
 
