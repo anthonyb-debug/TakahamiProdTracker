@@ -881,28 +881,22 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
             </div>
           </div>
         </div>
-        <!-- Monthly breakdown -->
+        <!-- Original-style calendar: rows=days, cols=months -->
         <div class="table-card">
           <div class="table-toolbar">
             <div class="table-toolbar-left">
-              <h3>Monthly Breakdown</h3>
+              <h3>Year-to-Date Daily Log</h3>
               <span class="badge badge-blue" id="ag-year-badge">—</span>
+            </div>
+            <div class="table-toolbar-right">
+              <span style="font-size:12px;color:var(--text-muted)" id="ag-editable-hint"></span>
             </div>
           </div>
           <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th style="text-align:left;min-width:120px">Month</th>
-                  <th>MTD Goal</th>
-                  <th>Actual</th>
-                  <th>Deficit</th>
-                  <th>PTG %</th>
-                  <th>ACPD</th>
-                  <th style="min-width:100px">Progress</th>
-                </tr>
-              </thead>
-              <tbody id="ag-monthly-body"></tbody>
+            <table id="ag-calendar-table">
+              <thead id="ag-calendar-head"></thead>
+              <tbody id="ag-calendar-body"></tbody>
+              <tfoot id="ag-calendar-foot"></tfoot>
             </table>
           </div>
         </div>
@@ -1189,11 +1183,11 @@ function buildTable(year,month,dim){
   const tbody=document.getElementById('table-body');
   const goal=MONTHLY_GOALS[month]||1890;
 
-  // Clean header — at-risk shown as subtle dot, no emoji/svg
-  let hh=`<tr><th>Day</th>`;
+  // Clean header — name only, at-risk as block below
+  let hh=`<tr><th style="text-align:left">Day</th>`;
   AGENTS.forEach((a,i)=>{
     const fn=a.name.split(',')[1]?.trim()||a.name.split(' ')[0];
-    hh+=`<th><span>${fn}</span><br><span class="col-risk" id="col-risk-${i}">at risk</span></th>`;
+    hh+=`<th style="min-width:85px">${fn}<span class="col-risk" id="col-risk-${i}" style="display:none;font-size:9px;color:var(--danger);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-left:4px">(at risk)</span></th>`;
   });
   hh+=`</tr>`;
   thead.innerHTML=hh;
@@ -1815,6 +1809,13 @@ function loadAgentView(){
   const agent = AGENTS[ai];
   if(!agent) return;
 
+  const now = new Date();
+  const canEdit = currentIsManager;
+
+  // Editable hint
+  const hint = document.getElementById('ag-editable-hint');
+  if(hint) hint.textContent = canEdit ? '✏️ Managers can edit cells directly' : 'View only';
+
   // Profile card
   const initials = agent.initials || agent.name.split(' ').map(w=>w[0]).join('').slice(0,2);
   const avatarEl = document.getElementById('ag-avatar');
@@ -1823,93 +1824,145 @@ function loadAgentView(){
   if(avatarEl) avatarEl.textContent = initials;
   if(nameEl)   nameEl.textContent   = agent.name.split(',').reverse().join(' ').trim();
   if(emailEl)  emailEl.textContent  = agent.email;
-
   const badge = document.getElementById('ag-year-badge');
   if(badge) badge.textContent = year;
 
-  // Compute per-month stats
-  const now = new Date();
-  let ytdTotal=0, ytdGoal=0, bestMonthVal=0, bestMonthName='—';
-  let rows = '';
+  // Figure out which months to show (Jan–Dec, dim future months)
+  const lastMonth = year < now.getFullYear() ? 11 : now.getMonth();
 
-  MONTHS.forEach((mName, month) => {
-    // Skip future months in current year
-    if(year === now.getFullYear() && month > now.getMonth()) {
-      rows += `<tr style="opacity:.35">
-        <td style="text-align:left;font-weight:600;color:var(--text-muted)">${mName}</td>
-        <td style="color:var(--text-muted)">—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-        <td><div style="height:6px;background:var(--border-light);border-radius:4px"></div></td>
-      </tr>`;
-      return;
-    }
+  // Build header: Day | Jan | Feb | ... | Dec
+  const thead = document.getElementById('ag-calendar-head');
+  const tbody  = document.getElementById('ag-calendar-body');
+  const tfoot  = document.getElementById('ag-calendar-foot');
+  if(!thead||!tbody||!tfoot) return;
 
-    const goal = MONTHLY_GOALS[month] || 1890;
-    const dim  = new Date(year, month+1, 0).getDate();
-    const isCurrentMonth = year===now.getFullYear() && month===now.getMonth();
-    const lastDay = isCurrentMonth ? now.getDate() : dim;
+  let hh = '<tr><th style="text-align:left;min-width:50px;position:sticky;left:0;background:var(--bg);z-index:2">Day</th>';
+  MONTHS.forEach((m,mi) => {
+    const future = year===now.getFullYear() && mi > lastMonth;
+    hh += `<th style="min-width:80px;${future?'opacity:.35':''}"><div style="font-size:11px;font-weight:700">${m.slice(0,3)}</div><div style="font-size:10px;color:var(--text-muted);font-weight:500">${MONTHLY_GOALS[mi]||1890}</div></th>`;
+  });
+  hh += '</tr>';
+  thead.innerHTML = hh;
 
-    let total=0, workDays=0, totalWorkDays=0;
-    for(let d=1;d<=dim;d++){
-      if(!isWeekend(year,month,d)){
-        totalWorkDays++;
-        if(d<=lastDay){
-          workDays++;
-          const v=getDayValue(year,month,ai,d);
-          if(v!==''&&!isNaN(v)) total+=Number(v);
-        }
+  // Build body: 31 rows max
+  let bb = '';
+  let monthTotals = new Array(12).fill(0);
+
+  for(let d=1; d<=31; d++){
+    // Check if this day exists in at least one month
+    const hasDay = MONTHS.some((_,mi) => {
+      const dim = new Date(year, mi+1, 0).getDate();
+      return d <= dim;
+    });
+    if(!hasDay) continue;
+
+    const isToday = now.getFullYear()===year && d===now.getDate();
+    let rowStyle = '';
+    // Check if any month this day is a weekend — we'll handle per cell
+    bb += `<tr${rowStyle}>`;
+    bb += `<td style="font-weight:600;color:var(--text-secondary);text-align:left;font-size:13px;position:sticky;left:0;background:${isToday?'#FFFBEB':'var(--card)'};z-index:1">${d}${isToday?'<span style="font-size:9px;color:var(--warning-dark);font-weight:700;margin-left:4px;background:#FEF3C7;border-radius:3px;padding:1px 4px">TODAY</span>':''}</td>`;
+
+    MONTHS.forEach((_,mi) => {
+      const dim = new Date(year, mi+1, 0).getDate();
+      const future = year===now.getFullYear() && mi > lastMonth;
+
+      if(d > dim){
+        // Day doesn't exist in this month
+        bb += `<td style="background:var(--bg)"></td>`;
+        return;
       }
+
+      const dow = new Date(year, mi, d).getDay();
+      const weekend = dow===0||dow===6;
+
+      if(weekend){
+        bb += `<td style="background:#1F2937"></td>`;
+        return;
+      }
+
+      if(future){
+        bb += `<td style="background:var(--bg);opacity:.3">—</td>`;
+        return;
+      }
+
+      const val = getDayValue(year, mi, ai, d);
+      const hasVal = val!==''&&!isNaN(val)&&val!==null;
+      if(hasVal) monthTotals[mi] += Number(val);
+
+      if(canEdit){
+        bb += `<td style="padding:2px 6px">
+          <input type="number" min="0"
+            style="width:68px;border:1px solid ${hasVal?'var(--primary-muted)':'var(--border)'};
+              border-radius:5px;padding:4px 6px;font-size:13px;font-family:var(--font);
+              font-weight:${hasVal?'700':'400'};text-align:center;
+              background:${hasVal?'var(--primary-light)':'var(--card)'};
+              color:${hasVal?'var(--primary-dark)':'var(--text)'};outline:none;
+              -moz-appearance:textfield"
+            value="${hasVal?val:''}"
+            placeholder="0"
+            onchange="agCellChanged(${year},${mi},${ai},${d},this)"
+            onblur="agCellChanged(${year},${mi},${ai},${d},this)"
+          />
+        </td>`;
+      } else {
+        bb += `<td style="font-weight:${hasVal?'700':'400'};color:${hasVal?'var(--primary-dark)':'var(--text-muted)'};font-size:13px;background:${hasVal?'var(--primary-light)':'transparent'}">${hasVal?val:''}</td>`;
+      }
+    });
+
+    bb += '</tr>';
+  }
+  tbody.innerHTML = bb;
+
+  // Recalculate totals after building (since we reset monthTotals during build)
+  monthTotals = new Array(12).fill(0);
+  for(let d=1; d<=31; d++){
+    MONTHS.forEach((_,mi)=>{
+      const dim = new Date(year,mi+1,0).getDate();
+      if(d>dim) return;
+      const dow = new Date(year,mi,d).getDay();
+      if(dow===0||dow===6) return;
+      const v = getDayValue(year,mi,ai,d);
+      if(v!==''&&!isNaN(v)) monthTotals[mi]+=Number(v);
+    });
+  }
+
+  // Footer: Productivity / Goal / Deficit rows
+  let ytdTotal=0, ytdGoal=0, bestMonthVal=0, bestMonthName='—';
+  const lastMonthForYear = year < now.getFullYear() ? 11 : now.getMonth();
+
+  let fprod = '<tr style="border-top:2px solid var(--border)"><td style="font-weight:700;font-size:12px;text-align:left;background:var(--bg);position:sticky;left:0;z-index:1;color:var(--text-secondary)">Productivity</td>';
+  let fgoal = '<tr><td style="font-weight:600;font-size:12px;text-align:left;background:var(--bg);position:sticky;left:0;z-index:1;color:var(--text-muted)">Goal</td>';
+  let fdef  = '<tr style="border-bottom:2px solid var(--border)"><td style="font-weight:700;font-size:12px;text-align:left;background:var(--bg);position:sticky;left:0;z-index:1;color:var(--text-muted)">Deficit</td>';
+
+  MONTHS.forEach((_,mi)=>{
+    const future = year===now.getFullYear() && mi > lastMonthForYear;
+    const goal = MONTHLY_GOALS[mi]||1890;
+    const total = monthTotals[mi];
+    const deficit = goal - total;
+
+    if(future){
+      fprod += '<td style="color:var(--text-muted);opacity:.4">—</td>';
+      fgoal += `<td style="color:var(--text-muted);opacity:.4">${goal}</td>`;
+      fdef  += '<td style="opacity:.4">—</td>';
+    } else {
+      const defColor = deficit<=0?'var(--success-dark)':'var(--danger)';
+      const defVal = deficit<=0?`+${Math.abs(deficit)}`:deficit;
+      fprod += `<td style="font-weight:700;font-size:13px;color:var(--text)">${total||''}</td>`;
+      fgoal += `<td style="font-size:12px;color:var(--text-secondary)">${goal}</td>`;
+      fdef  += `<td style="font-weight:700;font-size:13px;color:${defColor}">${total?defVal:''}</td>`;
+      ytdTotal += total;
+      ytdGoal  += goal;
+      if(total>bestMonthVal){bestMonthVal=total;bestMonthName=MONTHS[mi];}
     }
-
-    const mtdGoal = totalWorkDays>0 ? Math.round((goal/totalWorkDays)*workDays) : goal;
-    const deficit = total - mtdGoal;
-    const ptgNum  = mtdGoal>0 ? (total/mtdGoal*100) : 0;
-    const ptgStr  = ptgNum.toFixed(1)+'%';
-    const acpd    = workDays>0 ? (total/workDays).toFixed(1) : '—';
-    const barPct  = Math.min(100, mtdGoal>0?(total/mtdGoal*100):0);
-
-    ytdTotal += total;
-    ytdGoal  += mtdGoal;
-    if(total > bestMonthVal){ bestMonthVal=total; bestMonthName=mName; }
-
-    const defColor = deficit>=0?'var(--success-dark)':'var(--danger)';
-    const defVal   = deficit>=0?'+'+deficit:deficit;
-    const ptgColor = ptgNum>=95?'var(--success-dark)':ptgNum>=75?'var(--warning-dark)':'var(--danger)';
-    const barColor = ptgNum>=95?'#22C55E':ptgNum>=75?'#2563EB':'#EF4444';
-
-    const isActive = isCurrentMonth ? 'style="background:#FFFBEB"' : '';
-
-    rows += `<tr ${isActive}>
-      <td style="text-align:left;font-weight:600;color:var(--text)">${mName}${isCurrentMonth?' <span class="badge badge-amber">Current</span>':''}</td>
-      <td style="color:var(--text-secondary)">${mtdGoal.toLocaleString()}</td>
-      <td style="font-weight:700;color:var(--text)">${total.toLocaleString()}</td>
-      <td style="font-weight:700;color:${defColor}">${total===0&&!isCurrentMonth?'—':defVal}</td>
-      <td style="font-weight:700;color:${ptgColor}">${total===0?'—':ptgStr}</td>
-      <td style="color:var(--text-secondary)">${acpd}</td>
-      <td>
-        <div style="height:6px;background:var(--border-light);border-radius:4px;overflow:hidden;min-width:80px">
-          <div style="height:100%;width:${barPct}%;background:${barColor};border-radius:4px;transition:width .5s ease"></div>
-        </div>
-      </td>
-    </tr>`;
   });
 
-  // YTD totals row
+  fprod += '</tr>'; fgoal += '</tr>'; fdef += '</tr>';
+  tfoot.innerHTML = fprod + fgoal + fdef;
+
+  // Update profile stats
   const ytdPtgNum = ytdGoal>0?(ytdTotal/ytdGoal*100):0;
   const ytdPtgStr = ytdPtgNum.toFixed(1)+'%';
   const ytdDeficit = ytdTotal-ytdGoal;
-  rows += `<tr style="background:var(--bg);border-top:2px solid var(--border)">
-    <td style="text-align:left;font-weight:800;color:var(--text)">YTD Total</td>
-    <td style="font-weight:700;color:var(--text-secondary)">${ytdGoal.toLocaleString()}</td>
-    <td style="font-weight:800;color:var(--text)">${ytdTotal.toLocaleString()}</td>
-    <td style="font-weight:700;color:${ytdDeficit>=0?'var(--success-dark)':'var(--danger)'}">${ytdDeficit>=0?'+'+ytdDeficit:ytdDeficit}</td>
-    <td style="font-weight:700;color:${ytdPtgNum>=95?'var(--success-dark)':ytdPtgNum>=75?'var(--warning-dark)':'var(--danger)'}">${ytdPtgStr}</td>
-    <td>—</td><td></td>
-  </tr>`;
-
-  const tbody = document.getElementById('ag-monthly-body');
-  if(tbody) tbody.innerHTML = rows;
-
-  // Update profile stats
   const ytdPtgEl   = document.getElementById('ag-ytd-ptg');
   const ytdTotalEl = document.getElementById('ag-ytd-total');
   const ytdGoalEl  = document.getElementById('ag-ytd-goal');
@@ -1920,7 +1973,19 @@ function loadAgentView(){
     ytdPtgEl.textContent = ytdPtgStr;
     ytdPtgEl.style.color = ytdPtgNum>=95?'var(--success-dark)':ytdPtgNum>=75?'var(--warning-dark)':'var(--danger)';
   }
-  if(bestEl) bestEl.textContent = bestMonthName + (bestMonthVal>0?' ('+bestMonthVal+')':'');
+  if(bestEl) bestEl.textContent = bestMonthName + (bestMonthVal>0?' ('+bestMonthVal.toLocaleString()+')':'');
+}
+
+function agCellChanged(year, month, ai, day, input){
+  const v = input.value==='' ? '' : parseInt(input.value);
+  setDayValue(year, month, ai, day, v);
+  const hasVal = v!==''&&!isNaN(v);
+  input.style.background = hasVal?'var(--primary-light)':'var(--card)';
+  input.style.borderColor = hasVal?'var(--primary-muted)':'var(--border)';
+  input.style.fontWeight  = hasVal?'700':'400';
+  input.style.color = hasVal?'var(--primary-dark)':'var(--text)';
+  // Refresh footer totals
+  loadAgentView();
 }
 
 // ══════════════════════════════════════════════
