@@ -532,17 +532,17 @@ tr.deficit-row td.on-target{background:#064E3B;color:#6EE7B7}
     <nav class="sidebar-nav">
       <div class="nav-section">
         <div class="nav-label">Main</div>
-        <a class="nav-item active" href="#" onclick="return false">
+        <a class="nav-item active" id="nav-dashboard" href="#" onclick="switchView('dashboard');return false">
           <svg viewBox="0 0 20 20"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/></svg>
           <span class="nav-item-text">Dashboard</span>
           <span class="nav-tooltip">Dashboard</span>
         </a>
-        <a class="nav-item" href="#" onclick="return false" style="opacity:.5;cursor:default">
-          <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
-          <span class="nav-item-text">Productivity</span>
-          <span class="nav-tooltip">Productivity</span>
+        <a class="nav-item" id="nav-my" href="#" onclick="switchView('my');return false">
+          <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+          <span class="nav-item-text">My Productivity</span>
+          <span class="nav-tooltip">My Productivity</span>
         </a>
-        <a class="nav-item" href="#" onclick="return false" style="opacity:.5;cursor:default">
+        <a class="nav-item" href="#" onclick="return false" style="opacity:.4;cursor:default">
           <svg viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
           <span class="nav-item-text">Reports</span>
           <span class="nav-tooltip">Reports</span>
@@ -617,6 +617,9 @@ tr.deficit-row td.on-target{background:#064E3B;color:#6EE7B7}
 
     <!-- Content -->
     <div class="content">
+
+      <!-- VIEW: DASHBOARD (all agents) -->
+      <div id="view-dashboard">
 
       <!-- Breadcrumb -->
       <div class="breadcrumb">
@@ -869,9 +872,13 @@ function startApp(){
   }
 
   buildSelectors();
+  buildMySelectors();
   loadFromStorage();
   loadView();
   setupKeyboard();
+  // Hide My Productivity nav for managers
+  const myNav = document.getElementById("nav-my");
+  if (myNav) myNav.style.display = currentIsManager ? "none" : "flex";
 }
 
 function buildSelectors(){
@@ -900,6 +907,24 @@ function setupKeyboard(){
     }
     // Enter = advance to next row same column
     if(e.key==='Enter'&&e.target.tagName==='INPUT'){
+      // My Productivity view
+      if(e.target.id && e.target.id.startsWith('my-inp-')){
+        e.preventDefault();
+        const day = parseInt(e.target.id.replace('my-inp-',''));
+        const msEl = document.getElementById('my-sel-month');
+        const ysEl = document.getElementById('my-sel-year');
+        if(msEl && ysEl){
+          const year = parseInt(ysEl.value), month = parseInt(msEl.value);
+          const dim = new Date(year,month+1,0).getDate();
+          for(let d=day+1;d<=dim;d++){
+            if(!isWeekend(year,month,d)){
+              const next=document.getElementById(`my-inp-${d}`);
+              if(next&&!next.readOnly){next.focus();next.select();return;}
+            }
+          }
+        }
+        return;
+      }
       e.preventDefault();
       const id=e.target.id; // inp-{day}-{agentIdx}
       const parts=id.split('-');
@@ -975,12 +1000,9 @@ function buildTable(year,month,dim){
   let hh=`<tr><th>Day</th>`;
   AGENTS.forEach((a,i)=>{
     const fn=a.name.split(',')[1]?.trim()||a.name.split(' ')[0];
-    hh+=`<th><div class="col-header-wrap">
+    hh+=`<th><div class="col-head">
       <span>${fn}</span>
-      <span class="col-at-risk" id="col-risk-${i}">
-        <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-        AT RISK
-      </span>
+      <span class="col-risk" id="col-risk-${i}">⚠ AT RISK</span>
     </div></th>`;
   });
   hh+=`</tr>`;
@@ -1317,6 +1339,236 @@ function showToast(msg,type=''){
   const t=document.getElementById('toast');
   t.textContent=msg; t.className=`show ${type}`;
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>{t.className='';},3500);
+}
+
+
+// ══════════════════════════════════════════════
+// VIEW SWITCHING
+// ══════════════════════════════════════════════
+let currentView = 'dashboard';
+
+function switchView(view) {
+  currentView = view;
+  document.getElementById('view-dashboard').style.display = view === 'dashboard' ? 'block' : 'none';
+  const myView = document.getElementById('view-my');
+  if (myView) myView.style.display = view === 'my' ? 'block' : 'none';
+
+  // Update nav active state
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const activeNav = document.getElementById('nav-' + view);
+  if (activeNav) activeNav.classList.add('active');
+
+  // Update topbar title
+  const titles = { dashboard: 'Team Dashboard', my: 'My Productivity' };
+  const tb = document.getElementById('topbar-title');
+  if (tb) tb.textContent = titles[view] || 'Dashboard';
+
+  // Hide My Productivity nav for managers (they see team dashboard)
+  if (view === 'my') {
+    loadMyView();
+  }
+}
+
+// ══════════════════════════════════════════════
+// MY PRODUCTIVITY VIEW
+// ══════════════════════════════════════════════
+function buildMySelectors() {
+  const now = new Date();
+  ['my-sel-month','my-sel-year'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = '';
+  });
+  const ym = document.getElementById('my-sel-month');
+  const yy = document.getElementById('my-sel-year');
+  if (!ym || !yy) return;
+
+  MONTHS.forEach((m, i) => {
+    const o = document.createElement('option');
+    o.value = i; o.textContent = m;
+    if (i === now.getMonth()) o.selected = true;
+    ym.appendChild(o);
+  });
+  for (let y = 2024; y <= now.getFullYear() + 1; y++) {
+    const o = document.createElement('option');
+    o.value = y; o.textContent = y;
+    if (y === now.getFullYear()) o.selected = true;
+    yy.appendChild(o);
+  }
+}
+
+function loadMyView() {
+  if (currentAgentIdx < 0 && !currentIsManager) return;
+  const ai  = currentIsManager ? 0 : currentAgentIdx;
+  const msEl = document.getElementById('my-sel-month');
+  const ysEl = document.getElementById('my-sel-year');
+  if (!msEl || !ysEl) return;
+  const month = parseInt(msEl.value);
+  const year  = parseInt(ysEl.value);
+  const goal  = MONTHLY_GOALS[month] || 1890;
+  const dim   = new Date(year, month + 1, 0).getDate();
+  const now   = new Date();
+  const isCurrent = now.getFullYear() === year && now.getMonth() === month;
+  const lastDay   = isCurrent ? now.getDate() : dim;
+  const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  // Update titles
+  const pt = document.getElementById('my-page-title');
+  const ps = document.getElementById('my-page-sub');
+  const tt = document.getElementById('my-table-title');
+  const tb = document.getElementById('my-table-badge');
+  if (pt) pt.textContent = 'My Productivity — ' + MONTHS[month] + ' ' + year;
+  if (ps) ps.textContent = (currentIsManager ? AGENTS[0].name : AGENTS[ai].name) + ' · Goal: ' + goal.toLocaleString();
+  if (tt) tt.textContent = MONTHS[month] + ' ' + year + ' — My Daily Log';
+  if (tb) tb.textContent = MONTHS[month] + ' ' + year;
+
+  const goalBadge = document.getElementById('my-goal-badge');
+  if (goalBadge) goalBadge.textContent = goal.toLocaleString() + ' cases';
+
+  // Build table
+  const thead = document.getElementById('my-table-head');
+  const tbody = document.getElementById('my-table-body');
+  if (!thead || !tbody) return;
+
+  thead.innerHTML = '<tr><th style="text-align:left">Day</th><th>Cases</th><th>Status</th></tr>';
+
+  let totalCases = 0, workDays = 0, elapsedWorkDays = 0;
+  let totalWorkDays = 0;
+  for (let d = 1; d <= dim; d++) { if (!isWeekend(year,month,d)) totalWorkDays++; }
+
+  let bb = '';
+  let streak = 0, streakActive = true;
+  const dailyTarget = totalWorkDays > 0 ? Math.ceil(goal / totalWorkDays) : 0;
+
+  for (let d = 1; d <= dim; d++) {
+    const dow = new Date(year, month, d).getDay();
+    const weekend = isWeekend(year, month, d);
+    const isToday = isCurrent && d === now.getDate();
+    const isFuture = isCurrent && d > now.getDate();
+
+    if (weekend) {
+      bb += `<tr class="wknd-row"><td><div class="day-cell"><span class="day-num">${d}</span><span class="day-dow">${DOW[dow]}</span></div></td><td></td><td></td></tr>`;
+      continue;
+    }
+
+    if (!isWeekend(year,month,d)) {
+      totalWorkDays_counted = (totalWorkDays_counted || 0);
+      workDays++;
+      if (d <= lastDay) elapsedWorkDays++;
+    }
+
+    const val = getDayValue(year, month, ai, d);
+    const hasVal = val !== '' && !isNaN(val);
+    const num = hasVal ? Number(val) : 0;
+    if (hasVal && d <= lastDay) totalCases += num;
+
+    // Streak calc (from today backwards)
+    if (streakActive && hasVal && d <= lastDay) {
+      if (num >= dailyTarget) streak++;
+      else if (d < lastDay) { streak = 0; streakActive = false; }
+    }
+
+    // Status chip
+    let statusHtml = '';
+    if (isFuture) {
+      statusHtml = '<span style="font-size:11px;color:var(--text-muted)">—</span>';
+    } else if (!hasVal && d <= lastDay) {
+      statusHtml = '<span class="t-badge t-red" style="font-size:11px;padding:2px 8px">Missing</span>';
+    } else if (hasVal) {
+      const pct = dailyTarget > 0 ? num / dailyTarget : 0;
+      if (pct >= 1) statusHtml = '<span class="t-badge t-green" style="font-size:11px;padding:2px 8px">✓ On Target</span>';
+      else if (pct >= 0.75) statusHtml = '<span class="t-badge t-amber" style="font-size:11px;padding:2px 8px">Near</span>';
+      else statusHtml = '<span class="t-badge t-red" style="font-size:11px;padding:2px 8px">Below</span>';
+    }
+
+    const rowCls = isToday ? 'today-row' : '';
+    bb += `<tr class="${rowCls}">
+      <td><div class="day-cell"><span class="day-num">${d}</span><span class="day-dow">${DOW[dow]}</span></div></td>
+      <td><input type="number" min="0" id="my-inp-${d}"
+        class="${hasVal ? 'has-value' : ''}"
+        value="${hasVal ? val : ''}" placeholder="0"
+        ${isFuture ? 'readonly class="readonly-cell"' : ''}
+        onchange="myCellChanged(${year},${month},${ai},${d},this.value)"
+        onblur="myCellChanged(${year},${month},${ai},${d},this.value)"
+      /></td>
+      <td>${statusHtml}</td>
+    </tr>`;
+  }
+
+  // Summary rows
+  const mtdGoal = totalWorkDays > 0 ? Math.round((goal / totalWorkDays) * elapsedWorkDays) : 0;
+  const deficit = totalCases - mtdGoal;
+  const ptg = mtdGoal > 0 ? ((totalCases / mtdGoal) * 100).toFixed(1) : '0.0';
+  const acpd = elapsedWorkDays > 0 ? (totalCases / elapsedWorkDays).toFixed(1) : '0.0';
+
+  bb += `<tr class="summary-row"><td>My Total</td><td>${totalCases}</td><td></td></tr>`;
+  bb += `<tr class="goal-row"><td>Goal</td><td>${goal}</td><td></td></tr>`;
+  bb += `<tr class="deficit-row"><td>Deficit</td><td class="${deficit >= 0 ? 'on-target' : ''}">${deficit >= 0 ? '+' + deficit : deficit}</td><td></td></tr>`;
+
+  tbody.innerHTML = bb;
+
+  // Update my stats cards
+  const myTot = document.getElementById('my-total');
+  const myDef = document.getElementById('my-deficit');
+  const myPtg = document.getElementById('my-ptg');
+  const myAcpd = document.getElementById('my-acpd');
+  const myStreak = document.getElementById('my-streak');
+  const myBar = document.getElementById('my-progress-bar');
+
+  if (myTot) myTot.textContent = totalCases.toLocaleString();
+  if (myDef) {
+    myDef.textContent = deficit >= 0 ? '+' + deficit.toLocaleString() : deficit.toLocaleString();
+    myDef.style.color = deficit >= 0 ? 'var(--success-dark)' : 'var(--danger)';
+  }
+  if (myPtg) {
+    myPtg.textContent = ptg + '%';
+    myPtg.style.color = parseFloat(ptg) >= 95 ? 'var(--success-dark)' : parseFloat(ptg) >= 75 ? 'var(--warning-dark)' : 'var(--danger)';
+  }
+  if (myAcpd) myAcpd.textContent = acpd;
+  if (myStreak) myStreak.textContent = streak + ' day' + (streak !== 1 ? 's' : '');
+  if (myBar) {
+    const pct = Math.min(100, mtdGoal > 0 ? (totalCases / mtdGoal * 100) : 0);
+    myBar.style.width = pct + '%';
+    myBar.style.background = pct >= 100 ? 'linear-gradient(90deg,#22C55E,#10B981)' : pct >= 75 ? 'linear-gradient(90deg,#2563EB,#7C3AED)' : 'linear-gradient(90deg,#EF4444,#F97316)';
+  }
+
+  // Update target items
+  const remainingWorkDays_from_today = (() => {
+    let r = 0; for (let d = now.getDate(); d <= dim; d++) { if (!isWeekend(year,month,d)) r++; } return r;
+  })();
+  const remaining = Math.max(0, goal - totalCases);
+  const paceNeeded = remainingWorkDays_from_today > 0 ? Math.ceil(remaining / remainingWorkDays_from_today) : 0;
+
+  const myDT = document.getElementById('my-daily-target');
+  const myPace = document.getElementById('my-pace');
+  const myRem = document.getElementById('my-remaining');
+  if (myDT) { myDT.textContent = dailyTarget + ' cases/day'; myDT.className = 't-badge t-blue'; }
+  if (myPace) {
+    myPace.textContent = paceNeeded + ' cases/day';
+    myPace.className = 't-badge ' + (paceNeeded <= dailyTarget ? 't-green' : paceNeeded <= dailyTarget * 1.3 ? 't-amber' : 't-red');
+  }
+  if (myRem) {
+    myRem.textContent = remaining.toLocaleString() + ' cases';
+    myRem.className = 't-badge ' + (remaining === 0 ? 't-green' : remaining > goal * 0.5 ? 't-red' : 't-amber');
+  }
+
+  // Scroll to today
+  if (isCurrent) {
+    const todayRow = document.getElementById(`my-inp-${now.getDate()}`);
+    if (todayRow) setTimeout(() => todayRow.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+  }
+}
+
+function myCellChanged(year, month, ai, day, val) {
+  const v = val === '' ? '' : parseInt(val);
+  setDayValue(year, month, ai, day, v);
+  const inp = document.getElementById(`my-inp-${day}`);
+  if (inp) {
+    if (v !== '' && !isNaN(v)) inp.classList.add('has-value');
+    else inp.classList.remove('has-value');
+  }
+  // Also refresh dashboard if it was loaded
+  loadMyView();
 }
 
 // ══════════════════════════════════════════════
