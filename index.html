@@ -932,10 +932,20 @@ input[type=number]{transition:background .15s,border-color .15s,box-shadow .15s}
             <div style="font-size:15px;font-weight:700;color:var(--text)">Daily Entries</div>
             <div style="font-size:12px;color:var(--text-muted)" id="daily-log-sub">All agents · read only</div>
           </div>
-<!-- log selectors now use dashboard selectors -->
-          <div style="display:none">
-            <select id="log-sel-month"><option value="6" selected>July</option></select>
-            <select id="log-sel-year"><option value="2026" selected>2026</option></select>
+<div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Month</span>
+            <select id="log-sel-month" class="filter-select" onchange="onLogMonthChange()" style="font-size:12px;padding:5px 10px">
+              <option value="0">January</option><option value="1">February</option>
+              <option value="2">March</option><option value="3">April</option>
+              <option value="4">May</option><option value="5">June</option>
+              <option value="6">July</option><option value="7">August</option>
+              <option value="8">September</option><option value="9">October</option>
+              <option value="10">November</option><option value="11">December</option>
+            </select>
+            <select id="log-sel-year" class="filter-select" onchange="onLogMonthChange()" style="font-size:12px;padding:5px 10px">
+              <option value="2024">2024</option><option value="2025">2025</option>
+              <option value="2026" selected>2026</option><option value="2027">2027</option>
+            </select>
           </div>
         </div>
 
@@ -1415,13 +1425,7 @@ function startApp(){
   initTheme();
   updateStatusBar();
   setInterval(updateStatusBar, 10000);
-  setTimeout(function(){
-    var mo = document.getElementById('sel-month');
-    var yr = document.getElementById('sel-year');
-    var m = mo ? parseInt(mo.value) : new Date().getMonth();
-    var y = yr ? parseInt(yr.value) : new Date().getFullYear();
-    buildDailyLog(m, y);
-  }, 800);
+  // buildDailyLog called by loadView and fadeInView
   // Nav visibility
   const myNav = document.getElementById('nav-my');
   if (myNav) myNav.style.display = currentIsManager ? 'none' : 'flex';
