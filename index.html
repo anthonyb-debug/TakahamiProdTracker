@@ -3316,14 +3316,8 @@ function buildDailyLog(){
     agBar.style.display = 'grid';
   }
 
-  // ── Table head ──
-  var headHtml = '<tr><th>Day</th>';
-  AGENTS.forEach(function(agent,i){
-    var name = agent.name.split(',')[1]?.trim()||agent.name.split(' ')[0];
-    headHtml += '<th style="color:'+AGENT_COLORS[i].text+'">'+name+'</th>';
-  });
-  headHtml += '</tr>';
-  head.innerHTML = headHtml;
+  // ── No thead needed — agent bar above acts as header ──
+  head.innerHTML = '';
 
   // ── Table body ──
   var bodyHtml = '';
@@ -3383,12 +3377,22 @@ function buildDailyLog(){
   });
   footHtml += '</tr>';
 
-  // Goal row
+  // Score 4 Goal row
   footHtml += '<tr style="border-top:1px solid var(--border-light)"><td style="font-weight:600;color:var(--text-muted);font-size:11px">Score 4 Goal</td>';
   AGENTS.forEach(function(_,i){
+    var goal4 = getMonthlyGoal(i,year,month);
+    footHtml += '<td style="font-size:11px;color:var(--text-muted);font-weight:600">'+goal4.toLocaleString()+'</td>';
+  });
+  footHtml += '</tr>';
+
+  // Score 5 Goal row
+  footHtml += '<tr><td style="font-weight:600;color:var(--text-muted);font-size:11px">Score 5 Goal</td>';
+  AGENTS.forEach(function(_,i){
     var rates = getKPIRates(i);
-    var goal = getMonthlyGoal(i,year,month);
-    footHtml += '<td style="font-size:11px;color:var(--text-muted);font-weight:600">'+goal.toLocaleString()+'</td>';
+    var workDays = 0;
+    for(var dd=1;dd<=dim;dd++){ var dw=new Date(year,month,dd).getDay(); if(dw!==0&&dw!==6) workDays++; }
+    var goal5 = rates.score5 * workDays;
+    footHtml += '<td style="font-size:11px;color:var(--text-muted);font-weight:600">'+goal5.toLocaleString()+'</td>';
   });
   footHtml += '</tr>';
 
