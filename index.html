@@ -1415,7 +1415,7 @@ function startApp(){
   initTheme();
   updateStatusBar();
   setInterval(updateStatusBar, 10000);
-  buildDailyLog();
+  setTimeout(buildDailyLog, 300);
   // Nav visibility
   const myNav = document.getElementById('nav-my');
   if (myNav) myNav.style.display = currentIsManager ? 'none' : 'flex';
@@ -1563,7 +1563,7 @@ function loadView(){
   ensurePath(year,month);
   buildTodayCards();
   updateMTD(); updateLeaderboard();
-  buildDailyLog();
+  // buildDailyLog called by fadeInView after view is visible
 }
 
 function isWeekend(y,m,d){ const dow=new Date(y,m,d).getDay(); return dow===0||dow===6; }
@@ -3196,6 +3196,8 @@ function fadeInView(id){
     el.style.transition='opacity .25s ease,transform .25s ease';
     el.style.opacity='1';
     el.style.transform='translateY(0)';
+    // Build daily log after view is visible
+    if(id==='view-dashboard') buildDailyLog();
   });
 }
 
