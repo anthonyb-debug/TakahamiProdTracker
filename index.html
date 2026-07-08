@@ -1220,6 +1220,15 @@ input[type=number]{transition:background .15s,border-color .15s,box-shadow .15s}
 // CONFIG
 // ══════════════════════════════════════════════
 const ALLOWED_DOMAIN   = 'allianceglobalsolutions.com';
+
+// Agent accent colors — used throughout dashboard
+var AGENT_COLORS = [
+  {bg:'#2563EB',light:'#EFF6FF',text:'#1D4ED8'},
+  {bg:'#0891B2',light:'#ECFEFF',text:'#0E7490'},
+  {bg:'#7C3AED',light:'#F5F3FF',text:'#6D28D9'},
+  {bg:'#059669',light:'#ECFDF5',text:'#047857'},
+  {bg:'#D97706',light:'#FFFBEB',text:'#B45309'}
+];
 const SHEET_ID         = '1KIoDAnstMm64I9wvE18DVbxNwHVu_VqBfTD-F82oXig';
 const APPS_SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbxqxp1GGdP2sRyZbWj5Ya-2w5R5Nxwf7y_bCZHw_Cef7Sud3wpoMWtWhh33FWb7Z2dvSg/exec';
 
@@ -3243,13 +3252,7 @@ function checkKpi5(agentIdx, acpd){
 // ══════════════════════════════════════════════
 // DAILY LOG TABLE — Dashboard read-only
 // ══════════════════════════════════════════════
-var AGENT_COLORS = [
-  {bg:'#2563EB',light:'#EFF6FF',text:'#1D4ED8'},
-  {bg:'#0891B2',light:'#ECFEFF',text:'#0E7490'},
-  {bg:'#7C3AED',light:'#F5F3FF',text:'#6D28D9'},
-  {bg:'#059669',light:'#ECFDF5',text:'#047857'},
-  {bg:'#D97706',light:'#FFFBEB',text:'#B45309'}
-];
+
 
 function initDailyLogSelectors(){
   var moEl = document.getElementById('log-sel-month');
