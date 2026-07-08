@@ -3282,8 +3282,15 @@ function buildDailyLog(){
   var sub  = document.getElementById('daily-log-sub');
   if(!moEl||!yrEl||!head||!body||!foot) return;
 
+  // Populate selectors if empty
+  if(!moEl.options.length) initDailyLogSelectors();
+
   var month = parseInt(moEl.value);
   var year  = parseInt(yrEl.value);
+  // Fallback to current month/year if NaN
+  var now2 = new Date();
+  if(isNaN(month)) month = now2.getMonth();
+  if(isNaN(year))  year  = now2.getFullYear();
   var dim   = new Date(year,month+1,0).getDate();
   var now   = new Date();
   var isCurrent = now.getFullYear()===year && now.getMonth()===month;
