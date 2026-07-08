@@ -1407,7 +1407,7 @@ function startApp(){
   updateStatusBar();
   setInterval(updateStatusBar, 10000);
   initDailyLogSelectors();
-  buildDailyLog();
+  setTimeout(function(){ buildDailyLog(); }, 100);
   // Nav visibility
   const myNav = document.getElementById('nav-my');
   if (myNav) myNav.style.display = currentIsManager ? 'none' : 'flex';
@@ -1555,7 +1555,7 @@ function loadView(){
   ensurePath(year,month);
   buildTodayCards();
   updateMTD(); updateLeaderboard();
-  buildDailyLog();
+  setTimeout(function(){ buildDailyLog(); }, 50);
 }
 
 function isWeekend(y,m,d){ const dow=new Date(y,m,d).getDay(); return dow===0||dow===6; }
@@ -3283,14 +3283,21 @@ function buildDailyLog(){
   if(!moEl||!yrEl||!head||!body||!foot) return;
 
   // Populate selectors if empty
-  if(!moEl.options.length) initDailyLogSelectors();
+  if(!moEl.options.length || moEl.value === '') initDailyLogSelectors();
 
+  var now2 = new Date();
   var month = parseInt(moEl.value);
   var year  = parseInt(yrEl.value);
-  // Fallback to current month/year if NaN
-  var now2 = new Date();
   if(isNaN(month)) month = now2.getMonth();
   if(isNaN(year))  year  = now2.getFullYear();
+
+  // Sync with dashboard selectors if available
+  var dashMonth = document.getElementById('sel-month');
+  var dashYear  = document.getElementById('sel-year');
+  if(moEl.value === '' && dashMonth && dashMonth.value !== '') {
+    month = parseInt(dashMonth.value);
+    year  = parseInt(dashYear.value);
+  }
   var dim   = new Date(year,month+1,0).getDate();
   var now   = new Date();
   var isCurrent = now.getFullYear()===year && now.getMonth()===month;
