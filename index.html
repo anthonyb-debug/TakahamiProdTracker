@@ -1415,15 +1415,7 @@ function startApp(){
   initTheme();
   updateStatusBar();
   setInterval(updateStatusBar, 10000);
-  setTimeout(function(){
-    try {
-      buildDailyLog();
-    } catch(err) {
-      console.error('buildDailyLog ERROR:', err.message, err.stack);
-      var body = document.getElementById('daily-log-body');
-      if(body) body.innerHTML = '<tr><td colspan="6" style="padding:20px;color:red;text-align:center">Error: '+err.message+'</td></tr>';
-    }
-  }, 500);
+  setTimeout(buildDailyLog, 800);
   // Nav visibility
   const myNav = document.getElementById('nav-my');
   if (myNav) myNav.style.display = currentIsManager ? 'none' : 'flex';
@@ -1571,7 +1563,7 @@ function loadView(){
   ensurePath(year,month);
   buildTodayCards();
   updateMTD(); updateLeaderboard();
-  // buildDailyLog called by fadeInView after view is visible
+  buildDailyLog();
 }
 
 function isWeekend(y,m,d){ const dow=new Date(y,m,d).getDay(); return dow===0||dow===6; }
@@ -3294,7 +3286,6 @@ function buildDailyLog(){
   var head  = document.getElementById('daily-log-head');
   var sub   = document.getElementById('daily-log-sub');
 
-  if(!body){ return; }
 
   var now   = new Date();
   var month = now.getMonth();
