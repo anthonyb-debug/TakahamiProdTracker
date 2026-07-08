@@ -1415,7 +1415,15 @@ function startApp(){
   initTheme();
   updateStatusBar();
   setInterval(updateStatusBar, 10000);
-  setTimeout(buildDailyLog, 300);
+  setTimeout(function(){
+    try {
+      buildDailyLog();
+    } catch(err) {
+      console.error('buildDailyLog ERROR:', err.message, err.stack);
+      var body = document.getElementById('daily-log-body');
+      if(body) body.innerHTML = '<tr><td colspan="6" style="padding:20px;color:red;text-align:center">Error: '+err.message+'</td></tr>';
+    }
+  }, 500);
   // Nav visibility
   const myNav = document.getElementById('nav-my');
   if (myNav) myNav.style.display = currentIsManager ? 'none' : 'flex';
@@ -3197,7 +3205,10 @@ function fadeInView(id){
     el.style.opacity='1';
     el.style.transform='translateY(0)';
     // Build daily log after view is visible
-    if(id==='view-dashboard') buildDailyLog();
+    if(id==='view-dashboard'){
+      try { buildDailyLog(); }
+      catch(err){ console.error('buildDailyLog (fadeIn) ERROR:', err.message); }
+    }
   });
 }
 
