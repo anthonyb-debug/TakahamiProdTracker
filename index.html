@@ -1187,23 +1187,15 @@ function startApp(){
     const n=mgr?mgr.name:currentUser.name;
     if(sbn) sbn.textContent=n;
     if(sbr){ sbr.textContent='Manager'; sbr.style.color='#D97706'; }
-    document.getElementById('agent-banner').className='banner banner-warning';
-    document.getElementById('agent-banner').querySelector('span').innerHTML=
-      'Signed in as <strong>'+n+' 👑</strong> — Manager · Full access · Leaderboard enabled.';
-    document.getElementById('agent-banner').style.display='flex';
-    document.getElementById('readonly-notice').style.display='none';
     document.getElementById('leaderboard-section').style.display='block';
   } else if(currentAgentIdx>=0){
     const agentName=AGENTS[currentAgentIdx].name;
     document.getElementById('agent-full-name').textContent=agentName;
     if(sbn) sbn.textContent=agentName.split(',')[1]?.trim()||agentName;
     if(sbr) sbr.textContent='Agent';
-    document.getElementById('agent-banner').style.display='flex';
-    document.getElementById('readonly-notice').style.display='none';
     document.getElementById('leaderboard-section').style.display='none';
   } else {
-    document.getElementById('agent-banner').style.display='none';
-    document.getElementById('readonly-notice').style.display='flex';
+
   }
 
   buildSelectors();
