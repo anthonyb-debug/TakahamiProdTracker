@@ -617,54 +617,39 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
 
 /* ══ CONTENT PADDING for status bar ══ */
 .main-content{padding-bottom:36px}
+
+/* ── Daily Log ── */
+#dl-table thead th{
+  padding:10px 12px;font-size:11px;font-weight:700;
+  letter-spacing:.3px;white-space:nowrap;text-align:center;border:none;
+}
+#dl-table thead th:first-child{text-align:left;padding-left:16px;width:90px;background:var(--bg);color:var(--text-muted);text-transform:uppercase;letter-spacing:.7px}
+#dl-table tbody td{
+  padding:4px 12px;text-align:center;
+  border-bottom:1px solid var(--border-light);
+  font-size:12px;color:var(--text);vertical-align:middle;
+}
+#dl-table tbody td:first-child{text-align:left;padding-left:16px;font-size:11px;color:var(--text-secondary);font-weight:600;background:var(--bg)}
+#dl-table tbody tr:hover td{filter:brightness(.97)}
+#dl-table .dl-wknd{height:8px}
+#dl-table .dl-wknd td{padding:0;border:none;background:transparent}
+#dl-table .dl-wknd td:first-child{background:var(--bg)}
+#dl-table .dl-today td{background:#FFFBEB!important}
+#dl-table .dl-today td:first-child{background:#FEF3C7!important}
+#dl-table tfoot td{
+  padding:9px 12px;text-align:center;font-size:12px;font-weight:700;
+  background:var(--bg);white-space:nowrap;
+}
+#dl-table tfoot td:first-child{text-align:left;padding-left:16px;font-size:11px;font-weight:700;color:var(--text-secondary)}
+#dl-table tfoot tr:first-child td{border-top:2px solid var(--border);font-size:14px}
+#dl-table tfoot tr+tr td{border-top:1px solid var(--border-light);font-weight:600;font-size:11px}
+.dl-val{display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:26px;border-radius:6px;font-weight:700;font-size:12px;padding:0 6px}
 /* ── Smooth transitions ── */
 .stat-card{transition:transform .2s ease,box-shadow .2s ease,backdrop-filter .2s ease}
 .agent-today-card{transition:transform .2s ease,box-shadow .2s ease}
 input[type=number]{transition:background .15s,border-color .15s,box-shadow .15s}
 
 .kpi-pip{flex:1;height:6px;border-radius:3px;background:var(--border);transition:background .3s}
-
-/* ── Daily Log Table ── */
-#daily-log-table th{
-  font-size:10px;font-weight:700;color:var(--text-muted);
-  text-transform:uppercase;letter-spacing:.6px;
-  padding:8px 10px;text-align:center;
-  border-bottom:1px solid var(--border);
-  background:var(--bg);
-  white-space:nowrap;
-}
-#daily-log-table th:first-child{text-align:left;padding-left:16px;width:80px}
-#daily-log-table td{
-  padding:4px 10px;text-align:center;
-  border-bottom:1px solid var(--border-light);
-  font-size:12px;color:var(--text);
-  white-space:nowrap;
-}
-#daily-log-table td:first-child{
-  text-align:left;padding-left:16px;
-  font-size:11px;color:var(--text-secondary);font-weight:600;
-}
-#daily-log-table tbody tr:hover{background:var(--bg)}
-#daily-log-table .log-wknd td{background:var(--bg);opacity:.5;height:6px;padding:0}
-#daily-log-table .log-wknd td:first-child{padding-left:16px}
-#daily-log-table .log-today td{background:#FFFBEB}
-[data-theme="dark"] #daily-log-table .log-today td{background:rgba(251,191,36,.08)}
-#daily-log-table .log-empty{color:var(--border)!important;font-weight:400!important}
-#daily-log-table tfoot td{
-  font-weight:700;font-size:12px;padding:10px 10px;
-  text-align:center;border-top:2px solid var(--border);
-  background:var(--bg);
-}
-#daily-log-table tfoot td:first-child{text-align:left;padding-left:16px;color:var(--text-secondary)}
-.agent-col-header{
-  padding:10px 12px;text-align:center;font-size:11px;font-weight:700;
-  color:white;letter-spacing:.3px;
-}
-.log-val{
-  display:inline-block;min-width:36px;padding:2px 6px;
-  border-radius:5px;font-weight:700;font-size:12px;
-}
-
 
 /* ── Agent Today Cards ── */
 .agent-today-card{
@@ -925,16 +910,17 @@ input[type=number]{transition:background .15s,border-color .15s,box-shadow .15s}
       </div>
 
 
-      <!-- Daily Log by Agent — Read Only -->
-      <div style="margin-top:1.5rem">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <!-- ── Daily Log by Agent ── -->
+      <div style="margin-top:1.75rem" id="daily-log-wrap">
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:10px">
           <div>
-            <div style="font-size:15px;font-weight:700;color:var(--text)">Daily Entries</div>
-            <div style="font-size:12px;color:var(--text-muted)" id="daily-log-sub">All agents · read only</div>
+            <div style="font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.2px">Daily Entries</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px" id="dl-sub">All agents · read only</div>
           </div>
-<div style="display:flex;align-items:center;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Month</span>
-            <select id="log-sel-month" class="filter-select" onchange="var m=parseInt(this.value),y=parseInt(document.getElementById('log-sel-year').value);buildDailyLog(m,y);" style="font-size:12px;padding:5px 10px">
+            <select id="dl-month" class="filter-select" onchange="buildDailyLog()" style="font-size:12px;padding:5px 10px">
               <option value="0">January</option><option value="1">February</option>
               <option value="2">March</option><option value="3">April</option>
               <option value="4">May</option><option value="5">June</option>
@@ -942,22 +928,21 @@ input[type=number]{transition:background .15s,border-color .15s,box-shadow .15s}
               <option value="8">September</option><option value="9">October</option>
               <option value="10">November</option><option value="11">December</option>
             </select>
-            <select id="log-sel-year" class="filter-select" onchange="var m=parseInt(document.getElementById('log-sel-month').value),y=parseInt(this.value);buildDailyLog(m,y);" style="font-size:12px;padding:5px 10px">
-              <option value="2024">2024</option><option value="2025">2025</option>
-              <option value="2026" selected>2026</option><option value="2027">2027</option>
+            <select id="dl-year" class="filter-select" onchange="buildDailyLog()" style="font-size:12px;padding:5px 10px">
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+              <option value="2026" selected>2026</option>
+              <option value="2027">2027</option>
             </select>
           </div>
         </div>
 
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--sh-sm)">
-          <!-- Agent color header bar -->
-          <div id="daily-log-agent-bar" style="display:grid;border-bottom:2px solid var(--border)"></div>
-          <!-- Table -->
+        <div style="border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.07);border:1px solid var(--border)">
           <div style="overflow-x:auto">
-            <table id="daily-log-table" style="width:100%;border-collapse:collapse;table-layout:fixed">
-              <thead id="daily-log-head"></thead>
-              <tbody id="daily-log-body"></tbody>
-              <tfoot id="daily-log-foot"></tfoot>
+            <table id="dl-table" style="width:100%;border-collapse:collapse;min-width:600px">
+              <thead id="dl-head"></thead>
+              <tbody id="dl-body"></tbody>
+              <tfoot id="dl-foot"></tfoot>
             </table>
           </div>
         </div>
@@ -1230,15 +1215,6 @@ input[type=number]{transition:background .15s,border-color .15s,box-shadow .15s}
 // CONFIG
 // ══════════════════════════════════════════════
 const ALLOWED_DOMAIN   = 'allianceglobalsolutions.com';
-
-// Agent accent colors — used throughout dashboard
-var AGENT_COLORS = [
-  {bg:'#2563EB',light:'#EFF6FF',text:'#1D4ED8'},
-  {bg:'#0891B2',light:'#ECFEFF',text:'#0E7490'},
-  {bg:'#7C3AED',light:'#F5F3FF',text:'#6D28D9'},
-  {bg:'#059669',light:'#ECFDF5',text:'#047857'},
-  {bg:'#D97706',light:'#FFFBEB',text:'#B45309'}
-];
 const SHEET_ID         = '1KIoDAnstMm64I9wvE18DVbxNwHVu_VqBfTD-F82oXig';
 const APPS_SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbxqxp1GGdP2sRyZbWj5Ya-2w5R5Nxwf7y_bCZHw_Cef7Sud3wpoMWtWhh33FWb7Z2dvSg/exec';
 
@@ -1421,11 +1397,11 @@ function startApp(){
   loadFromStorage();
   loadView();
   setupKeyboard();
+  buildDailyLog();
   setupPaste();
   initTheme();
   updateStatusBar();
   setInterval(updateStatusBar, 10000);
-  // buildDailyLog called by loadView and fadeInView
   // Nav visibility
   const myNav = document.getElementById('nav-my');
   if (myNav) myNav.style.display = currentIsManager ? 'none' : 'flex';
@@ -1445,9 +1421,7 @@ function buildSelectors(){
   }
   MONTHS.forEach((m,i)=>{
     const o=document.createElement('option');
-    o.value=i; o.textContent=m;
-    if(i===now.getMonth()) o.selected=true;
-    ms.appendChild(o);
+    o.value=i; o.textContent=m; if(i===now.getMonth())o.selected=true; ms.appendChild(o);
   });
   if(as){
     // "All Agents" option for managers
@@ -1573,7 +1547,7 @@ function loadView(){
   ensurePath(year,month);
   buildTodayCards();
   updateMTD(); updateLeaderboard();
-  buildDailyLog(month, year);
+  buildDailyLog();
 }
 
 function isWeekend(y,m,d){ const dow=new Date(y,m,d).getDay(); return dow===0||dow===6; }
@@ -2128,7 +2102,7 @@ function buildMySelectors() {
     o.value = i; o.textContent = m;
     if (i === now.getMonth()) o.selected = true;
     ym.appendChild(o);
-  }); // All 12 months always shown
+  });
   for (let y = 2024; y <= now.getFullYear() + 1; y++) {
     const o = document.createElement('option');
     o.value = y; o.textContent = y;
@@ -2184,7 +2158,7 @@ function loadMyView() {
   const tbody = document.getElementById('my-table-body');
   if (!thead || !tbody) return;
 
-  thead.innerHTML = '<tr><th style="text-align:left">Day</th><th>Cases</th></tr>';
+  thead.innerHTML = '<tr><th style="text-align:left">Day</th><th>Cases</th><th>Status</th></tr>';
 
   let totalCases = 0, workDays = 0, elapsedWorkDays = 0;
   let totalWorkDays = 0;
@@ -2202,7 +2176,7 @@ function loadMyView() {
     const isFuture = isCurrent && d > now.getDate();
 
     if (weekend) {
-      bb += `<tr class="wknd-row"><td><div class="day-cell"><span class="day-num">${d}</span><span class="day-dow" style="color:#D1D5DB;font-size:9px">${DOW[dow]}</span></div></td><td></td></tr>`;
+      bb += `<tr class="wknd-row"><td><div class="day-cell"><span class="day-num">${d}</span><span class="day-dow" style="color:#D1D5DB;font-size:9px">${DOW[dow]}</span></div></td><td></td><td></td></tr>`;
       continue;
     }
 
@@ -2223,16 +2197,30 @@ function loadMyView() {
       else if (d < lastDay) { streak = 0; streakActive = false; }
     }
 
+    // Status chip
+    let statusHtml = '';
+    if (isFuture) {
+      statusHtml = '<span style="font-size:11px;color:var(--text-muted)">—</span>';
+    } else if (!hasVal && d <= lastDay) {
+      statusHtml = '<span class="t-badge t-red" style="font-size:11px;padding:2px 8px">Missing</span>';
+    } else if (hasVal) {
+      const pct = dailyTarget > 0 ? num / dailyTarget : 0;
+      if (pct >= 1) statusHtml = '<span class="t-badge t-green" style="font-size:11px;padding:2px 8px">✓ On Target</span>';
+      else if (pct >= 0.75) statusHtml = '<span class="t-badge t-amber" style="font-size:11px;padding:2px 8px">Near</span>';
+      else statusHtml = '<span class="t-badge t-red" style="font-size:11px;padding:2px 8px">Below</span>';
+    }
+
     const rowCls = isToday ? 'today-row' : '';
     bb += `<tr class="${rowCls}">
       <td><div class="day-cell"><span class="day-num">${d}</span><span class="day-dow">${DOW[dow]}</span></div></td>
       <td><input type="number" min="0" id="my-inp-${d}"
         class="${hasVal ? 'has-value' : ''}"
         value="${hasVal ? val : ''}" placeholder="0"
-        ${isFuture ? 'readonly' : ''}
+        ${isFuture ? 'readonly class="readonly-cell"' : ''}
         onchange="myCellChanged(${year},${month},${ai},${d},this.value)"
         onblur="myCellChanged(${year},${month},${ai},${d},this.value)"
       /></td>
+      <td>${statusHtml}</td>
     </tr>`;
   }
 
@@ -2242,9 +2230,9 @@ function loadMyView() {
   const ptg = mtdGoal > 0 ? ((totalCases / mtdGoal) * 100).toFixed(1) : '0.0';
   const acpd = elapsedWorkDays > 0 ? (totalCases / elapsedWorkDays).toFixed(1) : '0.0';
 
-  bb += `<tr class="summary-row"><td>My Total</td><td>${totalCases}</td></tr>`;
-  bb += `<tr class="goal-row"><td>Monthly Goal</td><td>${goal}</td></tr>`;
-  bb += `<tr class="deficit-row"><td>Deficit</td><td class="${deficit >= 0 ? 'on-target' : ''}">${deficit >= 0 ? '+' + deficit : deficit}</td></tr>`;
+  bb += `<tr class="summary-row"><td>My Total</td><td>${totalCases}</td><td></td></tr>`;
+  bb += `<tr class="goal-row"><td>Monthly Goal</td><td>${goal}</td><td></td></tr>`;
+  bb += `<tr class="deficit-row"><td>Deficit</td><td class="${deficit >= 0 ? 'on-target' : ''}">${deficit >= 0 ? '+' + deficit : deficit}</td><td></td></tr>`;
 
   tbody.innerHTML = bb;
 
@@ -3206,14 +3194,6 @@ function fadeInView(id){
     el.style.transition='opacity .25s ease,transform .25s ease';
     el.style.opacity='1';
     el.style.transform='translateY(0)';
-    // Build daily log after view is visible
-    if(id==='view-dashboard'){
-      var mo = document.getElementById('sel-month');
-      var yr = document.getElementById('sel-year');
-      var m = mo ? parseInt(mo.value) : new Date().getMonth();
-      var y = yr ? parseInt(yr.value) : new Date().getFullYear();
-      buildDailyLog(m, y);
-    }
   });
 }
 
@@ -3264,176 +3244,6 @@ function checkKpi5(agentIdx, acpd){
     showToast('⭐ '+name+' just hit KPI Score 5!', 'success');
   }
   _lastKpiScores[agentIdx] = score;
-}
-
-
-// ══════════════════════════════════════════════
-// DAILY LOG TABLE — Dashboard read-only
-// ══════════════════════════════════════════════
-
-
-function initDailyLogSelectors(){
-  var moEl = document.getElementById('log-sel-month');
-  var yrEl = document.getElementById('log-sel-year');
-  if(!moEl||!yrEl) return;
-  var now = new Date();
-  moEl.innerHTML=''; yrEl.innerHTML='';
-  MONTHS.forEach(function(m,i){
-    var o=document.createElement('option');
-    o.value=i; o.textContent=m;
-    if(i===now.getMonth()) o.selected=true;
-    moEl.appendChild(o);
-  });
-  for(var y=2024;y<=now.getFullYear()+1;y++){
-    var o=document.createElement('option');
-    o.value=y; o.textContent=y;
-    if(y===now.getFullYear()) o.selected=true;
-    yrEl.appendChild(o);
-  }
-}
-
-function buildDailyLog(){
-  var agBar = document.getElementById('daily-log-agent-bar');
-  var body  = document.getElementById('daily-log-body');
-  var foot  = document.getElementById('daily-log-foot');
-  var head  = document.getElementById('daily-log-head');
-  var sub   = document.getElementById('daily-log-sub');
-
-
-  var now   = new Date();
-  var month = now.getMonth();
-  var year  = now.getFullYear();
-
-  // Read from dashboard selectors if available
-  var dashMo = document.getElementById('sel-month');
-  var dashYr = document.getElementById('sel-year');
-  if(dashMo && dashMo.value !== '') month = parseInt(dashMo.value)||month;
-  if(dashYr && dashYr.value !== '') year  = parseInt(dashYr.value)||year;
-
-  var dim = new Date(year, month+1, 0).getDate();
-  var isCurrent = (now.getFullYear()===year && now.getMonth()===month);
-  var DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  var COLORS = [
-    {bg:'#2563EB',light:'#EFF6FF',text:'#1D4ED8'},
-    {bg:'#0891B2',light:'#ECFEFF',text:'#0E7490'},
-    {bg:'#7C3AED',light:'#F5F3FF',text:'#6D28D9'},
-    {bg:'#059669',light:'#ECFDF5',text:'#047857'},
-    {bg:'#D97706',light:'#FFFBEB',text:'#B45309'}
-  ];
-
-  if(sub) sub.textContent = MONTHS[month]+' '+year+' · All agents · read only';
-
-  // --- Agent header bar ---
-  if(agBar){
-    var bh = '';
-    bh += '<td style="width:80px;padding:9px 16px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;background:var(--bg)">Day</td>';
-    AGENTS.forEach(function(ag,i){
-      var nm = ag.name.split(',')[1]?ag.name.split(',')[1].trim():ag.name;
-      bh += '<td style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;color:white;background:'+COLORS[i].bg+'">'+nm+'</td>';
-    });
-    agBar.innerHTML = '<table style="width:100%;border-collapse:collapse;table-layout:fixed"><tr>'+bh+'</tr></table>';
-    agBar.style.display = 'block';
-  }
-
-  if(head) head.innerHTML = '';
-
-  // --- Body rows ---
-  var totals = [0,0,0,0,0];
-  var bhtml = '';
-  var lastWknd = false;
-
-  for(var d=1; d<=dim; d++){
-    var dow = new Date(year,month,d).getDay();
-    var wknd = (dow===0||dow===6);
-
-    if(wknd){
-      if(!lastWknd){
-        bhtml += '<tr><td colspan="'+(AGENTS.length+1)+'" style="height:8px;padding:0;border:none;background:linear-gradient(to right,var(--border-light),transparent)"></td></tr>';
-      }
-      lastWknd = true;
-      continue;
-    }
-    lastWknd = false;
-
-    var isToday  = isCurrent && d===now.getDate();
-    var isFuture = isCurrent && d>now.getDate();
-    var rowBg = isToday ? 'background:#FFFBEB' : '';
-
-    bhtml += '<tr style="'+rowBg+'">';
-    bhtml += '<td style="padding:5px 16px;font-size:11px;font-weight:600;color:var(--text-secondary)">'+d+'<span style="font-size:9px;color:var(--text-muted);margin-left:4px">'+DOW[dow]+'</span>'+(isToday?'<span style="font-size:8px;background:#FEF3C7;color:#D97706;border-radius:3px;padding:1px 4px;margin-left:4px">TODAY</span>':'')+'</td>';
-
-    AGENTS.forEach(function(ag,i){
-      if(isFuture){
-        bhtml += '<td style="text-align:center;font-size:11px;color:var(--border)">—</td>';
-        return;
-      }
-      var v = getDayValue(year,month,i,d);
-      var hasV = (v!==''&&v!==null&&!isNaN(v));
-      var num = hasV ? Number(v) : 0;
-      if(hasV) totals[i] += num;
-
-      if(!hasV){
-        bhtml += '<td style="text-align:center;font-size:11px;color:var(--border)">—</td>';
-        return;
-      }
-
-      var rates = getKPIRates(i);
-      var bg='transparent', fg='var(--text)', fw='400';
-      if(num>=rates.score5){ bg=COLORS[i].bg; fg='white'; fw='700'; }
-      else if(num>=rates.score4){ bg=COLORS[i].light; fg=COLORS[i].text; fw='700'; }
-
-      bhtml += '<td style="text-align:center;padding:4px 6px"><span style="display:inline-block;min-width:38px;padding:2px 6px;border-radius:5px;font-size:12px;font-weight:'+fw+';background:'+bg+';color:'+fg+'">'+num+'</span></td>';
-    });
-    bhtml += '</tr>';
-  }
-  body.innerHTML = bhtml;
-
-  // --- Footer ---
-  if(foot){
-    var workDays = 0;
-    for(var dd=1;dd<=dim;dd++){ var dw=new Date(year,month,dd).getDay(); if(dw!==0&&dw!==6) workDays++; }
-
-    var fh = '';
-    // Total row
-    fh += '<tr style="border-top:2px solid var(--border)">';
-    fh += '<td style="padding:9px 16px;font-size:12px;font-weight:700;color:var(--text-secondary)">Total</td>';
-    AGENTS.forEach(function(_,i){
-      fh += '<td style="text-align:center;font-size:14px;font-weight:800;color:'+COLORS[i].bg+'">'+totals[i].toLocaleString()+'</td>';
-    });
-    fh += '</tr>';
-
-    // Score 4 goal
-    fh += '<tr style="border-top:1px solid var(--border-light)">';
-    fh += '<td style="padding:6px 16px;font-size:11px;color:var(--text-muted);font-weight:600">Score 4 Goal</td>';
-    AGENTS.forEach(function(_,i){
-      var g4 = getKPIRates(i).score4 * workDays;
-      fh += '<td style="text-align:center;font-size:11px;color:var(--text-muted)">'+g4.toLocaleString()+'</td>';
-    });
-    fh += '</tr>';
-
-    // Score 5 goal
-    fh += '<tr style="border-top:1px solid var(--border-light)">';
-    fh += '<td style="padding:6px 16px;font-size:11px;color:var(--text-muted);font-weight:600">Score 5 Goal</td>';
-    AGENTS.forEach(function(_,i){
-      var g5 = getKPIRates(i).score5 * workDays;
-      fh += '<td style="text-align:center;font-size:11px;color:var(--text-muted)">'+g5.toLocaleString()+'</td>';
-    });
-    fh += '</tr>';
-
-    // Deficit
-    fh += '<tr style="border-top:1px solid var(--border-light)">';
-    fh += '<td style="padding:6px 16px 10px;font-size:11px;color:var(--text-muted);font-weight:700">Deficit</td>';
-    AGENTS.forEach(function(_,i){
-      var g4 = getKPIRates(i).score4 * workDays;
-      var def = g4 - totals[i];
-      var col = def<=0?'#15803D':'#EF4444';
-      var txt = def<=0?('+'+Math.abs(def).toLocaleString()):def.toLocaleString();
-      fh += '<td style="text-align:center;font-size:12px;font-weight:700;color:'+col+'">'+txt+'</td>';
-    });
-    fh += '</tr>';
-
-    foot.innerHTML = fh;
-  }
 }
 
 // ══════════════════════════════════════════════
@@ -3592,10 +3402,143 @@ function closeShortcuts(){
   if(el) el.style.display='none';
 }
 
+
+// ══════════════════════════════════════════════
+// DAILY LOG TABLE — Dashboard read-only
+// ══════════════════════════════════════════════
+var DL_COLORS = [
+  {bg:'#2563EB',light:'#DBEAFE',text:'#1D4ED8'},
+  {bg:'#0891B2',light:'#CFFAFE',text:'#0E7490'},
+  {bg:'#7C3AED',light:'#EDE9FE',text:'#6D28D9'},
+  {bg:'#059669',light:'#D1FAE5',text:'#047857'},
+  {bg:'#D97706',light:'#FEF3C7',text:'#B45309'}
+];
+
+function buildDailyLog(){
+  var moEl  = document.getElementById('dl-month');
+  var yrEl  = document.getElementById('dl-year');
+  var thead = document.getElementById('dl-head');
+  var tbody = document.getElementById('dl-body');
+  var tfoot = document.getElementById('dl-foot');
+  var sub   = document.getElementById('dl-sub');
+  if(!moEl||!yrEl||!thead||!tbody||!tfoot) return;
+
+  var now   = new Date();
+  var month = parseInt(moEl.value);
+  var year  = parseInt(yrEl.value);
+  if(isNaN(month)) month = now.getMonth();
+  if(isNaN(year))  year  = now.getFullYear();
+  var dim   = new Date(year,month+1,0).getDate();
+  var isCur = now.getFullYear()===year && now.getMonth()===month;
+  var DOW   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  if(sub) sub.textContent = MONTHS[month]+' '+year+' · All agents · read only';
+
+  // ── HEAD ──
+  var hh = '<tr>';
+  hh += '<th style="text-align:left;padding-left:16px;background:var(--bg);color:var(--text-muted);text-transform:uppercase;font-size:10px;letter-spacing:.7px">Day</th>';
+  AGENTS.forEach(function(a,i){
+    var col  = DL_COLORS[i];
+    var name = a.name.split(',').length>1 ? a.name.split(',')[1].trim() : a.name.split(' ')[0];
+    hh += '<th style="background:'+col.bg+';color:white;text-align:center">'+name+'</th>';
+  });
+  hh += '</tr>';
+  thead.innerHTML = hh;
+
+  // ── BODY ──
+  var bb = '';
+  var totals = new Array(AGENTS.length).fill(0);
+  var prevWknd = false;
+
+  for(var d=1;d<=dim;d++){
+    var dow    = new Date(year,month,d).getDay();
+    var isWknd = dow===0||dow===6;
+    var isToday= isCur && d===now.getDate();
+    var isFut  = isCur && d>now.getDate();
+
+    if(isWknd){
+      if(!prevWknd){
+        bb += '<tr class="dl-wknd"><td colspan="'+(AGENTS.length+1)+'"></td></tr>';
+      }
+      prevWknd = true;
+      continue;
+    }
+    prevWknd = false;
+
+    var rowCls = isToday ? 'dl-today' : '';
+    bb += '<tr class="'+rowCls+'">';
+
+    // Day cell
+    var dayTxt = d+'&nbsp;<span style="font-size:10px;color:var(--text-muted)">'+DOW[dow]+'</span>';
+    if(isToday) dayTxt += '&nbsp;<span style="font-size:8px;background:#FEF3C7;color:#D97706;border-radius:3px;padding:1px 4px;font-weight:800">TODAY</span>';
+    bb += '<td>'+dayTxt+'</td>';
+
+    AGENTS.forEach(function(a,i){
+      var col  = DL_COLORS[i];
+      var val  = getDayValue(year,month,i,d);
+      var hasV = val!==''&&!isNaN(val)&&!isFut;
+      var num  = hasV ? Number(val) : 0;
+      if(hasV) totals[i]+=num;
+
+      if(isFut||!hasV){
+        bb += '<td style="color:var(--border);font-size:11px">—</td>';
+      } else {
+        var rates = getKPIRates(i);
+        var bg='transparent', fg='var(--text)', fw='400';
+        if(num>=rates.score5){ bg=col.bg; fg='white'; fw='700'; }
+        else if(num>=rates.score4){ bg=col.light; fg=col.text; fw='700'; }
+        bb += '<td><span class="dl-val" style="background:'+bg+';color:'+fg+';font-weight:'+fw+'">'+num+'</span></td>';
+      }
+    });
+    bb += '</tr>';
+  }
+  tbody.innerHTML = bb;
+
+  // ── FOOT ──
+  var ff = '';
+
+  // Total row
+  ff += '<tr>';
+  ff += '<td style="font-weight:800;font-size:12px;color:var(--text-secondary)">Total</td>';
+  AGENTS.forEach(function(t,i){
+    var col = DL_COLORS[i];
+    ff += '<td style="color:'+col.bg+';font-size:15px;font-weight:800">'+totals[i].toLocaleString()+'</td>';
+  });
+  ff += '</tr>';
+
+  // Score 4 Goal
+  ff += '<tr>';
+  ff += '<td>Score 4 Goal <span style="font-size:10px;color:var(--text-muted)">(60+/day)</span></td>';
+  AGENTS.forEach(function(_,i){
+    var g4 = getMonthlyGoal(i,year,month);
+    ff += '<td>'+g4.toLocaleString()+'</td>';
+  });
+  ff += '</tr>';
+
+
+
+  // Deficit
+  ff += '<tr>';
+  ff += '<td style="color:var(--text-muted)">Deficit</td>';
+  AGENTS.forEach(function(_,i){
+    var g4  = getMonthlyGoal(i,year,month);
+    var def = g4 - totals[i];
+    var col = def<=0?'#15803D':'#EF4444';
+    var txt = def<=0 ? '+'+Math.abs(def).toLocaleString() : def.toLocaleString();
+    ff += '<td style="color:'+col+'">'+txt+'</td>';
+  });
+  ff += '</tr>';
+
+  tfoot.innerHTML = ff;
+}
+
 // ══════════════════════════════════════════════
 // BOOT
 // ══════════════════════════════════════════════
 window.addEventListener('load',()=>{
+  var _now=new Date();
+  var _dlm=document.getElementById('dl-month');
+  if(_dlm) _dlm.value=_now.getMonth();
   if(!checkSession()){
     document.getElementById('login-screen').style.display='flex';
     document.getElementById('app-screen').style.display='none';
