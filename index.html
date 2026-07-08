@@ -934,8 +934,18 @@ input[type=number]{transition:background .15s,border-color .15s,box-shadow .15s}
           </div>
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Month</span>
-            <select id="log-sel-month" class="filter-select" onchange="buildDailyLog()" style="font-size:12px;padding:5px 10px"></select>
-            <select id="log-sel-year" class="filter-select" onchange="buildDailyLog()" style="font-size:12px;padding:5px 10px"></select>
+            <select id="log-sel-month" class="filter-select" onchange="buildDailyLog()" style="font-size:12px;padding:5px 10px">
+              <option value="0">January</option><option value="1">February</option>
+              <option value="2">March</option><option value="3">April</option>
+              <option value="4">May</option><option value="5">June</option>
+              <option value="6" selected>July</option><option value="7">August</option>
+              <option value="8">September</option><option value="9">October</option>
+              <option value="10">November</option><option value="11">December</option>
+            </select>
+            <select id="log-sel-year" class="filter-select" onchange="buildDailyLog()" style="font-size:12px;padding:5px 10px">
+              <option value="2024">2024</option><option value="2025">2025</option>
+              <option value="2026" selected>2026</option><option value="2027">2027</option>
+            </select>
           </div>
         </div>
 
@@ -1406,8 +1416,7 @@ function startApp(){
   initTheme();
   updateStatusBar();
   setInterval(updateStatusBar, 10000);
-  initDailyLogSelectors();
-  setTimeout(function(){ buildDailyLog(); }, 100);
+  buildDailyLog();
   // Nav visibility
   const myNav = document.getElementById('nav-my');
   if (myNav) myNav.style.display = currentIsManager ? 'none' : 'flex';
@@ -1555,7 +1564,7 @@ function loadView(){
   ensurePath(year,month);
   buildTodayCards();
   updateMTD(); updateLeaderboard();
-  setTimeout(function(){ buildDailyLog(); }, 50);
+  buildDailyLog();
 }
 
 function isWeekend(y,m,d){ const dow=new Date(y,m,d).getDay(); return dow===0||dow===6; }
@@ -3282,22 +3291,11 @@ function buildDailyLog(){
   var sub  = document.getElementById('daily-log-sub');
   if(!moEl||!yrEl||!head||!body||!foot) return;
 
-  // Populate selectors if empty
-  if(!moEl.options.length || moEl.value === '') initDailyLogSelectors();
-
   var now2 = new Date();
   var month = parseInt(moEl.value);
   var year  = parseInt(yrEl.value);
   if(isNaN(month)) month = now2.getMonth();
   if(isNaN(year))  year  = now2.getFullYear();
-
-  // Sync with dashboard selectors if available
-  var dashMonth = document.getElementById('sel-month');
-  var dashYear  = document.getElementById('sel-year');
-  if(moEl.value === '' && dashMonth && dashMonth.value !== '') {
-    month = parseInt(dashMonth.value);
-    year  = parseInt(dashYear.value);
-  }
   var dim   = new Date(year,month+1,0).getDate();
   var now   = new Date();
   var isCurrent = now.getFullYear()===year && now.getMonth()===month;
