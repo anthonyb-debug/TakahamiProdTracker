@@ -3279,16 +3279,16 @@ function buildDailyLog(){
   var body = document.getElementById('daily-log-body');
   var foot = document.getElementById('daily-log-foot');
   var sub  = document.getElementById('daily-log-sub');
-  if(!moEl||!yrEl||!head||!body||!foot) return;
-
-  var now2 = new Date();
-  // Use dashboard pickers as source of truth
+  // Never bail — always render
+  var now2  = new Date();
+  var month = now2.getMonth();
+  var year  = now2.getFullYear();
+  // Try dashboard pickers first
   var dashMo = document.getElementById('sel-month');
   var dashYr = document.getElementById('sel-year');
-  var month = dashMo ? parseInt(dashMo.value) : parseInt(moEl.value);
-  var year  = dashYr ? parseInt(dashYr.value) : parseInt(yrEl.value);
-  if(isNaN(month)) month = now2.getMonth();
-  if(isNaN(year))  year  = now2.getFullYear();
+  if(dashMo && dashMo.value !== '' && !isNaN(parseInt(dashMo.value))) month = parseInt(dashMo.value);
+  if(dashYr && dashYr.value !== '' && !isNaN(parseInt(dashYr.value))) year  = parseInt(dashYr.value);
+  if(!head||!body||!foot){ console.warn('buildDailyLog: missing elements'); return; }
   var dim   = new Date(year,month+1,0).getDate();
   var now   = new Date();
   var isCurrent = now.getFullYear()===year && now.getMonth()===month;
