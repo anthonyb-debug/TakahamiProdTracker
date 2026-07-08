@@ -1415,7 +1415,13 @@ function startApp(){
   initTheme();
   updateStatusBar();
   setInterval(updateStatusBar, 10000);
-  setTimeout(buildDailyLog, 800);
+  setTimeout(function(){
+    var mo = document.getElementById('sel-month');
+    var yr = document.getElementById('sel-year');
+    var m = mo ? parseInt(mo.value) : new Date().getMonth();
+    var y = yr ? parseInt(yr.value) : new Date().getFullYear();
+    buildDailyLog(m, y);
+  }, 800);
   // Nav visibility
   const myNav = document.getElementById('nav-my');
   if (myNav) myNav.style.display = currentIsManager ? 'none' : 'flex';
