@@ -1411,9 +1411,16 @@ function startApp(){
   setInterval(updateStatusBar, 10000);
   // Nav visibility
   const myNav = document.getElementById('nav-my');
-  if (myNav) myNav.style.display = currentIsManager ? 'none' : 'flex';
+  if(myNav) myNav.style.display = currentIsManager ? 'none' : 'flex';
   const agNav = document.getElementById('nav-agents');
-  if (agNav) agNav.style.display = currentIsManager ? 'flex' : 'none';
+  if(agNav) agNav.style.display = currentIsManager ? 'flex' : 'none';
+
+  // Default view: agents land on My Productivity, managers on Dashboard
+  if(!currentIsManager && currentAgentIdx >= 0){
+    switchView('my');
+  } else {
+    switchView('dashboard');
+  }
 }
 
 function buildSelectors(){
