@@ -624,6 +624,48 @@ input[type=number]{transition:background .15s,border-color .15s,box-shadow .15s}
 
 .kpi-pip{flex:1;height:6px;border-radius:3px;background:var(--border);transition:background .3s}
 
+/* ── Daily Log Table ── */
+#daily-log-table th{
+  font-size:10px;font-weight:700;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:.6px;
+  padding:8px 10px;text-align:center;
+  border-bottom:1px solid var(--border);
+  background:var(--bg);
+  white-space:nowrap;
+}
+#daily-log-table th:first-child{text-align:left;padding-left:16px;width:80px}
+#daily-log-table td{
+  padding:4px 10px;text-align:center;
+  border-bottom:1px solid var(--border-light);
+  font-size:12px;color:var(--text);
+  white-space:nowrap;
+}
+#daily-log-table td:first-child{
+  text-align:left;padding-left:16px;
+  font-size:11px;color:var(--text-secondary);font-weight:600;
+}
+#daily-log-table tbody tr:hover{background:var(--bg)}
+#daily-log-table .log-wknd td{background:var(--bg);opacity:.5;height:6px;padding:0}
+#daily-log-table .log-wknd td:first-child{padding-left:16px}
+#daily-log-table .log-today td{background:#FFFBEB}
+[data-theme="dark"] #daily-log-table .log-today td{background:rgba(251,191,36,.08)}
+#daily-log-table .log-empty{color:var(--border)!important;font-weight:400!important}
+#daily-log-table tfoot td{
+  font-weight:700;font-size:12px;padding:10px 10px;
+  text-align:center;border-top:2px solid var(--border);
+  background:var(--bg);
+}
+#daily-log-table tfoot td:first-child{text-align:left;padding-left:16px;color:var(--text-secondary)}
+.agent-col-header{
+  padding:10px 12px;text-align:center;font-size:11px;font-weight:700;
+  color:white;letter-spacing:.3px;
+}
+.log-val{
+  display:inline-block;min-width:36px;padding:2px 6px;
+  border-radius:5px;font-weight:700;font-size:12px;
+}
+
+
 /* ── Agent Today Cards ── */
 .agent-today-card{
   background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);
@@ -880,6 +922,35 @@ input[type=number]{transition:background .15s,border-color .15s,box-shadow .15s}
         <select id="sel-agent"></select>
         <table id="main-table"><thead id="table-head"></thead><tbody id="table-body"></tbody></table>
         <span id="table-title"></span><span id="table-month-badge"></span>
+      </div>
+
+
+      <!-- Daily Log by Agent — Read Only -->
+      <div style="margin-top:1.5rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+          <div>
+            <div style="font-size:15px;font-weight:700;color:var(--text)">Daily Entries</div>
+            <div style="font-size:12px;color:var(--text-muted)" id="daily-log-sub">All agents · read only</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Month</span>
+            <select id="log-sel-month" class="filter-select" onchange="buildDailyLog()" style="font-size:12px;padding:5px 10px"></select>
+            <select id="log-sel-year" class="filter-select" onchange="buildDailyLog()" style="font-size:12px;padding:5px 10px"></select>
+          </div>
+        </div>
+
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--sh-sm)">
+          <!-- Agent color header bar -->
+          <div id="daily-log-agent-bar" style="display:grid;border-bottom:2px solid var(--border)"></div>
+          <!-- Table -->
+          <div style="overflow-x:auto">
+            <table id="daily-log-table" style="width:100%;border-collapse:collapse;table-layout:fixed">
+              <thead id="daily-log-head"></thead>
+              <tbody id="daily-log-body"></tbody>
+              <tfoot id="daily-log-foot"></tfoot>
+            </table>
+          </div>
+        </div>
       </div>
 
       </div><!-- /view-dashboard -->
@@ -1335,6 +1406,8 @@ function startApp(){
   initTheme();
   updateStatusBar();
   setInterval(updateStatusBar, 10000);
+  initDailyLogSelectors();
+  buildDailyLog();
   // Nav visibility
   const myNav = document.getElementById('nav-my');
   if (myNav) myNav.style.display = currentIsManager ? 'none' : 'flex';
@@ -1354,7 +1427,9 @@ function buildSelectors(){
   }
   MONTHS.forEach((m,i)=>{
     const o=document.createElement('option');
-    o.value=i; o.textContent=m; if(i===now.getMonth())o.selected=true; ms.appendChild(o);
+    o.value=i; o.textContent=m;
+    if(i===now.getMonth()) o.selected=true;
+    ms.appendChild(o);
   });
   if(as){
     // "All Agents" option for managers
@@ -1480,6 +1555,7 @@ function loadView(){
   ensurePath(year,month);
   buildTodayCards();
   updateMTD(); updateLeaderboard();
+  buildDailyLog();
 }
 
 function isWeekend(y,m,d){ const dow=new Date(y,m,d).getDay(); return dow===0||dow===6; }
@@ -2034,7 +2110,7 @@ function buildMySelectors() {
     o.value = i; o.textContent = m;
     if (i === now.getMonth()) o.selected = true;
     ym.appendChild(o);
-  });
+  }); // All 12 months always shown
   for (let y = 2024; y <= now.getFullYear() + 1; y++) {
     const o = document.createElement('option');
     o.value = y; o.textContent = y;
@@ -2090,7 +2166,7 @@ function loadMyView() {
   const tbody = document.getElementById('my-table-body');
   if (!thead || !tbody) return;
 
-  thead.innerHTML = '<tr><th style="text-align:left">Day</th><th>Cases</th><th>Status</th></tr>';
+  thead.innerHTML = '<tr><th style="text-align:left">Day</th><th>Cases</th></tr>';
 
   let totalCases = 0, workDays = 0, elapsedWorkDays = 0;
   let totalWorkDays = 0;
@@ -2108,7 +2184,7 @@ function loadMyView() {
     const isFuture = isCurrent && d > now.getDate();
 
     if (weekend) {
-      bb += `<tr class="wknd-row"><td><div class="day-cell"><span class="day-num">${d}</span><span class="day-dow" style="color:#D1D5DB;font-size:9px">${DOW[dow]}</span></div></td><td></td><td></td></tr>`;
+      bb += `<tr class="wknd-row"><td><div class="day-cell"><span class="day-num">${d}</span><span class="day-dow" style="color:#D1D5DB;font-size:9px">${DOW[dow]}</span></div></td><td></td></tr>`;
       continue;
     }
 
@@ -2129,30 +2205,16 @@ function loadMyView() {
       else if (d < lastDay) { streak = 0; streakActive = false; }
     }
 
-    // Status chip
-    let statusHtml = '';
-    if (isFuture) {
-      statusHtml = '<span style="font-size:11px;color:var(--text-muted)">—</span>';
-    } else if (!hasVal && d <= lastDay) {
-      statusHtml = '<span class="t-badge t-red" style="font-size:11px;padding:2px 8px">Missing</span>';
-    } else if (hasVal) {
-      const pct = dailyTarget > 0 ? num / dailyTarget : 0;
-      if (pct >= 1) statusHtml = '<span class="t-badge t-green" style="font-size:11px;padding:2px 8px">✓ On Target</span>';
-      else if (pct >= 0.75) statusHtml = '<span class="t-badge t-amber" style="font-size:11px;padding:2px 8px">Near</span>';
-      else statusHtml = '<span class="t-badge t-red" style="font-size:11px;padding:2px 8px">Below</span>';
-    }
-
     const rowCls = isToday ? 'today-row' : '';
     bb += `<tr class="${rowCls}">
       <td><div class="day-cell"><span class="day-num">${d}</span><span class="day-dow">${DOW[dow]}</span></div></td>
       <td><input type="number" min="0" id="my-inp-${d}"
         class="${hasVal ? 'has-value' : ''}"
         value="${hasVal ? val : ''}" placeholder="0"
-        ${isFuture ? 'readonly class="readonly-cell"' : ''}
+        ${isFuture ? 'readonly' : ''}
         onchange="myCellChanged(${year},${month},${ai},${d},this.value)"
         onblur="myCellChanged(${year},${month},${ai},${d},this.value)"
       /></td>
-      <td>${statusHtml}</td>
     </tr>`;
   }
 
@@ -2162,9 +2224,9 @@ function loadMyView() {
   const ptg = mtdGoal > 0 ? ((totalCases / mtdGoal) * 100).toFixed(1) : '0.0';
   const acpd = elapsedWorkDays > 0 ? (totalCases / elapsedWorkDays).toFixed(1) : '0.0';
 
-  bb += `<tr class="summary-row"><td>My Total</td><td>${totalCases}</td><td></td></tr>`;
-  bb += `<tr class="goal-row"><td>Monthly Goal</td><td>${goal}</td><td></td></tr>`;
-  bb += `<tr class="deficit-row"><td>Deficit</td><td class="${deficit >= 0 ? 'on-target' : ''}">${deficit >= 0 ? '+' + deficit : deficit}</td><td></td></tr>`;
+  bb += `<tr class="summary-row"><td>My Total</td><td>${totalCases}</td></tr>`;
+  bb += `<tr class="goal-row"><td>Monthly Goal</td><td>${goal}</td></tr>`;
+  bb += `<tr class="deficit-row"><td>Deficit</td><td class="${deficit >= 0 ? 'on-target' : ''}">${deficit >= 0 ? '+' + deficit : deficit}</td></tr>`;
 
   tbody.innerHTML = bb;
 
@@ -3176,6 +3238,160 @@ function checkKpi5(agentIdx, acpd){
     showToast('⭐ '+name+' just hit KPI Score 5!', 'success');
   }
   _lastKpiScores[agentIdx] = score;
+}
+
+
+// ══════════════════════════════════════════════
+// DAILY LOG TABLE — Dashboard read-only
+// ══════════════════════════════════════════════
+var AGENT_COLORS = [
+  {bg:'#2563EB',light:'#EFF6FF',text:'#1D4ED8'},
+  {bg:'#0891B2',light:'#ECFEFF',text:'#0E7490'},
+  {bg:'#7C3AED',light:'#F5F3FF',text:'#6D28D9'},
+  {bg:'#059669',light:'#ECFDF5',text:'#047857'},
+  {bg:'#D97706',light:'#FFFBEB',text:'#B45309'}
+];
+
+function initDailyLogSelectors(){
+  var moEl = document.getElementById('log-sel-month');
+  var yrEl = document.getElementById('log-sel-year');
+  if(!moEl||!yrEl) return;
+  var now = new Date();
+  moEl.innerHTML=''; yrEl.innerHTML='';
+  MONTHS.forEach(function(m,i){
+    var o=document.createElement('option');
+    o.value=i; o.textContent=m;
+    if(i===now.getMonth()) o.selected=true;
+    moEl.appendChild(o);
+  });
+  for(var y=2024;y<=now.getFullYear()+1;y++){
+    var o=document.createElement('option');
+    o.value=y; o.textContent=y;
+    if(y===now.getFullYear()) o.selected=true;
+    yrEl.appendChild(o);
+  }
+}
+
+function buildDailyLog(){
+  var moEl = document.getElementById('log-sel-month');
+  var yrEl = document.getElementById('log-sel-year');
+  var agBar= document.getElementById('daily-log-agent-bar');
+  var head = document.getElementById('daily-log-head');
+  var body = document.getElementById('daily-log-body');
+  var foot = document.getElementById('daily-log-foot');
+  var sub  = document.getElementById('daily-log-sub');
+  if(!moEl||!yrEl||!head||!body||!foot) return;
+
+  var month = parseInt(moEl.value);
+  var year  = parseInt(yrEl.value);
+  var dim   = new Date(year,month+1,0).getDate();
+  var now   = new Date();
+  var isCurrent = now.getFullYear()===year && now.getMonth()===month;
+  var DOW_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  if(sub) sub.textContent = MONTHS[month]+' '+year+' · All agents · read only';
+
+  // ── Agent color header bar ──
+  if(agBar){
+    var barHtml = '<div style="background:var(--bg);padding:6px 16px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center">Day</div>';
+    AGENTS.forEach(function(agent,i){
+      var col = AGENT_COLORS[i];
+      var name = agent.name.split(',')[1]?.trim()||agent.name.split(' ')[0];
+      barHtml += '<div class="agent-col-header" style="background:'+col.bg+';flex:1">'+name+'</div>';
+    });
+    agBar.innerHTML = barHtml;
+    agBar.style.gridTemplateColumns = '80px repeat('+AGENTS.length+',1fr)';
+    agBar.style.display = 'grid';
+  }
+
+  // ── Table head ──
+  var headHtml = '<tr><th>Day</th>';
+  AGENTS.forEach(function(agent,i){
+    var name = agent.name.split(',')[1]?.trim()||agent.name.split(' ')[0];
+    headHtml += '<th style="color:'+AGENT_COLORS[i].text+'">'+name+'</th>';
+  });
+  headHtml += '</tr>';
+  head.innerHTML = headHtml;
+
+  // ── Table body ──
+  var bodyHtml = '';
+  var monthTotals = new Array(AGENTS.length).fill(0);
+  var prevWknd = false;
+
+  for(var d=1;d<=dim;d++){
+    var dow = new Date(year,month,d).getDay();
+    var isWknd = dow===0||dow===6;
+    var isToday = isCurrent && d===now.getDate();
+    var isFuture = isCurrent && d > now.getDate();
+
+    if(isWknd){
+      if(!prevWknd){
+        bodyHtml += '<tr class="log-wknd"><td colspan="'+(AGENTS.length+1)+'"></td></tr>';
+      }
+      prevWknd = true;
+      continue;
+    }
+    prevWknd = false;
+
+    var rowClass = isToday ? 'log-today' : '';
+    bodyHtml += '<tr class="'+rowClass+'">';
+
+    // Day cell
+    var dayLabel = d+'<span style="font-size:9px;color:var(--text-muted);margin-left:4px">'+DOW_SHORT[dow]+'</span>';
+    if(isToday) dayLabel += '<span style="font-size:8px;background:#FEF3C7;color:#D97706;border-radius:3px;padding:1px 4px;margin-left:4px;font-weight:800">TODAY</span>';
+    bodyHtml += '<td>'+dayLabel+'</td>';
+
+    // Agent value cells
+    AGENTS.forEach(function(agent,i){
+      var col = AGENT_COLORS[i];
+      var val = getDayValue(year,month,i,d);
+      var hasVal = val!==''&&!isNaN(val)&&!isFuture;
+      var num = hasVal ? Number(val) : 0;
+      if(hasVal) monthTotals[i] += num;
+
+      if(isFuture||!hasVal){
+        bodyHtml += '<td class="log-empty">—</td>';
+      } else {
+        var rates = getKPIRates(i);
+        var bgColor = num >= rates.score5 ? col.bg : num >= rates.score4 ? col.light : 'transparent';
+        var textColor = num >= rates.score5 ? 'white' : num >= rates.score4 ? col.text : 'var(--text)';
+        var fontWeight = num >= rates.score4 ? '700' : '400';
+        bodyHtml += '<td><span class="log-val" style="background:'+bgColor+';color:'+textColor+';font-weight:'+fontWeight+'">'+num+'</span></td>';
+      }
+    });
+    bodyHtml += '</tr>';
+  }
+  body.innerHTML = bodyHtml;
+
+  // ── Footer totals ──
+  var footHtml = '<tr><td>Total</td>';
+  AGENTS.forEach(function(total,i){
+    var col = AGENT_COLORS[i];
+    footHtml += '<td style="color:'+col.bg+';font-size:14px">'+monthTotals[i].toLocaleString()+'</td>';
+  });
+  footHtml += '</tr>';
+
+  // Goal row
+  footHtml += '<tr style="border-top:1px solid var(--border-light)"><td style="font-weight:600;color:var(--text-muted);font-size:11px">Score 4 Goal</td>';
+  AGENTS.forEach(function(_,i){
+    var rates = getKPIRates(i);
+    var goal = getMonthlyGoal(i,year,month);
+    footHtml += '<td style="font-size:11px;color:var(--text-muted);font-weight:600">'+goal.toLocaleString()+'</td>';
+  });
+  footHtml += '</tr>';
+
+  // Deficit row
+  footHtml += '<tr style="border-top:1px solid var(--border-light)"><td style="font-weight:700;color:var(--text-muted);font-size:11px">Deficit</td>';
+  AGENTS.forEach(function(_,i){
+    var goal = getMonthlyGoal(i,year,month);
+    var deficit = goal - monthTotals[i];
+    var defColor = deficit <= 0 ? '#15803D' : '#EF4444';
+    var defText  = deficit <= 0 ? '+'+(Math.abs(deficit).toLocaleString()) : deficit.toLocaleString();
+    footHtml += '<td style="font-size:11px;font-weight:700;color:'+defColor+'">'+defText+'</td>';
+  });
+  footHtml += '</tr>';
+
+  foot.innerHTML = footHtml;
 }
 
 // ══════════════════════════════════════════════
