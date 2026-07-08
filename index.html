@@ -3277,150 +3277,148 @@ function initDailyLogSelectors(){
 }
 
 function buildDailyLog(){
-  var moEl = document.getElementById('log-sel-month');
-  var yrEl = document.getElementById('log-sel-year');
-  var agBar= document.getElementById('daily-log-agent-bar');
-  var head = document.getElementById('daily-log-head');
-  var body = document.getElementById('daily-log-body');
-  var foot = document.getElementById('daily-log-foot');
-  var sub  = document.getElementById('daily-log-sub');
-  // Never bail — always render
-  var now2  = new Date();
-  var month = now2.getMonth();
-  var year  = now2.getFullYear();
-  // Try dashboard pickers first
+  var agBar = document.getElementById('daily-log-agent-bar');
+  var body  = document.getElementById('daily-log-body');
+  var foot  = document.getElementById('daily-log-foot');
+  var head  = document.getElementById('daily-log-head');
+  var sub   = document.getElementById('daily-log-sub');
+
+  if(!body){ return; }
+
+  var now   = new Date();
+  var month = now.getMonth();
+  var year  = now.getFullYear();
+
+  // Read from dashboard selectors if available
   var dashMo = document.getElementById('sel-month');
   var dashYr = document.getElementById('sel-year');
-  if(dashMo && dashMo.value !== '' && !isNaN(parseInt(dashMo.value))) month = parseInt(dashMo.value);
-  if(dashYr && dashYr.value !== '' && !isNaN(parseInt(dashYr.value))) year  = parseInt(dashYr.value);
-  if(!head||!body||!foot){ console.warn('buildDailyLog: missing elements'); return; }
-  var dim   = new Date(year,month+1,0).getDate();
-  var now   = new Date();
-  var isCurrent = now.getFullYear()===year && now.getMonth()===month;
-  var DOW_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  if(dashMo && dashMo.value !== '') month = parseInt(dashMo.value)||month;
+  if(dashYr && dashYr.value !== '') year  = parseInt(dashYr.value)||year;
+
+  var dim = new Date(year, month+1, 0).getDate();
+  var isCurrent = (now.getFullYear()===year && now.getMonth()===month);
+  var DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var COLORS = [
+    {bg:'#2563EB',light:'#EFF6FF',text:'#1D4ED8'},
+    {bg:'#0891B2',light:'#ECFEFF',text:'#0E7490'},
+    {bg:'#7C3AED',light:'#F5F3FF',text:'#6D28D9'},
+    {bg:'#059669',light:'#ECFDF5',text:'#047857'},
+    {bg:'#D97706',light:'#FFFBEB',text:'#B45309'}
+  ];
 
   if(sub) sub.textContent = MONTHS[month]+' '+year+' · All agents · read only';
 
-  // ── Agent color header bar — use table structure for perfect alignment ──
+  // --- Agent header bar ---
   if(agBar){
-    var colW = 'calc((100% - 80px) / '+AGENTS.length+')';
-    var barHtml = '<table style="width:100%;border-collapse:collapse;table-layout:fixed">'
-      + '<colgroup><col style="width:80px">';
-    AGENTS.forEach(function(){ barHtml += '<col style="width:'+colW+'">'; });
-    barHtml += '</colgroup><tr>';
-    barHtml += '<td style="background:var(--bg);padding:8px 16px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;width:80px">Day</td>';
-    AGENTS.forEach(function(agent,i){
-      var col = AGENT_COLORS[i];
-      var name = agent.name.split(',')[1]?.trim()||agent.name.split(' ')[0];
-      barHtml += '<td class="agent-col-header" style="background:'+col.bg+';width:'+colW+'">'+name+'</td>';
+    var bh = '';
+    bh += '<td style="width:80px;padding:9px 16px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;background:var(--bg)">Day</td>';
+    AGENTS.forEach(function(ag,i){
+      var nm = ag.name.split(',')[1]?ag.name.split(',')[1].trim():ag.name;
+      bh += '<td style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;color:white;background:'+COLORS[i].bg+'">'+nm+'</td>';
     });
-    barHtml += '</tr></table>';
-    agBar.innerHTML = barHtml;
+    agBar.innerHTML = '<table style="width:100%;border-collapse:collapse;table-layout:fixed"><tr>'+bh+'</tr></table>';
     agBar.style.display = 'block';
   }
 
-  // ── No thead needed — agent bar above acts as header ──
-  // Add colgroup to match agent bar widths exactly
-  var colgroupHtml = '<colgroup><col style="width:80px">';
-  AGENTS.forEach(function(){ colgroupHtml += '<col>'; });
-  colgroupHtml += '</colgroup>';
-  var tbl = document.getElementById('daily-log-table');
-  if(tbl){
-    var existingCg = tbl.querySelector('colgroup');
-    if(existingCg) existingCg.remove();
-    tbl.insertAdjacentHTML('afterbegin', colgroupHtml);
-  }
-  head.innerHTML = '';
+  if(head) head.innerHTML = '';
 
-  // ── Table body ──
-  var bodyHtml = '';
-  var monthTotals = new Array(AGENTS.length).fill(0);
-  var prevWknd = false;
+  // --- Body rows ---
+  var totals = [0,0,0,0,0];
+  var bhtml = '';
+  var lastWknd = false;
 
-  for(var d=1;d<=dim;d++){
+  for(var d=1; d<=dim; d++){
     var dow = new Date(year,month,d).getDay();
-    var isWknd = dow===0||dow===6;
-    var isToday = isCurrent && d===now.getDate();
-    var isFuture = isCurrent && d > now.getDate();
+    var wknd = (dow===0||dow===6);
 
-    if(isWknd){
-      if(!prevWknd){
-        bodyHtml += '<tr class="log-wknd"><td colspan="'+(AGENTS.length+1)+'"></td></tr>';
+    if(wknd){
+      if(!lastWknd){
+        bhtml += '<tr><td colspan="'+(AGENTS.length+1)+'" style="height:8px;padding:0;border:none;background:linear-gradient(to right,var(--border-light),transparent)"></td></tr>';
       }
-      prevWknd = true;
+      lastWknd = true;
       continue;
     }
-    prevWknd = false;
+    lastWknd = false;
 
-    var rowClass = isToday ? 'log-today' : '';
-    bodyHtml += '<tr class="'+rowClass+'">';
+    var isToday  = isCurrent && d===now.getDate();
+    var isFuture = isCurrent && d>now.getDate();
+    var rowBg = isToday ? 'background:#FFFBEB' : '';
 
-    // Day cell
-    var dayLabel = d+'<span style="font-size:9px;color:var(--text-muted);margin-left:4px">'+DOW_SHORT[dow]+'</span>';
-    if(isToday) dayLabel += '<span style="font-size:8px;background:#FEF3C7;color:#D97706;border-radius:3px;padding:1px 4px;margin-left:4px;font-weight:800">TODAY</span>';
-    bodyHtml += '<td>'+dayLabel+'</td>';
+    bhtml += '<tr style="'+rowBg+'">';
+    bhtml += '<td style="padding:5px 16px;font-size:11px;font-weight:600;color:var(--text-secondary)">'+d+'<span style="font-size:9px;color:var(--text-muted);margin-left:4px">'+DOW[dow]+'</span>'+(isToday?'<span style="font-size:8px;background:#FEF3C7;color:#D97706;border-radius:3px;padding:1px 4px;margin-left:4px">TODAY</span>':'')+'</td>';
 
-    // Agent value cells
-    AGENTS.forEach(function(agent,i){
-      var col = AGENT_COLORS[i];
-      var val = getDayValue(year,month,i,d);
-      var hasVal = val!==''&&!isNaN(val)&&!isFuture;
-      var num = hasVal ? Number(val) : 0;
-      if(hasVal) monthTotals[i] += num;
-
-      if(isFuture||!hasVal){
-        bodyHtml += '<td class="log-empty">—</td>';
-      } else {
-        var rates = getKPIRates(i);
-        var bgColor = num >= rates.score5 ? col.bg : num >= rates.score4 ? col.light : 'transparent';
-        var textColor = num >= rates.score5 ? 'white' : num >= rates.score4 ? col.text : 'var(--text)';
-        var fontWeight = num >= rates.score4 ? '700' : '400';
-        bodyHtml += '<td><span class="log-val" style="background:'+bgColor+';color:'+textColor+';font-weight:'+fontWeight+'">'+num+'</span></td>';
+    AGENTS.forEach(function(ag,i){
+      if(isFuture){
+        bhtml += '<td style="text-align:center;font-size:11px;color:var(--border)">—</td>';
+        return;
       }
+      var v = getDayValue(year,month,i,d);
+      var hasV = (v!==''&&v!==null&&!isNaN(v));
+      var num = hasV ? Number(v) : 0;
+      if(hasV) totals[i] += num;
+
+      if(!hasV){
+        bhtml += '<td style="text-align:center;font-size:11px;color:var(--border)">—</td>';
+        return;
+      }
+
+      var rates = getKPIRates(i);
+      var bg='transparent', fg='var(--text)', fw='400';
+      if(num>=rates.score5){ bg=COLORS[i].bg; fg='white'; fw='700'; }
+      else if(num>=rates.score4){ bg=COLORS[i].light; fg=COLORS[i].text; fw='700'; }
+
+      bhtml += '<td style="text-align:center;padding:4px 6px"><span style="display:inline-block;min-width:38px;padding:2px 6px;border-radius:5px;font-size:12px;font-weight:'+fw+';background:'+bg+';color:'+fg+'">'+num+'</span></td>';
     });
-    bodyHtml += '</tr>';
+    bhtml += '</tr>';
   }
-  body.innerHTML = bodyHtml;
+  body.innerHTML = bhtml;
 
-  // ── Footer totals ──
-  var footHtml = '<tr><td>Total</td>';
-  AGENTS.forEach(function(total,i){
-    var col = AGENT_COLORS[i];
-    footHtml += '<td style="color:'+col.bg+';font-size:14px">'+monthTotals[i].toLocaleString()+'</td>';
-  });
-  footHtml += '</tr>';
-
-  // Score 4 Goal row
-  footHtml += '<tr style="border-top:1px solid var(--border-light)"><td style="font-weight:600;color:var(--text-muted);font-size:11px">Score 4 Goal</td>';
-  AGENTS.forEach(function(_,i){
-    var goal4 = getMonthlyGoal(i,year,month);
-    footHtml += '<td style="font-size:11px;color:var(--text-muted);font-weight:600">'+goal4.toLocaleString()+'</td>';
-  });
-  footHtml += '</tr>';
-
-  // Score 5 Goal row
-  footHtml += '<tr><td style="font-weight:600;color:var(--text-muted);font-size:11px">Score 5 Goal</td>';
-  AGENTS.forEach(function(_,i){
-    var rates = getKPIRates(i);
+  // --- Footer ---
+  if(foot){
     var workDays = 0;
     for(var dd=1;dd<=dim;dd++){ var dw=new Date(year,month,dd).getDay(); if(dw!==0&&dw!==6) workDays++; }
-    var goal5 = rates.score5 * workDays;
-    footHtml += '<td style="font-size:11px;color:var(--text-muted);font-weight:600">'+goal5.toLocaleString()+'</td>';
-  });
-  footHtml += '</tr>';
 
-  // Deficit row
-  footHtml += '<tr style="border-top:1px solid var(--border-light)"><td style="font-weight:700;color:var(--text-muted);font-size:11px">Deficit</td>';
-  AGENTS.forEach(function(_,i){
-    var goal = getMonthlyGoal(i,year,month);
-    var deficit = goal - monthTotals[i];
-    var defColor = deficit <= 0 ? '#15803D' : '#EF4444';
-    var defText  = deficit <= 0 ? '+'+(Math.abs(deficit).toLocaleString()) : deficit.toLocaleString();
-    footHtml += '<td style="font-size:11px;font-weight:700;color:'+defColor+'">'+defText+'</td>';
-  });
-  footHtml += '</tr>';
+    var fh = '';
+    // Total row
+    fh += '<tr style="border-top:2px solid var(--border)">';
+    fh += '<td style="padding:9px 16px;font-size:12px;font-weight:700;color:var(--text-secondary)">Total</td>';
+    AGENTS.forEach(function(_,i){
+      fh += '<td style="text-align:center;font-size:14px;font-weight:800;color:'+COLORS[i].bg+'">'+totals[i].toLocaleString()+'</td>';
+    });
+    fh += '</tr>';
 
-  foot.innerHTML = footHtml;
+    // Score 4 goal
+    fh += '<tr style="border-top:1px solid var(--border-light)">';
+    fh += '<td style="padding:6px 16px;font-size:11px;color:var(--text-muted);font-weight:600">Score 4 Goal</td>';
+    AGENTS.forEach(function(_,i){
+      var g4 = getKPIRates(i).score4 * workDays;
+      fh += '<td style="text-align:center;font-size:11px;color:var(--text-muted)">'+g4.toLocaleString()+'</td>';
+    });
+    fh += '</tr>';
+
+    // Score 5 goal
+    fh += '<tr style="border-top:1px solid var(--border-light)">';
+    fh += '<td style="padding:6px 16px;font-size:11px;color:var(--text-muted);font-weight:600">Score 5 Goal</td>';
+    AGENTS.forEach(function(_,i){
+      var g5 = getKPIRates(i).score5 * workDays;
+      fh += '<td style="text-align:center;font-size:11px;color:var(--text-muted)">'+g5.toLocaleString()+'</td>';
+    });
+    fh += '</tr>';
+
+    // Deficit
+    fh += '<tr style="border-top:1px solid var(--border-light)">';
+    fh += '<td style="padding:6px 16px 10px;font-size:11px;color:var(--text-muted);font-weight:700">Deficit</td>';
+    AGENTS.forEach(function(_,i){
+      var g4 = getKPIRates(i).score4 * workDays;
+      var def = g4 - totals[i];
+      var col = def<=0?'#15803D':'#EF4444';
+      var txt = def<=0?('+'+Math.abs(def).toLocaleString()):def.toLocaleString();
+      fh += '<td style="text-align:center;font-size:12px;font-weight:700;color:'+col+'">'+txt+'</td>';
+    });
+    fh += '</tr>';
+
+    foot.innerHTML = fh;
+  }
 }
 
 // ══════════════════════════════════════════════
