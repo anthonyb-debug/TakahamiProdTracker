@@ -1563,7 +1563,7 @@ function loadView(){
   ensurePath(year,month);
   buildTodayCards();
   updateMTD(); updateLeaderboard();
-  buildDailyLog();
+  buildDailyLog(month, year);
 }
 
 function isWeekend(y,m,d){ const dow=new Date(y,m,d).getDay(); return dow===0||dow===6; }
@@ -3198,8 +3198,11 @@ function fadeInView(id){
     el.style.transform='translateY(0)';
     // Build daily log after view is visible
     if(id==='view-dashboard'){
-      try { buildDailyLog(); }
-      catch(err){ console.error('buildDailyLog (fadeIn) ERROR:', err.message); }
+      var mo = document.getElementById('sel-month');
+      var yr = document.getElementById('sel-year');
+      var m = mo ? parseInt(mo.value) : new Date().getMonth();
+      var y = yr ? parseInt(yr.value) : new Date().getFullYear();
+      buildDailyLog(m, y);
     }
   });
 }
