@@ -388,9 +388,11 @@ tr.today-row td:first-child::after{
 }
 
 /* Weekend */
-tr.wknd-row td{background:#F1F3F5;padding:3px 14px}
-tr.wknd-row .day-num{color:#C4C9D4}
-tr.wknd-row .day-dow{color:#C4C9D4}
+tr.wknd-row td{padding:0;border-bottom:none;height:10px}
+tr.wknd-row td:first-child{padding-left:10px}
+tr.wknd-row .day-num{display:none}
+tr.wknd-row .day-label{display:none;color:#D1D5DB}
+tr.wknd-row .day-cell::after{content:'';display:block;height:1px;background:linear-gradient(to right,#E2E8F0,#F8FAFC);width:100%}
 
 /* Inputs */
 td input[type="number"]{
@@ -1401,7 +1403,7 @@ function buildTable(year,month,dim){
     bb+=`<td><div class="day-cell"><span class="day-num">${d}</span><span class="day-label">${DOW[dow]}</span></div></td>`;
 
     AGENTS.forEach((_,ai)=>{
-      if(weekend){bb+=`<td></td>`;return;}
+      if(weekend){bb+=`<td style='border:none'></td>`;return;}
       const val=getDayValue(year,month,ai,d);
       const isOwn=ai===currentAgentIdx||currentIsManager;
       const hasVal=val!==''&&val!==undefined;
@@ -1990,7 +1992,7 @@ function loadMyView() {
     const isFuture = isCurrent && d > now.getDate();
 
     if (weekend) {
-      bb += `<tr><td style="background:#F1F3F5;padding:5px 14px"><div class="day-cell"><span class="day-num" style="color:#C4C9D4">${d}</span><span class="day-dow" style="color:#C4C9D4">${DOW[dow]}</span></div></td><td style="background:#F1F3F5"></td><td style="background:#F1F3F5"></td></tr>`;
+      bb += `<tr class="wknd-row"><td><div class="day-cell"><span class="day-num">${d}</span><span class="day-dow" style="color:#D1D5DB;font-size:9px">${DOW[dow]}</span></div></td><td></td><td></td></tr>`;
       continue;
     }
 
@@ -2750,7 +2752,7 @@ function buildTodayCards(){
       + '<div style="display:flex;align-items:center;gap:10px;margin:8px 0 4px">'
         + '<div style="position:relative;width:56px;height:56px;flex-shrink:0">'
           + ring
-          + '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--text);transform:rotate(90deg)">'+Math.round(pct)+'%</div>'
+          + '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--text)">'+Math.round(pct)+'%</div>'
         + '</div>'
         + '<div>'
           + '<div class="atc-count" style="font-size:28px">'+total.toLocaleString()+'</div>'
@@ -2982,16 +2984,22 @@ function getTrend(year, month, agentIdx, lastDay){
 // CIRCULAR PROGRESS RING
 // ══════════════════════════════════════════════
 function buildRing(pct, color, size){
-  size = size || 64;
+  size = size || 56;
   var r = (size-8)/2;
   var circ = 2*Math.PI*r;
   var offset = circ - (Math.min(pct,100)/100)*circ;
-  return '<svg width="'+size+'" height="'+size+'" class="progress-ring">'
-    + '<circle class="progress-ring-track" cx="'+size/2+'" cy="'+size/2+'" r="'+r+'"/>'
-    + '<circle class="progress-ring-fill" cx="'+size/2+'" cy="'+size/2+'" r="'+r+'"'
-    +   ' stroke="'+color+'"'
+  var cx = size/2, cy = size/2;
+  // Rotate the circles so arc starts at top, NOT the whole SVG (so text stays upright)
+  return '<svg width="'+size+'" height="'+size+'" style="display:block">'
+    + '<circle fill="none" stroke="#E5E7EB" stroke-width="6"'
+    +   ' cx="'+cx+'" cy="'+cy+'" r="'+r+'"'
+    +   ' transform="rotate(-90 '+cx+' '+cy+')" />'
+    + '<circle fill="none" stroke="'+color+'" stroke-width="6" stroke-linecap="round"'
+    +   ' cx="'+cx+'" cy="'+cy+'" r="'+r+'"'
     +   ' stroke-dasharray="'+circ+'"'
-    +   ' stroke-dashoffset="'+offset+'"/>'
+    +   ' stroke-dashoffset="'+offset+'"'
+    +   ' transform="rotate(-90 '+cx+' '+cy+')"'
+    +   ' style="transition:stroke-dashoffset .8s ease,stroke .3s"/>'
     + '</svg>';
 }
 
