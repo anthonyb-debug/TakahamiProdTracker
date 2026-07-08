@@ -932,20 +932,10 @@ input[type=number]{transition:background .15s,border-color .15s,box-shadow .15s}
             <div style="font-size:15px;font-weight:700;color:var(--text)">Daily Entries</div>
             <div style="font-size:12px;color:var(--text-muted)" id="daily-log-sub">All agents · read only</div>
           </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Month</span>
-            <select id="log-sel-month" class="filter-select" onchange="buildDailyLog()" style="font-size:12px;padding:5px 10px">
-              <option value="0">January</option><option value="1">February</option>
-              <option value="2">March</option><option value="3">April</option>
-              <option value="4">May</option><option value="5">June</option>
-              <option value="6" selected>July</option><option value="7">August</option>
-              <option value="8">September</option><option value="9">October</option>
-              <option value="10">November</option><option value="11">December</option>
-            </select>
-            <select id="log-sel-year" class="filter-select" onchange="buildDailyLog()" style="font-size:12px;padding:5px 10px">
-              <option value="2024">2024</option><option value="2025">2025</option>
-              <option value="2026" selected>2026</option><option value="2027">2027</option>
-            </select>
+<!-- log selectors now use dashboard selectors -->
+          <div style="display:none">
+            <select id="log-sel-month"><option value="6" selected>July</option></select>
+            <select id="log-sel-year"><option value="2026" selected>2026</option></select>
           </div>
         </div>
 
@@ -3292,8 +3282,11 @@ function buildDailyLog(){
   if(!moEl||!yrEl||!head||!body||!foot) return;
 
   var now2 = new Date();
-  var month = parseInt(moEl.value);
-  var year  = parseInt(yrEl.value);
+  // Use dashboard pickers as source of truth
+  var dashMo = document.getElementById('sel-month');
+  var dashYr = document.getElementById('sel-year');
+  var month = dashMo ? parseInt(dashMo.value) : parseInt(moEl.value);
+  var year  = dashYr ? parseInt(dashYr.value) : parseInt(yrEl.value);
   if(isNaN(month)) month = now2.getMonth();
   if(isNaN(year))  year  = now2.getFullYear();
   var dim   = new Date(year,month+1,0).getDate();
@@ -3303,20 +3296,35 @@ function buildDailyLog(){
 
   if(sub) sub.textContent = MONTHS[month]+' '+year+' · All agents · read only';
 
-  // ── Agent color header bar ──
+  // ── Agent color header bar — use table structure for perfect alignment ──
   if(agBar){
-    var barHtml = '<div style="background:var(--bg);padding:6px 16px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center">Day</div>';
+    var colW = 'calc((100% - 80px) / '+AGENTS.length+')';
+    var barHtml = '<table style="width:100%;border-collapse:collapse;table-layout:fixed">'
+      + '<colgroup><col style="width:80px">';
+    AGENTS.forEach(function(){ barHtml += '<col style="width:'+colW+'">'; });
+    barHtml += '</colgroup><tr>';
+    barHtml += '<td style="background:var(--bg);padding:8px 16px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;width:80px">Day</td>';
     AGENTS.forEach(function(agent,i){
       var col = AGENT_COLORS[i];
       var name = agent.name.split(',')[1]?.trim()||agent.name.split(' ')[0];
-      barHtml += '<div class="agent-col-header" style="background:'+col.bg+';flex:1">'+name+'</div>';
+      barHtml += '<td class="agent-col-header" style="background:'+col.bg+';width:'+colW+'">'+name+'</td>';
     });
+    barHtml += '</tr></table>';
     agBar.innerHTML = barHtml;
-    agBar.style.gridTemplateColumns = '80px repeat('+AGENTS.length+',1fr)';
-    agBar.style.display = 'grid';
+    agBar.style.display = 'block';
   }
 
   // ── No thead needed — agent bar above acts as header ──
+  // Add colgroup to match agent bar widths exactly
+  var colgroupHtml = '<colgroup><col style="width:80px">';
+  AGENTS.forEach(function(){ colgroupHtml += '<col>'; });
+  colgroupHtml += '</colgroup>';
+  var tbl = document.getElementById('daily-log-table');
+  if(tbl){
+    var existingCg = tbl.querySelector('colgroup');
+    if(existingCg) existingCg.remove();
+    tbl.insertAdjacentHTML('afterbegin', colgroupHtml);
+  }
   head.innerHTML = '';
 
   // ── Table body ──
