@@ -514,8 +514,111 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
 }
 .undo-toast button{background:rgba(14,165,233,.2);border:1px solid #0EA5E9;color:#38BDF8;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
 
+
+/* ══ DARK MODE ══ */
+[data-theme="dark"]{
+  --bg:#0F172A;--card:#1E293B;--text:#F1F5F9;--text-secondary:#CBD5E1;
+  --text-muted:#64748B;--border:#334155;--border-light:#1E293B;
+  --primary-light:rgba(37,99,235,.15);--primary-muted:rgba(37,99,235,.3);
+  --danger-light:rgba(239,68,68,.15);--success-dark:#34D399;--warning-dark:#FCD34D;
+}
+[data-theme="dark"] .stat-card{background:#1E293B;border-color:#334155}
+[data-theme="dark"] .table-card,[data-theme="dark"] .lb-card{background:#1E293B;border-color:#334155}
+[data-theme="dark"] table input[type=number]{background:#0F172A;border-color:#334155;color:#F1F5F9}
+[data-theme="dark"] table input[type=number].has-value{background:rgba(37,99,235,.2);color:#93C5FD}
+[data-theme="dark"] thead th{background:#1E293B;color:#64748B}
+[data-theme="dark"] tbody tr:hover:not(.summary-row):not(.goal-row):not(.deficit-row):not(.wknd-row){background:rgba(255,255,255,.03)}
+[data-theme="dark"] .agent-today-card{background:#1E293B;border-color:#334155}
+[data-theme="dark"] .login-card{background:#1E293B;border-color:#334155}
+[data-theme="dark"] .topbar{background:#020617}
+[data-theme="dark"] .main-content{background:#0F172A}
+
+/* ══ GLASSMORPHISM STAT CARDS ══ */
+.stat-card{
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  position:relative;overflow:hidden;
+}
+.stat-card::after{
+  content:'';position:absolute;top:-40px;right:-40px;
+  width:120px;height:120px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.06) 0%,transparent 70%);
+  pointer-events:none;
+}
+
+/* ══ SMOOTH PAGE TRANSITIONS ══ */
+.view-section{
+  animation:fadeSlideIn .25s ease;
+}
+@keyframes fadeSlideIn{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* ══ STATUS BAR ══ */
+.status-bar{
+  position:fixed;bottom:0;left:var(--sidebar-w);right:0;
+  height:28px;background:#0F172A;border-top:1px solid #1E293B;
+  display:flex;align-items:center;padding:0 1.5rem;gap:20px;
+  z-index:90;transition:left var(--transition);
+}
+.sidebar.collapsed ~ .main-wrap .status-bar{left:var(--sidebar-collapsed)}
+.status-bar-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#475569}
+.status-bar-dot{width:6px;height:6px;border-radius:50%;background:#22C55E;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.status-bar-item.warn .status-bar-dot{background:#F59E0B}
+
+/* ══ DARK MODE TOGGLE ══ */
+.dark-toggle{
+  width:36px;height:36px;border:1px solid #334155;border-radius:var(--r);
+  background:none;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:#94A3B8;transition:all var(--transition);
+}
+.dark-toggle:hover{background:#1E293B;color:#F1F5F9}
+
+/* ══ TOOLTIP ══ */
+.has-tooltip{position:relative}
+.has-tooltip .tooltip{
+  display:none;position:absolute;bottom:calc(100% + 8px);left:50%;
+  transform:translateX(-50%);background:#1E293B;color:#F1F5F9;
+  font-size:11px;font-weight:500;padding:6px 10px;border-radius:8px;
+  white-space:nowrap;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,.3);
+  pointer-events:none;
+}
+.has-tooltip .tooltip::after{
+  content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);
+  border:5px solid transparent;border-top-color:#1E293B;
+}
+.has-tooltip:hover .tooltip{display:block}
+
+/* ══ CONFETTI ══ */
+.confetti-piece{
+  position:fixed;width:10px;height:10px;top:-10px;
+  animation:confettiFall linear forwards;pointer-events:none;z-index:9999;
+  border-radius:2px;
+}
+@keyframes confettiFall{
+  to{transform:translateY(110vh) rotate(720deg);opacity:0}
+}
+
+/* ══ NUMBER COUNTER ══ */
+.count-up{transition:all .1s}
+
+/* ══ TODAY ROW PINNED ══ */
+.today-row{
+  position:sticky;top:calc(var(--topbar-h) + 33px);z-index:3;
+  background:#FFFBEB !important;box-shadow:0 2px 8px rgba(251,191,36,.15);
+}
+[data-theme="dark"] .today-row{background:rgba(251,191,36,.1) !important}
+
+/* ══ AGENT COLOR BADGES ══ */
+.agent-badge-0{color:#2563EB}.agent-badge-1{color:#0891B2}
+.agent-badge-2{color:#7C3AED}.agent-badge-3{color:#059669}.agent-badge-4{color:#D97706}
+
+/* ══ CONTENT PADDING for status bar ══ */
+.main-content{padding-bottom:36px}
 /* ── Smooth transitions ── */
-.stat-card{transition:transform .2s ease,box-shadow .2s ease}
+.stat-card{transition:transform .2s ease,box-shadow .2s ease,backdrop-filter .2s ease}
 .agent-today-card{transition:transform .2s ease,box-shadow .2s ease}
 input[type=number]{transition:background .15s,border-color .15s,box-shadow .15s}
 
@@ -670,6 +773,11 @@ input[type=number]{transition:background .15s,border-color .15s,box-shadow .15s}
         <!-- Hidden pickers used by export modal -->
         <select id="export-agent" style="display:none"></select>
         <select id="export-month" style="display:none"><option value="-1">All Months</option></select>
+        <button class="dark-toggle" onclick="toggleDarkMode()" id="dark-toggle-btn" title="Toggle dark mode">
+          <svg viewBox="0 0 20 20" style="width:16px;height:16px;fill:currentColor" id="dark-icon">
+            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+          </svg>
+        </button>
         <button class="btn btn-outline btn-sm" onclick="showExportModal()" style="display:flex;align-items:center;gap:6px">
           <svg viewBox="0 0 20 20" style="width:14px;height:14px;fill:currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
           Export Excel
@@ -687,7 +795,7 @@ input[type=number]{transition:background .15s,border-color .15s,box-shadow .15s}
     <div class="content">
 
       <!-- VIEW: DASHBOARD (all agents) -->
-      <div id="view-dashboard">
+      <div id="view-dashboard" class="view-section">
 
       <!-- Breadcrumb -->
       <div class="breadcrumb">
@@ -777,7 +885,7 @@ input[type=number]{transition:background .15s,border-color .15s,box-shadow .15s}
       </div><!-- /view-dashboard -->
 
       <!-- VIEW: MY PRODUCTIVITY -->
-      <div id="view-my" style="display:none">
+      <div id="view-my" class="view-section" style="display:none">
         <div class="breadcrumb">
           <span class="breadcrumb-item">Takahami Medical Billing</span>
           <span class="breadcrumb-sep">›</span>
@@ -877,7 +985,7 @@ input[type=number]{transition:background .15s,border-color .15s,box-shadow .15s}
       </div><!-- /view-my -->
 
       <!-- VIEW: AGENTS -->
-      <div id="view-agents" style="display:none">
+      <div id="view-agents" class="view-section" style="display:none">
         <div class="breadcrumb">
           <span class="breadcrumb-item">Takahami Medical Billing</span>
           <span class="breadcrumb-sep">›</span>
@@ -953,6 +1061,24 @@ input[type=number]{transition:background .15s,border-color .15s,box-shadow .15s}
       </div><!-- /view-agents -->
 
     </div><!-- /content -->
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <div class="status-bar-item" id="sb-sync">
+        <div class="status-bar-dot"></div>
+        <span id="sb-sync-text">Ready</span>
+      </div>
+      <div class="status-bar-item">
+        <svg viewBox="0 0 20 20" style="width:10px;height:10px;fill:currentColor;opacity:.5"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
+        <span id="sb-date">—</span>
+      </div>
+      <div class="status-bar-item" id="sb-entries">
+        <svg viewBox="0 0 20 20" style="width:10px;height:10px;fill:currentColor;opacity:.5"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+        <span id="sb-entries-text">—</span>
+      </div>
+      <div class="status-bar-item" style="margin-left:auto">
+        <span style="color:#1E3A5F;font-size:10px">Takahami Medical Billing · Alliance Global Solutions</span>
+      </div>
+    </div>
   </div><!-- /main-wrap -->
 <!-- Export Modal -->
 <div id="export-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center">
@@ -1206,6 +1332,9 @@ function startApp(){
   loadView();
   setupKeyboard();
   setupPaste();
+  initTheme();
+  updateStatusBar();
+  setInterval(updateStatusBar, 10000);
   // Nav visibility
   const myNav = document.getElementById('nav-my');
   if (myNav) myNav.style.display = currentIsManager ? 'none' : 'flex';
@@ -1328,6 +1457,7 @@ function setDayValue(y,m,ai,d,val){
   // Check personal best
   if(!isEmpty) checkPersonalBest(ai,d,m,y,Number(val));
   saveToStorage(); updateMTD(); updateLeaderboard(); if(currentView==='dashboard') buildTodayCards();
+  updateStatusBar();
   // Auto-sync this single cell immediately — no button needed
   var sendVal = isEmpty ? -1 : Number(val);
   _sendToSheet(y, m, d, ai, sendVal);
@@ -1601,7 +1731,7 @@ function updateMTD(){
   const acpd=workDays>0?(total/workDays).toFixed(1):'0.0';
   const pct=Math.min(100,mtdGoal>0?(total/mtdGoal*100):0);
 
-  document.getElementById('mtd-prod').textContent=total.toLocaleString();
+  animateCount(document.getElementById('mtd-prod'), total, 600);
   const defEl=document.getElementById('mtd-deficit');
   defEl.textContent=deficit>=0?`+${deficit.toLocaleString()}`:deficit.toLocaleString();
   defEl.style.color=deficit>=0?'var(--success)':'var(--danger)';
@@ -1862,11 +1992,10 @@ let currentView = 'dashboard';
 
 function switchView(view) {
   currentView = view;
-  document.getElementById('view-dashboard').style.display = view === 'dashboard' ? 'block' : 'none';
-  const myView = document.getElementById('view-my');
-  if (myView) myView.style.display = view === 'my' ? 'block' : 'none';
-  const agView = document.getElementById('view-agents');
-  if (agView) agView.style.display = view === 'agents' ? 'block' : 'none';
+  ['view-dashboard','view-my','view-agents'].forEach(function(id){
+    var el=document.getElementById(id); if(el){el.style.display='none';el.style.opacity='1';el.style.transform='none';}
+  });
+  fadeInView('view-'+view);
 
   // Update nav active state
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -2714,6 +2843,7 @@ function buildTodayCards(){
     var rates     = getKPIRates(i);
     var acpd      = elapsedWorkDays>0 ? total/elapsedWorkDays : 0;
     var kpiScore  = elapsedWorkDays>0 ? getKPIScore(acpd,i) : null;
+    if(kpiScore!==null) checkKpi5(i, acpd);
     var kpiCol    = kpiScore!==null ? getKPIColor(kpiScore) : null;
     var mtdGoal   = rates.score4 * elapsedWorkDays;
     var pct       = mtdGoal>0 ? Math.min(100,(total/mtdGoal)*100) : 0;
@@ -2918,6 +3048,135 @@ function exportToExcel(){
   showToast('✅ Exported '+total+' entries','success');
 }
 
+
+
+// ══════════════════════════════════════════════
+// DARK MODE
+// ══════════════════════════════════════════════
+function toggleDarkMode(){
+  var isDark = document.documentElement.getAttribute('data-theme')==='dark';
+  document.documentElement.setAttribute('data-theme', isDark?'light':'dark');
+  localStorage.setItem('tmb_theme', isDark?'light':'dark');
+  updateDarkIcon(!isDark);
+}
+function updateDarkIcon(isDark){
+  var icon = document.getElementById('dark-icon');
+  if(!icon) return;
+  if(isDark){
+    icon.innerHTML='<path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>';
+  } else {
+    icon.innerHTML='<path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>';
+  }
+}
+function initTheme(){
+  var saved = localStorage.getItem('tmb_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+  updateDarkIcon(saved==='dark');
+}
+
+// ══════════════════════════════════════════════
+// NUMBER COUNTER ANIMATION
+// ══════════════════════════════════════════════
+function animateCount(el, target, duration){
+  if(!el) return;
+  var start = 0;
+  var step  = target / (duration / 16);
+  var current = 0;
+  var timer = setInterval(function(){
+    current = Math.min(current + step, target);
+    el.textContent = Math.floor(current).toLocaleString();
+    if(current >= target){ el.textContent = target.toLocaleString(); clearInterval(timer); }
+  }, 16);
+}
+
+// ══════════════════════════════════════════════
+// CONFETTI BURST
+// ══════════════════════════════════════════════
+function launchConfetti(){
+  var colors = ['#2563EB','#7C3AED','#22C55E','#F59E0B','#EF4444','#0EA5E9','#EC4899'];
+  for(var i=0;i<60;i++){
+    (function(i){
+      setTimeout(function(){
+        var el = document.createElement('div');
+        el.className = 'confetti-piece';
+        el.style.left = Math.random()*100+'vw';
+        el.style.background = colors[Math.floor(Math.random()*colors.length)];
+        el.style.animationDuration = (1.5+Math.random()*2)+'s';
+        el.style.animationDelay = '0s';
+        el.style.width = (6+Math.random()*8)+'px';
+        el.style.height = el.style.width;
+        el.style.borderRadius = Math.random()>0.5?'50%':'2px';
+        document.body.appendChild(el);
+        setTimeout(function(){ el.remove(); }, 3500);
+      }, i*30);
+    })(i);
+  }
+}
+
+// ══════════════════════════════════════════════
+// SMOOTH VIEW TRANSITIONS
+// ══════════════════════════════════════════════
+function fadeInView(id){
+  var el = document.getElementById(id);
+  if(!el) return;
+  el.style.opacity='0';
+  el.style.transform='translateY(8px)';
+  el.style.display='block';
+  requestAnimationFrame(function(){
+    el.style.transition='opacity .25s ease,transform .25s ease';
+    el.style.opacity='1';
+    el.style.transform='translateY(0)';
+  });
+}
+
+// ══════════════════════════════════════════════
+// STATUS BAR UPDATES
+// ══════════════════════════════════════════════
+function updateStatusBar(){
+  var syncEl   = document.getElementById('sb-sync-text');
+  var dateEl   = document.getElementById('sb-date');
+  var entriesEl= document.getElementById('sb-entries-text');
+  var now = new Date();
+  if(dateEl) dateEl.textContent = now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+
+  // Count today's entries
+  var todayEntries = 0;
+  var year = now.getFullYear(), month = now.getMonth(), day = now.getDate();
+  AGENTS.forEach(function(_,ai){
+    var v = getDayValue(year,month,ai,day);
+    if(v!==''&&!isNaN(v)&&Number(v)>0) todayEntries++;
+  });
+  if(entriesEl) entriesEl.textContent = todayEntries+'/'+AGENTS.length+' agents entered today';
+
+  // Pending sync indicator
+  var pending = Object.keys(_pendingCells||{}).length;
+  var sbSync  = document.getElementById('sb-sync');
+  if(syncEl){
+    if(pending>0){
+      syncEl.textContent = pending+' change'+(pending!==1?'s':'')+' pending sync';
+      if(sbSync) sbSync.querySelector('.status-bar-dot').style.background='#F59E0B';
+    } else {
+      syncEl.textContent = 'All synced';
+      if(sbSync) sbSync.querySelector('.status-bar-dot').style.background='#22C55E';
+    }
+  }
+}
+
+// ══════════════════════════════════════════════
+// KPI 5 CONFETTI TRIGGER
+// ══════════════════════════════════════════════
+var _lastKpiScores = {};
+function checkKpi5(agentIdx, acpd){
+  var score = getKPIScore(acpd, agentIdx);
+  var prevScore = _lastKpiScores[agentIdx] || 0;
+  if(score === 5 && prevScore < 5){
+    var agent = AGENTS[agentIdx];
+    var name  = agent ? (agent.name.split(',')[1]?.trim()||agent.name.split(' ')[0]) : 'Agent';
+    launchConfetti();
+    showToast('⭐ '+name+' just hit KPI Score 5!', 'success');
+  }
+  _lastKpiScores[agentIdx] = score;
+}
 
 // ══════════════════════════════════════════════
 // SKELETON LOADING
