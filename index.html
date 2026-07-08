@@ -620,30 +620,44 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
 
 /* ── Daily Log ── */
 #dl-table thead th{
-  padding:10px 12px;font-size:11px;font-weight:700;
-  letter-spacing:.3px;white-space:nowrap;text-align:center;border:none;
+  padding:10px 16px;font-size:11px;font-weight:600;
+  letter-spacing:.4px;white-space:nowrap;text-align:center;border:none;
 }
-#dl-table thead th:first-child{text-align:left;padding-left:16px;width:90px;background:var(--bg);color:var(--text-muted);text-transform:uppercase;letter-spacing:.7px}
+#dl-table thead th:first-child{
+  text-align:left;width:80px;background:var(--bg);
+  color:var(--text-muted);text-transform:uppercase;font-size:10px;letter-spacing:.8px;
+}
 #dl-table tbody td{
-  padding:4px 12px;text-align:center;
+  padding:5px 16px;text-align:center;
   border-bottom:1px solid var(--border-light);
   font-size:12px;color:var(--text);vertical-align:middle;
 }
-#dl-table tbody td:first-child{text-align:left;padding-left:16px;font-size:11px;color:var(--text-secondary);font-weight:600;background:var(--bg)}
-#dl-table tbody tr:hover td{filter:brightness(.97)}
-#dl-table .dl-wknd{height:8px}
+#dl-table tbody td:first-child{
+  text-align:left;font-size:11px;color:var(--text-muted);
+  font-weight:600;background:var(--bg);width:80px;
+}
+#dl-table tbody tr:hover td:not(:first-child){background:#FAFAFA}
+#dl-table .dl-wknd{height:6px}
 #dl-table .dl-wknd td{padding:0;border:none;background:transparent}
 #dl-table .dl-wknd td:first-child{background:var(--bg)}
 #dl-table .dl-today td{background:#FFFBEB!important}
-#dl-table .dl-today td:first-child{background:#FEF3C7!important}
+#dl-table .dl-today td:first-child{background:#FEF9C3!important;color:#92400E!important}
 #dl-table tfoot td{
-  padding:9px 12px;text-align:center;font-size:12px;font-weight:700;
-  background:var(--bg);white-space:nowrap;
+  padding:8px 16px;text-align:center;font-size:12px;
+  font-weight:600;background:var(--bg);white-space:nowrap;
 }
-#dl-table tfoot td:first-child{text-align:left;padding-left:16px;font-size:11px;font-weight:700;color:var(--text-secondary)}
-#dl-table tfoot tr:first-child td{border-top:2px solid var(--border);font-size:14px}
-#dl-table tfoot tr+tr td{border-top:1px solid var(--border-light);font-weight:600;font-size:11px}
-.dl-val{display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:26px;border-radius:6px;font-weight:700;font-size:12px;padding:0 6px}
+#dl-table tfoot td:first-child{
+  text-align:left;font-size:11px;color:var(--text-muted);font-weight:600;
+}
+#dl-table tfoot tr:first-child td{
+  border-top:2px solid var(--border);font-size:14px;font-weight:800;padding-top:10px;
+}
+#dl-table tfoot tr+tr td{border-top:1px solid var(--border-light);font-size:11px}
+.dl-val{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:36px;height:24px;border-radius:5px;
+  font-size:12px;padding:0 6px;
+}
 /* ── Smooth transitions ── */
 .stat-card{transition:transform .2s ease,box-shadow .2s ease,backdrop-filter .2s ease}
 .agent-today-card{transition:transform .2s ease,box-shadow .2s ease}
@@ -1908,19 +1922,22 @@ function updateLeaderboard(){
 
   let html='';
   scores.forEach((s,idx)=>{
-    const rankCls=idx===0?'r1':idx===1?'r2':idx===2?'r3':'rn';
-    const rankLabel=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':(idx+1);
-    const barColor=colors[idx]||'linear-gradient(90deg,#2563eb,#7c3aed)';
-    const barPct=maxTotal>0?(s.total/maxTotal*100):0;
-    const kpiS=getKPIScore(s.acpd,s.agentIdx);
-    const kpiC=getKPIColor(kpiS);
-    html+=`<div class="lb-row">
-      <div class="lb-rank ${rankCls}">${rankLabel}</div>
-      <div class="lb-name">${s.name}</div>
-      <div class="lb-bar-wrap"><div class="lb-bar-fill" style="width:${barPct}%;background:${barColor}"></div></div>
-      <div class="lb-value" style="font-weight:800;font-size:15px">${s.total.toLocaleString()} <span style="font-size:11px;color:var(--text-muted);font-weight:500">claims</span></div>
-      <div style="font-size:11px;font-weight:600;color:var(--text-secondary);min-width:60px;text-align:right">${s.acpd.toFixed(1)}/day</div>
-      <div style="min-width:52px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:${kpiC.bg};color:${kpiC.text};border:1px solid ${kpiC.border}">KPI ${kpiS}</div>
+    const rankLabel = idx===0?'1':idx===1?'2':idx===2?'3':(idx+1)+'';
+    const barPct    = maxTotal>0?(s.total/maxTotal*100):0;
+    const isTop     = idx===0;
+    html+=`<div class="lb-row" style="${isTop?'background:var(--bg);':''}">
+      <div class="lb-rank-num" style="
+        width:28px;height:28px;border-radius:50%;display:flex;align-items:center;
+        justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;
+        background:${idx===0?'#0F172A':idx===1?'#374151':idx===2?'#6B7280':'var(--border-light)'};
+        color:${idx<3?'white':'var(--text-muted)'};
+      ">${rankLabel}</div>
+      <div class="lb-name" style="flex:1;font-size:13px;font-weight:${isTop?700:500}">${s.name}</div>
+      <div class="lb-bar-wrap" style="width:120px">
+        <div class="lb-bar-fill" style="width:${barPct}%;background:${isTop?'#0F172A':'#CBD5E1'}"></div>
+      </div>
+      <div style="font-size:14px;font-weight:800;color:var(--text);min-width:70px;text-align:right">${s.total.toLocaleString()}</div>
+      <div style="font-size:11px;color:var(--text-muted);min-width:55px;text-align:right">${s.acpd.toFixed(1)}/day</div>
     </div>`;
   });
   document.getElementById('leaderboard-body').innerHTML=html;
@@ -3465,11 +3482,11 @@ function closeShortcuts(){
 // DAILY LOG TABLE — Dashboard read-only
 // ══════════════════════════════════════════════
 var DL_COLORS = [
-  {bg:'#2563EB',light:'#DBEAFE',text:'#1D4ED8'},
-  {bg:'#0891B2',light:'#CFFAFE',text:'#0E7490'},
-  {bg:'#7C3AED',light:'#EDE9FE',text:'#6D28D9'},
-  {bg:'#059669',light:'#D1FAE5',text:'#047857'},
-  {bg:'#D97706',light:'#FEF3C7',text:'#B45309'}
+  {bg:'#1E293B',light:'#F1F5F9',text:'#334155'},
+  {bg:'#334155',light:'#F8FAFC',text:'#475569'},
+  {bg:'#475569',light:'#F8FAFC',text:'#334155'},
+  {bg:'#1E293B',light:'#F1F5F9',text:'#334155'},
+  {bg:'#334155',light:'#F8FAFC',text:'#475569'}
 ];
 
 function buildDailyLog(){
@@ -3498,7 +3515,7 @@ function buildDailyLog(){
   AGENTS.forEach(function(a,i){
     var col  = DL_COLORS[i];
     var name = a.name.split(',').length>1 ? a.name.split(',')[1].trim() : a.name.split(' ')[0];
-    hh += '<th style="background:'+col.bg+';color:white;text-align:center">'+name+'</th>';
+    hh += '<th style="background:#1E293B;color:#F1F5F9;text-align:center;font-weight:600;letter-spacing:.3px">'+name+'</th>';
   });
   hh += '</tr>';
   thead.innerHTML = hh;
@@ -3539,12 +3556,12 @@ function buildDailyLog(){
       if(hasV) totals[i]+=num;
 
       if(isFut||!hasV){
-        bb += '<td style="color:var(--border);font-size:11px">—</td>';
+        bb += '<td style="color:#E2E8F0;font-size:11px">—</td>';
       } else {
         var rates = getKPIRates(i);
-        var bg='transparent', fg='var(--text)', fw='400';
-        if(num>=rates.score5){ bg=col.bg; fg='white'; fw='700'; }
-        else if(num>=rates.score4){ bg=col.light; fg=col.text; fw='700'; }
+        var bg='transparent', fg='#374151', fw='500';
+        if(num>=rates.score5){ bg='#0F172A'; fg='#F8FAFC'; fw='700'; }
+        else if(num>=rates.score4){ bg='#F1F5F9'; fg='#1E293B'; fw='600'; }
         bb += '<td><span class="dl-val" style="background:'+bg+';color:'+fg+';font-weight:'+fw+'">'+num+'</span></td>';
       }
     });
@@ -3559,8 +3576,7 @@ function buildDailyLog(){
   ff += '<tr>';
   ff += '<td style="font-weight:800;font-size:12px;color:var(--text-secondary)">Total</td>';
   AGENTS.forEach(function(t,i){
-    var col = DL_COLORS[i];
-    ff += '<td style="color:'+col.bg+';font-size:15px;font-weight:800">'+totals[i].toLocaleString()+'</td>';
+    ff += '<td style="color:#1E293B;font-size:15px;font-weight:800">'+totals[i].toLocaleString()+'</td>';
   });
   ff += '</tr>';
 
