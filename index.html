@@ -797,6 +797,12 @@ input[type=number]{transition:background .15s,border-color .15s,box-shadow .15s}
       </div>
       <div class="topbar-right">
         <span id="sync-status" class="sync-status" style="display:none"></span>
+        <span id="target-bar" style="display:none"></span>
+        <span id="daily-target-badge" style="display:none"></span>
+        <span id="pace-badge" style="display:none"></span>
+        <span id="remaining-badge" style="display:none"></span>
+        <span id="streak-badge" style="display:none"></span>
+        <span id="mtd-ptg" style="display:none"></span>
         <!-- Hidden pickers used by export modal -->
         <select id="export-agent" style="display:none"></select>
         <select id="export-month" style="display:none"><option value="-1">All Months</option></select>
@@ -1301,6 +1307,7 @@ function isManager(email){ return MANAGERS.some(m=>m.email.toLowerCase()===(emai
 // STATE
 // ══════════════════════════════════════════════
 let currentUser=null, currentAgentIdx=-1, currentIsManager=false, data={}, selectedAgentIdx=-1;
+var _pendingCells = {};
 
 // ══════════════════════════════════════════════
 // AUTH
@@ -1524,6 +1531,12 @@ function setDayValue(y,m,ai,d,val){
   // Check personal best
   if(!isEmpty) checkPersonalBest(ai,d,m,y,Number(val));
   saveToStorage(); updateMTD(); updateLeaderboard(); if(currentView==='dashboard') buildTodayCards();
+  if(!isEmpty){
+    var _key=y+'-'+m+'-'+d+'-'+ai;
+    _pendingCells[_key]={year:y,month:m,day:d,ai:ai,val:Number(val)};
+    showPendingBadge();
+    _sendToSheet(y,m,d,ai,Number(val));
+  }
   updateStatusBar();
   // Auto-sync this single cell immediately — no button needed
   var sendVal = isEmpty ? -1 : Number(val);
@@ -1961,6 +1974,44 @@ function _sendToSheet(year, month, day, agentIdx, claims){
 
 // My Productivity — sync button click
 // Sends only the logged-in agent's entries for the selected month
+
+async function syncPendingCells(source){
+  var pending = Object.values(_pendingCells);
+  if(pending.length===0){ showToast('No changes to sync.','info'); return; }
+
+  var btnId    = source==='my'?'my-sync-btn':'ag-sync-btn';
+  var statusId = source==='my'?'my-sync-status':'ag-sync-status';
+  var btn      = document.getElementById(btnId);
+  var statusEl = document.getElementById(statusId);
+  if(btn){ btn.disabled=true; btn.textContent='Syncing '+pending.length+'...'; }
+  if(statusEl){ statusEl.textContent='Syncing '+pending.length+' change'+(pending.length!==1?'s':'')+'...'; statusEl.className='sync-status'; }
+
+  var synced=0;
+  for(var i=0;i<pending.length;i++){
+    var p=pending[i];
+    _sendToSheet(p.year,p.month,p.day,p.ai,p.val);
+    synced++;
+    await new Promise(function(r){setTimeout(r,150);});
+  }
+  _pendingCells={};
+
+  var msg='Synced '+synced+' cell'+(synced!==1?'s':'');
+  showToast('✅ '+msg,'success');
+  if(statusEl){ statusEl.textContent=msg+' · '+new Date().toLocaleTimeString(); statusEl.className='sync-status ok'; }
+  var svgIcon='<svg viewBox="0 0 20 20" style="width:13px;height:13px;fill:white"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> ';
+  if(btn){ btn.disabled=false; btn.innerHTML=svgIcon+'Sync to Sheets'; }
+}
+
+function showPendingBadge(){
+  var count=Object.keys(_pendingCells).length;
+  var svgIcon='<svg viewBox="0 0 20 20" style="width:13px;height:13px;fill:white"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> ';
+  ['my-sync-btn','ag-sync-btn'].forEach(function(id){
+    var btn=document.getElementById(id);
+    if(!btn) return;
+    btn.innerHTML = svgIcon+(count>0?'Sync ('+count+' pending)':'Sync to Sheets');
+  });
+}
+
 async function syncMyData(){
   const msEl = document.getElementById('my-sel-month');
   const ysEl = document.getElementById('my-sel-year');
