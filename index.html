@@ -460,6 +460,63 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
   .topbar{padding:0 1rem}
 }
 @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+/* ── Skeleton loading ── */
+.skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.25rem;box-shadow:var(--sh-sm)}
+
+/* ── Progress ring ── */
+.progress-ring{transform:rotate(-90deg)}
+.progress-ring-track{fill:none;stroke:#E5E7EB;stroke-width:6}
+.progress-ring-fill{fill:none;stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset .8s ease,stroke .3s}
+
+/* ── Trend arrow ── */
+.trend-up{color:#22C55E;font-size:11px;font-weight:700}
+.trend-down{color:#EF4444;font-size:11px;font-weight:700}
+.trend-flat{color:#94A3B8;font-size:11px;font-weight:700}
+
+/* ── Personal best banner ── */
+.pb-banner{
+  position:fixed;bottom:24px;right:24px;z-index:999;
+  background:linear-gradient(135deg,#7C3AED,#2563EB);
+  color:white;border-radius:12px;padding:14px 20px;
+  box-shadow:0 8px 32px rgba(124,58,237,.4);
+  font-size:14px;font-weight:600;max-width:280px;
+  animation:slideUp .4s cubic-bezier(.175,.885,.32,1.275);
+  display:none;
+}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* ── Keyboard shortcuts panel ── */
+.shortcuts-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:600;
+  align-items:center;justify-content:center;backdrop-filter:blur(4px);
+}
+.shortcuts-panel{
+  background:var(--card);border-radius:16px;padding:2rem;width:100%;max-width:480px;
+  box-shadow:0 24px 48px rgba(0,0,0,.25);margin:1rem;max-height:85vh;overflow-y:auto;
+}
+.shortcuts-panel h3{font-size:18px;font-weight:800;color:var(--text);margin-bottom:1.25rem}
+.shortcut-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-light)}
+.shortcut-row:last-child{border:none}
+.shortcut-desc{font-size:13px;color:var(--text-secondary)}
+.shortcut-keys{display:flex;gap:4px}
+.shortcut-key{background:#F1F5F9;border:1px solid #CBD5E1;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;color:var(--text);font-family:monospace}
+
+/* ── Undo toast ── */
+.undo-toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:998;
+  background:#1E293B;color:#F1F5F9;border-radius:10px;padding:12px 20px;
+  font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.3);
+  display:none;align-items:center;gap:12px;white-space:nowrap;
+}
+.undo-toast button{background:rgba(14,165,233,.2);border:1px solid #0EA5E9;color:#38BDF8;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+
+/* ── Smooth transitions ── */
+.stat-card{transition:transform .2s ease,box-shadow .2s ease}
+.agent-today-card{transition:transform .2s ease,box-shadow .2s ease}
+input[type=number]{transition:background .15s,border-color .15s,box-shadow .15s}
+
 .kpi-pip{flex:1;height:6px;border-radius:3px;background:var(--border);transition:background .3s}
 
 /* ── Agent Today Cards ── */
@@ -928,6 +985,36 @@ tr.deficit-row td.on-target{color:var(--success-dark)}
     </div>
   </div>
 </div>
+<!-- Personal Best Banner -->
+<div class="pb-banner" id="pb-banner">
+  🔥 <span id="pb-text">New personal best!</span>
+  <div style="font-size:11px;opacity:.8;margin-top:4px">Keep it up!</div>
+</div>
+
+<!-- Keyboard Shortcuts Panel -->
+<div class="shortcuts-overlay" id="shortcuts-overlay" onclick="if(event.target===this)closeShortcuts()">
+  <div class="shortcuts-panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+      <h3>⌨️ Keyboard Shortcuts</h3>
+      <button onclick="closeShortcuts()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-muted)">×</button>
+    </div>
+    <div class="shortcut-row"><span class="shortcut-desc">Show shortcuts</span><div class="shortcut-keys"><span class="shortcut-key">?</span></div></div>
+    <div class="shortcut-row"><span class="shortcut-desc">Sync to Sheets</span><div class="shortcut-keys"><span class="shortcut-key">Ctrl</span><span class="shortcut-key">S</span></div></div>
+    <div class="shortcut-row"><span class="shortcut-desc">Undo last entry</span><div class="shortcut-keys"><span class="shortcut-key">Ctrl</span><span class="shortcut-key">Z</span></div></div>
+    <div class="shortcut-row"><span class="shortcut-desc">Navigate cells</span><div class="shortcut-keys"><span class="shortcut-key">Enter</span><span class="shortcut-key">Tab</span></div></div>
+    <div class="shortcut-row"><span class="shortcut-desc">Go to Dashboard</span><div class="shortcut-keys"><span class="shortcut-key">Ctrl</span><span class="shortcut-key">1</span></div></div>
+    <div class="shortcut-row"><span class="shortcut-desc">Go to My Productivity</span><div class="shortcut-keys"><span class="shortcut-key">Ctrl</span><span class="shortcut-key">2</span></div></div>
+    <div class="shortcut-row"><span class="shortcut-desc">Go to Agents</span><div class="shortcut-keys"><span class="shortcut-key">Ctrl</span><span class="shortcut-key">3</span></div></div>
+    <div class="shortcut-row"><span class="shortcut-desc">Export Excel</span><div class="shortcut-keys"><span class="shortcut-key">Ctrl</span><span class="shortcut-key">E</span></div></div>
+  </div>
+</div>
+
+<!-- Undo Toast -->
+<div class="undo-toast" id="undo-toast">
+  <span id="undo-text">Entry changed</span>
+  <button onclick="undoLastEntry()">Undo</button>
+</div>
+
 </div><!-- /app-screen -->
 
 <div id="toast"></div>
@@ -1173,6 +1260,16 @@ function buildSelectors(){
 // ══════════════════════════════════════════════
 function setupKeyboard(){
   document.addEventListener('keydown',e=>{
+    // ? key = show shortcuts
+    if(e.key==='?' && !e.ctrlKey && !e.metaKey){ e.preventDefault(); showShortcuts(); return; }
+    // Ctrl+Z = undo
+    if((e.ctrlKey||e.metaKey) && e.key==='z'){ e.preventDefault(); undoLastEntry(); return; }
+    // Ctrl+E = export
+    if((e.ctrlKey||e.metaKey) && e.key==='e'){ e.preventDefault(); showExportModal(); return; }
+    // Ctrl+1/2/3 = navigate
+    if((e.ctrlKey||e.metaKey) && e.key==='1'){ e.preventDefault(); switchView('dashboard'); return; }
+    if((e.ctrlKey||e.metaKey) && e.key==='2'){ e.preventDefault(); switchView('my'); return; }
+    if((e.ctrlKey||e.metaKey) && e.key==='3'){ e.preventDefault(); if(currentIsManager) switchView('agents'); return; }
     // Ctrl+S = sync
     if((e.ctrlKey||e.metaKey)&&e.key==='s'){
       e.preventDefault(); syncToSheets();
@@ -1233,8 +1330,14 @@ function getDayValue(y,m,ai,d){try{return data[y][m][ai][d]??'';}catch(e){return
 function setDayValue(y,m,ai,d,val){
   ensurePath(y,m);
   var isEmpty = (val===''||val===null||isNaN(val));
+  // Save old value for undo before overwriting
+  var oldVal = (data[y]&&data[y][m]&&data[y][m][ai]) ? (data[y][m][ai][d]??'') : '';
   if(isEmpty) delete data[y][m][ai][d];
   else data[y][m][ai][d]=Number(val);
+  // Push to undo stack
+  if(String(oldVal)!==String(val)) pushUndo(y,m,ai,d,oldVal);
+  // Check personal best
+  if(!isEmpty) checkPersonalBest(ai,d,m,y,Number(val));
   saveToStorage(); updateMTD(); updateLeaderboard(); if(currentView==='dashboard') buildTodayCards();
   // Auto-sync this single cell immediately — no button needed
   var sendVal = isEmpty ? -1 : Number(val);
@@ -2606,6 +2709,8 @@ function buildTodayCards(){
 
   var teamTotal = 0;
   var html = '';
+  // Show skeletons while building
+  showSkeletons('today-agent-cards', AGENTS.length);
 
   AGENTS.forEach(function(agent,i){
     var total = 0;
@@ -2632,14 +2737,26 @@ function buildTodayCards(){
     var defText   = deficit<=0?('+'+Math.abs(deficit).toLocaleString()+' ahead'):(deficit.toLocaleString()+' behind');
 
 
-    html += '<div class="agent-today-card" style="border-top:3px solid '+borderCol+'">'
+    var trend = getTrend(year, month, i, lastDay);
+    var ring  = buildRing(pct, barColor, 56);
+    var trendHtml = trend.arrow ? '<span class="'+trend.cls+'">'+trend.arrow+' '+trend.label+'</span>' : '';
+
+    html += '<div class="agent-today-card" style="border-top:3px solid '+borderCol+';transition:transform .2s,box-shadow .2s">'
       + '<div class="atc-top">'
         + '<div class="atc-avatar" style="background:'+avatarColors[i%avatarColors.length]+'">'+agent.initials+'</div>'
+        + trendHtml
       + '</div>'
       + '<div class="atc-name">'+fullName+'</div>'
-
-      + '<div class="atc-count">'+total.toLocaleString()+'</div>'
-      + '<div class="atc-label">claims MTD</div>'
+      + '<div style="display:flex;align-items:center;gap:10px;margin:8px 0 4px">'
+        + '<div style="position:relative;width:56px;height:56px;flex-shrink:0">'
+          + ring
+          + '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--text);transform:rotate(90deg)">'+Math.round(pct)+'%</div>'
+        + '</div>'
+        + '<div>'
+          + '<div class="atc-count" style="font-size:28px">'+total.toLocaleString()+'</div>'
+          + '<div class="atc-label">claims MTD</div>'
+        + '</div>'
+      + '</div>'
       + '<div class="atc-bar"><div class="atc-bar-fill" style="width:'+pct+'%;background:'+barColor+'"></div></div>'
       + '<div class="atc-footer">'
         + '<span>Goal: '+mtdGoal.toLocaleString()+'</span>'
@@ -2810,6 +2927,157 @@ function exportToExcel(){
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
   showToast('✅ Exported '+total+' entries','success');
+}
+
+
+// ══════════════════════════════════════════════
+// SKELETON LOADING
+// ══════════════════════════════════════════════
+function showSkeletons(containerId, count){
+  var el = document.getElementById(containerId);
+  if(!el) return;
+  var html = '';
+  for(var i=0;i<count;i++){
+    html += '<div class="skeleton-card"><div class="skeleton" style="height:36px;width:36px;border-radius:50%;margin-bottom:12px"></div>'
+      + '<div class="skeleton" style="height:14px;width:70%;margin-bottom:8px"></div>'
+      + '<div class="skeleton" style="height:36px;width:50%;margin-bottom:8px"></div>'
+      + '<div class="skeleton" style="height:6px;width:100%"></div></div>';
+  }
+  el.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════
+// TREND INDICATOR — compare this week vs last week ACPD
+// ══════════════════════════════════════════════
+function getTrend(year, month, agentIdx, lastDay){
+  var now = new Date();
+  // This week: last 5 workdays
+  var thisWeek = 0, thisCount = 0;
+  var lastWeek = 0, lastCount = 0;
+  var workDays = [];
+  for(var d=1;d<=lastDay;d++){
+    if(!isWeekend(year,month,d)) workDays.push(d);
+  }
+  var recent = workDays.slice(-5);
+  var prev   = workDays.slice(-10,-5);
+  recent.forEach(function(d){
+    var v=getDayValue(year,month,agentIdx,d);
+    if(v!==''&&!isNaN(v)){thisWeek+=Number(v);thisCount++;}
+  });
+  prev.forEach(function(d){
+    var v=getDayValue(year,month,agentIdx,d);
+    if(v!==''&&!isNaN(v)){lastWeek+=Number(v);lastCount++;}
+  });
+  var thisAcpd = thisCount>0?thisWeek/thisCount:0;
+  var lastAcpd = lastCount>0?lastWeek/lastCount:0;
+  if(lastAcpd===0) return {arrow:'',label:'',color:''};
+  var diff = thisAcpd - lastAcpd;
+  var pct  = Math.abs((diff/lastAcpd)*100).toFixed(0);
+  if(diff > 2)  return {arrow:'↑',label:pct+'%',color:'#22C55E',cls:'trend-up'};
+  if(diff < -2) return {arrow:'↓',label:pct+'%',color:'#EF4444',cls:'trend-down'};
+  return {arrow:'→',label:'Stable',color:'#94A3B8',cls:'trend-flat'};
+}
+
+// ══════════════════════════════════════════════
+// CIRCULAR PROGRESS RING
+// ══════════════════════════════════════════════
+function buildRing(pct, color, size){
+  size = size || 64;
+  var r = (size-8)/2;
+  var circ = 2*Math.PI*r;
+  var offset = circ - (Math.min(pct,100)/100)*circ;
+  return '<svg width="'+size+'" height="'+size+'" class="progress-ring">'
+    + '<circle class="progress-ring-track" cx="'+size/2+'" cy="'+size/2+'" r="'+r+'"/>'
+    + '<circle class="progress-ring-fill" cx="'+size/2+'" cy="'+size/2+'" r="'+r+'"'
+    +   ' stroke="'+color+'"'
+    +   ' stroke-dasharray="'+circ+'"'
+    +   ' stroke-dashoffset="'+offset+'"/>'
+    + '</svg>';
+}
+
+// ══════════════════════════════════════════════
+// PERSONAL BEST TRACKER
+// ══════════════════════════════════════════════
+var _personalBests = {}; // agentIdx → best single-day value
+var _pbTimer = null;
+
+function checkPersonalBest(agentIdx, day, month, year, newVal){
+  if(!newVal || isNaN(newVal) || newVal <= 0) return;
+  // Load historical best for this agent
+  var best = 0;
+  var allData = data;
+  Object.keys(allData).forEach(function(y){
+    Object.keys(allData[y]||{}).forEach(function(m){
+      var agentData = (allData[y][m]||{})[agentIdx]||{};
+      Object.keys(agentData).forEach(function(d){
+        var v = Number(agentData[d]);
+        if(!isNaN(v) && v > best) best = v;
+      });
+    });
+  });
+  if(newVal > best && best > 0){
+    showPersonalBest(agentIdx, newVal);
+  }
+}
+
+function showPersonalBest(agentIdx, val){
+  var agent = AGENTS[agentIdx];
+  if(!agent) return;
+  var firstName = agent.name.split(',')[1]?.trim()||agent.name.split(' ')[0];
+  var banner = document.getElementById('pb-banner');
+  var text   = document.getElementById('pb-text');
+  if(!banner||!text) return;
+  text.textContent = '🏆 '+firstName+': '+val+' claims — New personal best!';
+  banner.style.display = 'block';
+  clearTimeout(_pbTimer);
+  _pbTimer = setTimeout(function(){ banner.style.display='none'; }, 5000);
+}
+
+// ══════════════════════════════════════════════
+// UNDO LAST ENTRY
+// ══════════════════════════════════════════════
+var _undoStack = []; // {year,month,ai,day,oldVal}
+var _undoTimer = null;
+
+function pushUndo(year, month, ai, day, oldVal){
+  _undoStack.push({year:year,month:month,ai:ai,day:day,oldVal:oldVal});
+  if(_undoStack.length > 20) _undoStack.shift();
+  // Show undo toast
+  var agent = AGENTS[ai];
+  var name  = agent ? (agent.name.split(',')[1]?.trim()||agent.name.split(' ')[0]) : 'Agent';
+  var toast = document.getElementById('undo-toast');
+  var text  = document.getElementById('undo-text');
+  if(toast&&text){
+    text.textContent = name+' Day '+day+': changed to '+getDayValue(year,month,ai,day);
+    toast.style.display = 'flex';
+    clearTimeout(_undoTimer);
+    _undoTimer = setTimeout(function(){ toast.style.display='none'; }, 4000);
+  }
+}
+
+function undoLastEntry(){
+  var last = _undoStack.pop();
+  if(!last){ showToast('Nothing to undo','error'); return; }
+  // Restore old value
+  var inp = document.getElementById('inp-'+last.day+'-'+last.ai)
+    || document.getElementById('my-inp-'+last.day)
+    || document.getElementById('ag-inp-'+last.day+'-'+last.month);
+  if(inp) inp.value = last.oldVal===''?'':last.oldVal;
+  setDayValue(last.year, last.month, last.ai, last.day, last.oldVal);
+  document.getElementById('undo-toast').style.display='none';
+  showToast('↩️ Undone','success');
+}
+
+// ══════════════════════════════════════════════
+// KEYBOARD SHORTCUTS PANEL
+// ══════════════════════════════════════════════
+function showShortcuts(){
+  var el = document.getElementById('shortcuts-overlay');
+  if(el) el.style.display='flex';
+}
+function closeShortcuts(){
+  var el = document.getElementById('shortcuts-overlay');
+  if(el) el.style.display='none';
 }
 
 // ══════════════════════════════════════════════
