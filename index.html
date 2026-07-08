@@ -163,8 +163,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 }
 .sidebar-user-info{overflow:hidden;transition:opacity var(--transition),width var(--transition)}
 .sidebar.collapsed .sidebar-user-info{opacity:0;width:0}
-.sidebar-user-name{font-size:13px;font-weight:600;color:#E2E8F0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sidebar-user-role{font-size:11px;color:#64748B;white-space:nowrap}
+.sidebar-user-name{font-size:12px;font-weight:600;color:#CBD5E1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-user-role{font-size:10px;color:#475569;white-space:nowrap;text-transform:uppercase;letter-spacing:.5px}
 .btn-signout{
   background:none;border:none;cursor:pointer;padding:0;
   color:#475569;transition:color var(--transition);flex-shrink:0;
@@ -697,14 +697,9 @@ input[type=number]{transition:background .15s,border-color .15s,box-shadow .15s}
       </div>
 
       <!-- Banners -->
-      <div class="banner banner-info" id="agent-banner">
-        <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
-        <span>Signed in as <strong id="agent-full-name">—</strong> — edit your daily entries in <strong>My Productivity</strong>.</span>
-      </div>
-      <div class="banner banner-muted" id="readonly-notice" style="display:none">
-        <svg viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>
-        <span>View-only mode — you are not in the agent list for this campaign.</span>
-      </div>
+<div id="agent-banner" style="display:none"></div>
+      <div id="agent-full-name" style="display:none"></div>
+      <div id="readonly-notice" style="display:none"></div>
 
       <!-- Section header -->
       <div class="section-header">
